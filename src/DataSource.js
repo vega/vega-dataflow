@@ -229,8 +229,8 @@ prototype.listener = function() {
     });
 
     output.mod = input.mod.map(function(t) {
-      map[t._id]._prev = t._prev;
-      return map[t._id];
+      var o = map[t._id];
+      return (o._prev = t._prev, o);
     });
 
     output.rem = input.rem.map(function(t) { 
