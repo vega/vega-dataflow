@@ -34,6 +34,7 @@ prototype.evaluate = function(input) {
   if (input.reflow) {
     input.mod = input.mod.concat(Tuple.idFilter(this._data, 
       input.add, input.mod, input.rem));
+    input.reflow = false;
   }
 
   return input;
