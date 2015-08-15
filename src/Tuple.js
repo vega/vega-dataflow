@@ -1,5 +1,4 @@
-var util = require('datalib/src/util'),
-    SENTINEL = require('./Sentinel'),
+var SENTINEL = require('./Sentinel'),
     tupleID = 0;
 
 // Object.create is expensive. So, when ingesting, trust that the
@@ -20,27 +19,29 @@ function derive(datum, prev) {
 function set(t, k, v) {
   var prev = t[k];
   if (prev === v) return false;
-  set_prev(t, k);
+
+  var p = t._prev;
+  if (p !== undefined) {
+    if (p === SENTINEL) { t._prev = (p = Object.create(t)); }
+    p[k] = prev;
+  }
+
   t[k] = v;
   return true;
 }
 
-function set_prev(t, k) {
-  if (t._prev === undefined) return;
-  t._prev = (t._prev === SENTINEL) ? {} : t._prev;
-  t._prev[k] = t[k];
-}
-
-function has_prev(t) {
-  return t._prev && t._prev !== SENTINEL;
+function prev(t) {
+  var p = t._prev;
+  return p !== SENTINEL && p || t;
 }
 
 function reset() {
   tupleID = 0;
 }
 
-function idMap(a) {
-  for (var ids={}, i=0, n=a.length; i<n; ++i) {
+function idMap(a, ids) {
+  ids = ids || {};
+  for (var i=0, n=a.length; i<n; ++i) {
     ids[a[i]._id] = 1;
   }
   return ids;
@@ -48,10 +49,9 @@ function idMap(a) {
 
 function idFilter(data) {
   var ids = {};
-  for (var i=1, len=arguments.length; i<len; ++i) {
-    util.extend(ids, idMap(arguments[i]));
+  for (var i=arguments.length; --i>0;) {
+    idMap(arguments[i], ids);
   }
-
   return data.filter(function(x) { return !ids[x._id]; });
 }
 
@@ -59,8 +59,7 @@ module.exports = {
   ingest:   ingest,
   derive:   derive,
   set:      set,
-  set_prev: set_prev,
-  has_prev: has_prev,
+  prev:     prev,
   reset:    reset,
   idMap:    idMap,
   idFilter: idFilter

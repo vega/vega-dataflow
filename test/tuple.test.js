@@ -13,18 +13,15 @@ describe('Tuple', function() {
     assert.equal(d._id, 1);
     assert.equal(d.a, 5);
     assert.strictEqual(d, o);
-    assert.notOk(Tuple.has_prev(d));
     assert.isUndefined(d._prev);
 
     d = Tuple.ingest(o, null);
     assert.equal(d._id, 2);
-    assert.notOk(Tuple.has_prev(d));
     assert.strictEqual(d._prev, SENTINEL);
 
     d = Tuple.ingest(5, p);
     assert.equal(d._id, 3);
     assert.equal(d.data, 5);
-    assert.ok(Tuple.has_prev(d));
     assert.strictEqual(d._prev, p);
     assert.equal(d._prev.data, 3);
   });
@@ -40,7 +37,7 @@ describe('Tuple', function() {
     var d = Tuple.ingest({a:5});
     assert.isTrue(Tuple.set(d, 'a', 7));
     assert.equal(d.a, 7);
-    assert.notOk(Tuple.has_prev(d));
+    assert.notOk(d._prev);
 
     d = Tuple.ingest({a:5}, null);
     assert.isTrue(Tuple.set(d, 'a', 7));
