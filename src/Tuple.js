@@ -48,7 +48,10 @@ module.exports = {
     if (u === v) {
       return false;
     } else if ((p = t._prev) !== undefined) {
-      if (p === null) { t._prev = (p = copy(t)); }
+      if (p === null) {
+        t._prev = (p = copy(t));
+        p._id = t._id;
+      }
       p[k] = u;
     }
 

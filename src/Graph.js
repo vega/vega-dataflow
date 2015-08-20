@@ -1,4 +1,4 @@
-var util = require('datalib/src/util'),
+var dl = require('datalib'),
     Heap = require('./Heap'),
     ChangeSet = require('./ChangeSet'),
     DataSource = require('./DataSource'),
@@ -90,7 +90,7 @@ prototype.signalValues = function(names) {
 
 prototype.signalRef = function(ref) {
   if (!Array.isArray(ref)) {
-    ref = util.field(ref);
+    ref = dl.field(ref);
   }
 
   var value = this.signal(ref[0]).value();

@@ -151,8 +151,10 @@ prototype.pipeline = function(pipeline) {
 };
 
 prototype.finalize = function() {
-  if (this._revises) for (var i=0, n=this._data.length; i<n; ++i) {
-    Tuple.reset_prev(this._data[i]);
+  if (this._revises) {
+    for (var i=0, n=this._data.length; i<n; ++i) {
+      Tuple.reset_prev(this._data[i]);
+    }
   }
 };
 
