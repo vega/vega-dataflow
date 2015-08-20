@@ -6,7 +6,7 @@ var tupleID = 0;
 function ingest(datum, prev) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
   datum._id = ++tupleID;
-  datum._prev = prev;//(prev === undefined) ? prev : (prev || SENTINEL);
+  datum._prev = prev;
   if (prev) prev._id = datum._id;
   return datum;
 }
@@ -33,8 +33,7 @@ module.exports = {
 
   derive: function(d, prev) {
     // TODO is it safe to use a raw previous object here?
-    //return ingest(Object.create(d), p);
-    var p = d._prev !== undefined ? d._prev : prev;
+    var p = d._prev !== undefined ? d._prev : (prev ? null : undefined);
     return ingest(copy(d), p ? copy(p) : p);
   },
 
