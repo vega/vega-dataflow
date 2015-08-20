@@ -2,7 +2,6 @@
 
 var assert = require('chai').assert;
 var Tuple = require('../src/Tuple');
-var SENTINEL = require('../src/Sentinel');
 
 describe('Tuple', function() {
 
@@ -17,20 +16,26 @@ describe('Tuple', function() {
 
     d = Tuple.ingest(o, null);
     assert.equal(d._id, 2);
-    assert.strictEqual(d._prev, SENTINEL);
+    assert.strictEqual(d._prev, null);
 
     d = Tuple.ingest(5, p);
     assert.equal(d._id, 3);
     assert.equal(d.data, 5);
     assert.strictEqual(d._prev, p);
     assert.equal(d._prev.data, 3);
+    assert.equal(p._id, d._id);
   });
 
-  it('should derive inheriting tuples', function() {
-    var o = {a: 5};
+  it('should copy on derive', function() {
+    var o = Tuple.ingest({a: 5});
     var d = Tuple.derive(o);
     assert.equal(d.a, 5);
-    assert.strictEqual(d.__proto__, o);
+    assert.isUndefined(d._prev);
+
+    o = Tuple.ingest({a: 2}, {a: 3});
+    d = Tuple.derive(o);
+    assert.equal(d.a, 2);
+    assert.equal(d._prev.a, 3);
   });
 
   it('should set values', function() {

@@ -1,5 +1,4 @@
-var SENTINEL = require('./Sentinel'),
-    tupleID = 0;
+var tupleID = 0;
 
 // Object.create is expensive. So, when ingesting, trust that the
 // datum is an object that has been appropriately sandboxed from 
@@ -7,36 +6,9 @@ var SENTINEL = require('./Sentinel'),
 function ingest(datum, prev) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
   datum._id = ++tupleID;
-  datum._prev = (prev !== undefined) ? (prev || SENTINEL) : undefined;
+  datum._prev = prev;//(prev === undefined) ? prev : (prev || SENTINEL);
+  if (prev) prev._id = datum._id;
   return datum;
-}
-
-function derive(datum, prev) {
-  return ingest(Object.create(datum), prev);
-}
-
-// WARNING: operators should only call this once per timestamp!
-function set(t, k, v) {
-  var prev = t[k];
-  if (prev === v) return false;
-
-  var p = t._prev;
-  if (p !== undefined) {
-    if (p === SENTINEL) { t._prev = (p = Object.create(t)); }
-    p[k] = prev;
-  }
-
-  t[k] = v;
-  return true;
-}
-
-function prev(t) {
-  var p = t._prev;
-  return p !== SENTINEL && p || t;
-}
-
-function reset() {
-  tupleID = 0;
 }
 
 function idMap(a, ids) {
@@ -47,20 +19,64 @@ function idMap(a, ids) {
   return ids;
 }
 
-function idFilter(data) {
-  var ids = {};
-  for (var i=arguments.length; --i>0;) {
-    idMap(arguments[i], ids);
+function copy(t, c) {
+  c = c || {};
+  for (var k in t) {
+    if (k !== '_prev' && k !== '_id') c[k] = t[k];
   }
-  return data.filter(function(x) { return !ids[x._id]; });
+  return c;
 }
 
 module.exports = {
-  ingest:   ingest,
-  derive:   derive,
-  set:      set,
-  prev:     prev,
-  reset:    reset,
-  idMap:    idMap,
-  idFilter: idFilter
+  ingest: ingest,
+  idMap: idMap,
+
+  derive: function(d, prev) {
+    // TODO is it safe to use a raw previous object here?
+    //return ingest(Object.create(d), p);
+    var p = d._prev !== undefined ? d._prev : prev;
+    return ingest(copy(d), p ? copy(p) : p);
+  },
+
+  rederive: function(d, t) {
+    if (d._prev) copy(d._prev, t._prev);
+    return copy(d, t);
+  },
+
+  // WARNING: operators should only call this once per timestamp!
+  set: function(t, k, v) {
+    var u = t[k], p;
+    if (u === v) {
+      return false;
+    } else if ((p = t._prev) !== undefined) {
+      if (p === null) { t._prev = (p = copy(t)); }
+      p[k] = u;
+    }
+
+    t[k] = v;
+    return true;
+  },
+
+  prev: function(t) {
+    return t._prev || t;
+  },
+
+  init_prev: function(d) {
+    if (d._prev === undefined) d._prev = null;
+  },
+
+  reset_prev: function(d) {
+    var p = d._prev, k;
+    for (k in p) p[k] = d[k];
+  },
+
+  reset: function() { tupleID = 0; },
+
+  idFilter: function(data) {
+    var ids = {};
+    for (var i=arguments.length; --i>0;) {
+      idMap(arguments[i], ids);
+    }
+    return data.filter(function(x) { return !ids[x._id]; });
+  }
 };
