@@ -152,8 +152,9 @@ prototype.pipeline = function(pipeline) {
 
 prototype.finalize = function() {
   if (this._revises) {
-    for (var i=0, n=this._data.length; i<n; ++i) {
-      Tuple.reset_prev(this._data[i]);
+    var data = this.values();
+    for (var i=0, n=data.length; i<n; ++i) {
+      Tuple.reset_prev(data[i]);
     }
   }
 };

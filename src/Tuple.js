@@ -32,7 +32,6 @@ module.exports = {
   idMap: idMap,
 
   derive: function(d, prev) {
-    // TODO is it safe to use a raw previous object here?
     var p = d._prev !== undefined ? d._prev : (prev ? null : undefined);
     return ingest(copy(d), p ? copy(p) : p);
   },
@@ -44,10 +43,10 @@ module.exports = {
 
   // WARNING: operators should only call this once per timestamp!
   set: function(t, k, v) {
-    var u = t[k], p;
-    if (u === v) {
-      return false;
-    } else if ((p = t._prev) !== undefined) {
+    var u = t[k];
+        p = t._prev;
+
+    if (p !== undefined) {
       if (p === null) {
         t._prev = (p = copy(t));
         p._id = t._id;
@@ -55,21 +54,20 @@ module.exports = {
       p[k] = u;
     }
 
-    t[k] = v;
-    return true;
+    return u === v ? false : (t[k] = v, true);
   },
 
   prev: function(t) {
     return t._prev || t;
   },
 
-  init_prev: function(d) {
-    if (d._prev === undefined) d._prev = null;
+  init_prev: function(t) {
+    if (t._prev === undefined) t._prev = null;
   },
 
-  reset_prev: function(d) {
-    var p = d._prev, k;
-    for (k in p) p[k] = d[k];
+  reset_prev: function(t) {
+    var p = t._prev, k;
+    for (k in p) p[k] = t[k];
   },
 
   reset: function() { tupleID = 0; },
