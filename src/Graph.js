@@ -181,9 +181,7 @@ prototype.connect = function(branch) {
 
     data = node.dependency(Deps.DATA);
     for (j=0, m=data.length; j<m; ++j) {
-      this.data(data[j])
-        .revises(node.revises())
-        .addListener(collector);
+      this.data(data[j]).addListener(collector);
     }
 
     signals = node.dependency(Deps.SIGNALS);

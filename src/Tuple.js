@@ -3,12 +3,9 @@ var tupleID = 0;
 // Object.create is expensive. So, when ingesting, trust that the
 // datum is an object that has been appropriately sandboxed from 
 // the outside environment. 
-function ingest(datum, prev) {
+function ingest(datum) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
-  datum._id = ++tupleID;
-  datum._prev = prev;
-  if (prev) prev._id = datum._id;
-  return datum;
+  return (datum._id = ++tupleID, datum);
 }
 
 function idMap(a, ids) {
@@ -31,9 +28,8 @@ module.exports = {
   ingest: ingest,
   idMap: idMap,
 
-  derive: function(d, prev) {
-    var p = d._prev !== undefined ? d._prev : (prev ? null : undefined);
-    return ingest(copy(d), p ? copy(p) : p);
+  derive: function(d) {
+    return ingest(copy(d));
   },
 
   rederive: function(d, t) {
@@ -41,33 +37,14 @@ module.exports = {
     return copy(d, t);
   },
 
-  // WARNING: operators should only call this once per timestamp!
   set: function(t, k, v) {
-    var u = t[k];
-        p = t._prev;
-
-    if (p !== undefined) {
-      if (p === null) {
-        t._prev = (p = copy(t));
-        p._id = t._id;
-      }
-      p[k] = u;
-    }
-
-    return u === v ? false : (t[k] = v, true);
+    return t[k] === v ? false : (t[k] = v, true);
   },
 
-  prev: function(t) {
-    return t._prev || t;
-  },
-
-  init_prev: function(t) {
-    if (t._prev === undefined) t._prev = null;
-  },
-
-  reset_prev: function(t) {
-    var p = t._prev, k;
-    for (k in p) p[k] = t[k];
+  prev: function(t, stamp) {
+    var p = t._prev || (t._prev = {_id: t._id});
+    // TODO update copy to handle tuple values with their own _prev.
+    return (!stamp || p._stamp === stamp) ? p : (p._stamp = stamp, copy(t, p));
   },
 
   reset: function() { tupleID = 0; },

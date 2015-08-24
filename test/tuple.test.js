@@ -14,16 +14,18 @@ describe('Tuple', function() {
     assert.strictEqual(d, o);
     assert.isUndefined(d._prev);
 
-    d = Tuple.ingest(o, null);
+    d = Tuple.ingest(o);
     assert.equal(d._id, 2);
-    assert.strictEqual(d._prev, null);
+    assert.isUndefined(d._prev, null);
 
-    d = Tuple.ingest(5, p);
+    d = Tuple.ingest(3);
+    Tuple.prev(d, 1);
+    d.data = 5;
     assert.equal(d._id, 3);
     assert.equal(d.data, 5);
-    assert.strictEqual(d._prev, p);
+    assert.isDefined(d._prev);
     assert.equal(d._prev.data, 3);
-    assert.equal(p._id, d._id);
+    assert.equal(d._prev._id, d._id);
   });
 
   it('should copy on derive', function() {
@@ -31,25 +33,22 @@ describe('Tuple', function() {
     var d = Tuple.derive(o);
     assert.equal(d.a, 5);
     assert.isUndefined(d._prev);
-
-    o = Tuple.ingest({a: 2}, {a: 3});
-    d = Tuple.derive(o);
-    assert.equal(d.a, 2);
-    assert.equal(d._prev.a, 3);
   });
 
   it('should set values', function() {
     var d = Tuple.ingest({a:5});
     assert.isTrue(Tuple.set(d, 'a', 7));
     assert.equal(d.a, 7);
-    assert.notOk(d._prev);
+    assert.isUndefined(d._prev);
 
-    d = Tuple.ingest({a:5}, null);
+    d = Tuple.ingest({a:5});
+    Tuple.prev(d, 1);
     assert.isTrue(Tuple.set(d, 'a', 7));
     assert.equal(d.a, 7);
     assert.equal(d._prev.a, 5);
 
-    d = Tuple.ingest(5, {data: 3});
+    d = Tuple.ingest(5);
+    Tuple.prev(d, 1);
     assert.isTrue(Tuple.set(d, 'data', 7));
     assert.equal(d.data, 7);
     assert.equal(d._prev.data, 5);

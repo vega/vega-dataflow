@@ -15,7 +15,6 @@ function DataSource(graph, name, facet) {
 
   this._pipeline  = null; // Pipeline of transformations.
   this._collector = null; // Collector to materialize output of pipeline
-  this._revises = false;  // Does any pipeline operator need to track prev?
   this._mutates = false;  // Does any pipeline operator mutate tuples?
 }
 
@@ -32,12 +31,7 @@ prototype.source = function(src) {
 };
 
 prototype.insert = function(tuples) {
-  var prev = this._revises ? null : undefined;
-  var insert = tuples.map(function(d) {
-    return Tuple.ingest(d, prev);
-  });
-
-  this._input.add = this._input.add.concat(insert);
+  this._input.add = this._input.add.concat(tuples.map(Tuple.ingest));
   return this;
 };
 
@@ -79,20 +73,6 @@ prototype.values = function(data) {
   return this;
 };
 
-prototype.revises = function(p) {
-  if (!arguments.length) return this._revises;
-
-  // If we've not needed prev in the past, but a new dataflow node needs it now
-  // ensure existing tuples have prev set.
-  if (!this._revises && p) {
-    this._data.forEach(Tuple.init_prev);
-    this._input.add.forEach(Tuple.init_prev); // new tuples haven't been merged
-  }
-
-  this._revises = this._revises || p;
-  return this;
-};
-
 prototype.mutates = function(m) {
   if (!arguments.length) return this._mutates;
   this._mutates = this._mutates || m;
@@ -116,7 +96,6 @@ prototype.pipeline = function(pipeline) {
   this._outputNode = DataSourceOutput(this);
 
   var graph = this._graph,
-      revises = 0,
       mutates = 0,
       collector = this._inputNode,
       i, node, router, collects;
@@ -136,7 +115,6 @@ prototype.pipeline = function(pipeline) {
 
     if ((collects = node.collector())) collector = node;
     router = router || node.router() && !collects;
-    revises = revises || node.revises();
     mutates = mutates || node.mutates();
   }
   if (router) pipeline.push(collector = new Collector(graph));
@@ -144,19 +122,9 @@ prototype.pipeline = function(pipeline) {
   pipeline.unshift(this._inputNode);
   pipeline.push(this._outputNode);
   this._collector = collector;
-  this._revises = !!revises;
   this._mutates = !!mutates;
   this._graph.connect(this._pipeline = pipeline);
   return this;
-};
-
-prototype.finalize = function() {
-  if (this._revises) {
-    var data = this.values();
-    for (var i=0, n=data.length; i<n; ++i) {
-      Tuple.reset_prev(data[i]);
-    }
-  }
 };
 
 prototype.listener = function() { 
@@ -273,7 +241,7 @@ function DataSourceListener(ds) {
           output = ChangeSet.create(input);
 
       output.add = input.add.map(function(t) {
-        return (map[t._id] = Tuple.derive(t, ds._revises));
+        return (map[t._id] = Tuple.derive(t));
       });
 
       output.mod = input.mod.map(function(t) {
