@@ -7,7 +7,7 @@ function ingest(datum) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
   var id = ++tupleID;
   datum._id = id;
-  if (datum._prev) datum._prev._id = id;
+  if (datum._prev) datum._prev = null;
   return datum;
 }
 
@@ -52,8 +52,12 @@ module.exports = {
   },
 
   prev_update: function(t) {
-    // TODO update copy to handle tuple values with their own _prev.
-    if (t._prev) { copy(t, t._prev); }
+    var p = t._prev, k, v;
+    if (p) for (k in t) {
+      if (k !== '_prev' && k !== '_id') {
+        p[k] = ((v=t[k]) instanceof Object && v._prev) ? v._prev : v;
+      }
+    }
   },
 
   reset: function() { tupleID = 0; },
