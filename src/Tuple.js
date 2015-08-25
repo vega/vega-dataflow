@@ -5,7 +5,10 @@ var tupleID = 0;
 // the outside environment. 
 function ingest(datum) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
-  return (datum._id = ++tupleID, datum);
+  var id = ++tupleID;
+  datum._id = id;
+  if (datum._prev) datum._prev._id = id;
+  return datum;
 }
 
 function idMap(a, ids) {
@@ -33,18 +36,24 @@ module.exports = {
   },
 
   rederive: function(d, t) {
-    if (d._prev) copy(d._prev, t._prev);
     return copy(d, t);
   },
 
   set: function(t, k, v) {
-    return t[k] === v ? false : (t[k] = v, true);
+    return t[k] === v ? 0 : (t[k] = v, 1);
   },
 
-  prev: function(t, stamp) {
-    var p = t._prev || (t._prev = {_id: t._id});
+  prev: function(t) {
+    return t._prev || t;
+  },
+
+  prev_init: function(t) {
+    if (!t._prev) { t._prev = {_id: t._id}; }
+  },
+
+  prev_update: function(t) {
     // TODO update copy to handle tuple values with their own _prev.
-    return (!stamp || p._stamp === stamp) ? p : (p._stamp = stamp, copy(t, p));
+    if (t._prev) { copy(t, t._prev); }
   },
 
   reset: function() { tupleID = 0; },

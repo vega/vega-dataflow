@@ -19,7 +19,8 @@ describe('Tuple', function() {
     assert.isUndefined(d._prev, null);
 
     d = Tuple.ingest(3);
-    Tuple.prev(d, 1);
+    Tuple.prev_init(d);
+    Tuple.prev_update(d);
     d.data = 5;
     assert.equal(d._id, 3);
     assert.equal(d.data, 5);
@@ -37,22 +38,24 @@ describe('Tuple', function() {
 
   it('should set values', function() {
     var d = Tuple.ingest({a:5});
-    assert.isTrue(Tuple.set(d, 'a', 7));
+    assert.equal(Tuple.set(d, 'a', 7), 1);
     assert.equal(d.a, 7);
     assert.isUndefined(d._prev);
 
     d = Tuple.ingest({a:5});
-    Tuple.prev(d, 1);
-    assert.isTrue(Tuple.set(d, 'a', 7));
+    Tuple.prev_init(d);
+    Tuple.prev_update(d);
+    assert.equal(Tuple.set(d, 'a', 7), 1);
     assert.equal(d.a, 7);
     assert.equal(d._prev.a, 5);
 
     d = Tuple.ingest(5);
-    Tuple.prev(d, 1);
-    assert.isTrue(Tuple.set(d, 'data', 7));
+    Tuple.prev_init(d);
+    Tuple.prev_update(d);
+    assert.equal(Tuple.set(d, 'data', 7), 1);
     assert.equal(d.data, 7);
     assert.equal(d._prev.data, 5);
-    assert.isFalse(Tuple.set(d, 'data', 7));
+    assert.equal(Tuple.set(d, 'data', 7), 0);
   });
 
   it('should reset tuple ids', function() {
