@@ -130,19 +130,17 @@ prototype.pipeline = function(pipeline) {
 prototype.synchronize = function() {
   var data = this._data, i, n;
 
-  if (data.length && data[0]._prev) {
+  for (i=0, n=data.length; i<n; ++i) {
+    Tuple.prev_update(data[i]);
+  }
+
+  if (this._inputNode !== this._collector) {
+    data = this._collector.data();
     for (i=0, n=data.length; i<n; ++i) {
       Tuple.prev_update(data[i]);
     }
   }
-  if (this._collector) {
-    data = this._collector.data();
-    if (data.length && data[0]._prev) {
-      for (i=0, n=data.length; i<n; ++i) {
-        Tuple.prev_update(data[i]);
-      }
-    }
-  }
+
   return this;
 };
 
