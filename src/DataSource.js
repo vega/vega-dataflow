@@ -9,12 +9,14 @@ function DataSource(graph, name, facet) {
   this._name = name;
   this._data = [];
   this._source = null;
-  this._facet = facet;
-  this._input = ChangeSet.create();
+  this._facet  = facet;
+  this._input  = ChangeSet.create();
   this._output = null; // Output changeset
 
+  this._inputNode  = null;
+  this._outputNode = null;
   this._pipeline  = null; // Pipeline of transformations.
-  this._collector = null; // Collector to materialize output of pipeline
+  this._collector = null; // Collector to materialize output of pipeline.
   this._mutates = false;  // Does any pipeline operator mutate tuples?
 }
 
@@ -150,7 +152,7 @@ prototype.listener = function() {
 
 prototype.addListener = function(l) {
   if (l instanceof DataSource) {
-    (this._collector || this._inputNode).addListener(l.listener());
+    this._collector.addListener(l.listener());
   } else {
     this._outputNode.addListener(l);      
   }
@@ -162,8 +164,7 @@ prototype.removeListener = function(l) {
 };
 
 prototype.listeners = function(ds) {
-  return (ds ? this._collector || this._inputNode : this._outputNode)
-    .listeners();
+  return (ds ? this._collector : this._outputNode).listeners();
 };
 
 // Input node applies the datasource's delta, and propagates it to 

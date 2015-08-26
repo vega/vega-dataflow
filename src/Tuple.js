@@ -1,12 +1,8 @@
 var tupleID = 0;
 
-// Object.create is expensive. So, when ingesting, trust that the
-// datum is an object that has been appropriately sandboxed from 
-// the outside environment. 
 function ingest(datum) {
   datum = (datum === Object(datum)) ? datum : {data: datum};
-  var id = ++tupleID;
-  datum._id = id;
+  datum._id = ++tupleID;
   if (datum._prev) datum._prev = null;
   return datum;
 }
