@@ -38,17 +38,17 @@ prototype.data = function(name, pipeline, facet) {
 };
 
 prototype.dataValues = function(names) {
-  var data = this._data, k;
-  if (!arguments.length) {
-    names = [];
-    for (k in data) names.push(k);
-  }
-  if (Array.isArray(names)) {
-    return names.reduce(function(db, name) {
-      return (db[name] = data[name].values(), db);
-    }, {});
+  var data = this._data,
+      n = arguments.length ? names : dl.keys(data),
+      name, db, i;
+
+  if (Array.isArray(n)) {
+    for (db={}, i=0; i<n.length; ++i) {
+      db[(name=n[i])] = data[name].values();
+    }
+    return db;
   } else {
-    return data[names].values();
+    return data[n].values();
   }
 };
 
@@ -73,18 +73,17 @@ prototype.signal = function(name, init) {
 
 // TODO: separate into signalValue and signalValues?
 prototype.signalValues = function(names) {
-  if (!arguments.length) {
-    names = [];
-    for (var k in this._signals) names.push(k);
-  }
-  if (Array.isArray(names)) {
-    var values = {};
-    for (var i=0, n=names.length; i<n; ++i) {
-      values[names[i]] = this._signals[names[i]].value();
+  var sig = this._signals,
+      n = arguments.length ? names : dl.keys(sig),
+      vals, i;
+
+  if (Array.isArray(n)) {
+    for (vals={}, i=0; i<n.length; ++i) {
+      vals[n[i]] = sig[n[i]].value();
     }
-    return values;
+    return vals;
   } else {
-    return this._signals[names].value();
+    return sig[n].value();
   }
 };
 
