@@ -37,6 +37,16 @@ prototype.data = function(name, pipeline, facet) {
   }
 };
 
+prototype.signal = function(name, init) {
+  if (arguments.length === 1) {
+    return Array.isArray(name) ?
+      name.map(function(n) { return m._signals[n]; }) :
+      this._signals[name];
+  } else {
+    return (this._signals[name] = new Signal(this, name, init));
+  }
+};
+
 prototype.dataValues = function(names) {
   var data = this._data,
       n = arguments.length ? names : dl.keys(data),
@@ -49,25 +59,6 @@ prototype.dataValues = function(names) {
     return db;
   } else {
     return data[n].values();
-  }
-};
-
-function signal(names) {
-  var m = this;
-  if (Array.isArray(names)) {
-    return names.map(function(name) {
-      return m._signals[name];
-    });
-  } else {
-    return this._signals[names];
-  }
-}
-
-prototype.signal = function(name, init) {
-  if (arguments.length === 1) {
-    return signal.call(this, name);
-  } else {
-    return (this._signals[name] = new Signal(this, name, init));
   }
 };
 
@@ -112,9 +103,10 @@ prototype.propagate = function(pulse, node, stamp) {
   // of the dataflow graph during a propagation (e.g., when creating
   // a new inline datasource).
   var pq = new Heap(function(a, b) {
-    // Topological sort on qrank as rank may change during propagation.
-    return a.qrank() - b.qrank();
-  }); 
+    // Sort on qrank (queue-rank).
+    // Rank can change during propagation due to rewiring.
+    return a._qrank - b._qrank;
+  });
 
   if (pulse.stamp) throw Error('Pulse already has a non-zero stamp.');
 
