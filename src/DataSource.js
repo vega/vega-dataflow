@@ -93,7 +93,7 @@ prototype.pipeline = function(pipeline) {
   if (!arguments.length) return this._pipeline;
 
   var graph = this._graph,
-      collector, status;
+      status;
 
   pipeline.unshift(this._inputNode = DataSourceInput(this));
   status = graph.preprocess(pipeline);
