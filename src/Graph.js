@@ -245,22 +245,19 @@ prototype.disconnect = function(branch) {
 };
 
 prototype.synchronize = function(branch) {
-  var tids = {}, cids = {},
-      node, collector, data, i, n, j, m, d, id;
+  var ids = {},
+      node, data, i, n, j, m, d, id;
 
   for (i=0, n=branch.length; i<n; ++i) {
     node = branch[i];
-    collector = node._collector || (node.collector() && node);
-    if (cids[collector._id] || !collector) continue;
+    if (!node.collector()) continue;
 
-    for (j=0, data=collector.data(), m=data.length; j<m; ++j) {
+    for (j=0, data=node.data(), m=data.length; j<m; ++j) {
       id = (d = data[j])._id;
-      if (tids[id]) continue; 
+      if (ids[id]) continue; 
       Tuple.prev_update(d);
-      tids[id] = 1; 
+      ids[id] = 1; 
     }
-
-    cids[collector._id] = 1;
   }
 
   return this;
