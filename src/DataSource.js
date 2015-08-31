@@ -103,6 +103,7 @@ prototype.pipeline = function(pipeline) {
   for (i=0; i<pipeline.length; ++i) {
     node = pipeline[i];
 
+    // Batch nodes need access to a materialized dataset. 
     if (!node._collector && node.batch()) {
       if (router) {
         node = new Collector(graph);
@@ -114,8 +115,15 @@ prototype.pipeline = function(pipeline) {
     }
 
     if ((collects = node.collector())) collector = node;
-    router = router || node.router() && !collects;
+    router  = router  || node.router() && !collects;
     mutates = mutates || node.mutates();
+
+    // A collector needs to be inserted after tuple-producing
+    // nodes for correct previous value tracking.
+    if (node.produces()) {
+      pipeline.splice(i+1, 0, new Collector(graph));
+      router = false;
+    }
   }
   if (router) pipeline.push(collector = new Collector(graph));
 
@@ -128,17 +136,23 @@ prototype.pipeline = function(pipeline) {
 };
 
 prototype.synchronize = function() {
-  var data = this._data, i, n;
+  var pipeline = this._pipeline,
+      tids = {}, cids = {},
+      node, collector, data, i, n, j, m, d, id;
 
-  for (i=0, n=data.length; i<n; ++i) {
-    Tuple.prev_update(data[i]);
-  }
+  for (i=0, n=pipeline.length; i<n; ++i) {
+    node = pipeline[i];
+    collector = node._collector || (node.collector() && node);
+    if (cids[collector._id] || !collector) continue;
 
-  if (this._inputNode !== this._collector) {
-    data = this._collector.data();
-    for (i=0, n=data.length; i<n; ++i) {
-      Tuple.prev_update(data[i]);
+    for (j=0, data=collector.data(), m=data.length; j<m; ++j) {
+      id = (d = data[j])._id;
+      if (tids[id]) continue; 
+      Tuple.prev_update(d);
+      tids[id] = 1; 
     }
+
+    cids[collector._id] = 1;
   }
 
   return this;
