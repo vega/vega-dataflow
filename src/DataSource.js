@@ -92,46 +92,21 @@ prototype.fire = function(input) {
 prototype.pipeline = function(pipeline) {
   if (!arguments.length) return this._pipeline;
 
-  this._inputNode = DataSourceInput(this);
-  this._outputNode = DataSourceOutput(this);
-
   var graph = this._graph,
-      mutates = 0,
-      collector = this._inputNode,
-      i, node, router, collects;
+      collector, status;
 
-  for (i=0; i<pipeline.length; ++i) {
-    node = pipeline[i];
+  pipeline.unshift(this._inputNode = DataSourceInput(this));
+  status = graph.preprocess(pipeline);
 
-    // Batch nodes need access to a materialized dataset. 
-    if (!node._collector && node.batch()) {
-      if (router) {
-        node = new Collector(graph);
-        pipeline.splice(i, 0, node);
-        router = false;
-      } else {
-        node._collector = collector;
-      }
-    }
-
-    if ((collects = node.collector())) collector = node;
-    router  = router  || node.router() && !collects;
-    mutates = mutates || node.mutates();
-
-    // A collector needs to be inserted after tuple-producing
-    // nodes for correct previous value tracking.
-    if (node.produces()) {
-      pipeline.splice(i+1, 0, new Collector(graph));
-      router = false;
-    }
+  if (status.router) {
+    pipeline.push(status.collector = new Collector(graph));
   }
-  if (router) pipeline.push(collector = new Collector(graph));
 
-  pipeline.unshift(this._inputNode);
-  pipeline.push(this._outputNode);
-  this._collector = collector;
-  this._mutates = !!mutates;
-  this._graph.connect(this._pipeline = pipeline);
+  pipeline.push(this._outputNode = DataSourceOutput(this));
+  this._collector = status.collector;
+  this._mutates = !!status.mutates;
+  graph.connect(this._pipeline = pipeline);
+
   return this;
 };
 

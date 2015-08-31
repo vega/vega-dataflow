@@ -2,6 +2,7 @@ var dl = require('datalib'),
     Heap = require('./Heap'),
     ChangeSet = require('./ChangeSet'),
     DataSource = require('./DataSource'),
+    Collector = require('./Collector'),
     Signal = require('./Signal'),
     Deps = require('./Dependencies');
 
@@ -156,6 +157,43 @@ prototype.propagate = function(pulse, node, stamp) {
       }
     }
   }
+};
+
+// Process a new branch of the dataflow graph prior to connection:
+// (1) Insert new Collector nodes as needed. 
+// (2) Track + return mutation/routing status of the branch.
+prototype.preprocess = function(branch) {
+  var graph = this,
+      mutates = 0,
+      node, router, collector, collects;
+
+  for (var i=0; i<branch.length; ++i) {
+    node = branch[i];
+
+    // Batch nodes need access to a materialized dataset. 
+    if (node.batch() && !node._collector) {
+      if (router || !collector) {
+        node = new Collector(graph);
+        branch.splice(i, 0, node);
+        router = false;
+      } else {
+        node._collector = collector;
+      }
+    }
+
+    if ((collects = node.collector())) collector = node;
+    router  = router  || node.router() && !collects;
+    mutates = mutates || node.mutates();
+
+    // A collector needs to be inserted after tuple-producing
+    // nodes for correct previous value tracking.
+    if (node.produces()) {
+      branch.splice(i+1, 0, new Collector(graph));
+      router = false;
+    }
+  }
+
+  return {router: router, collector: collector, mutates: mutates};
 };
 
 prototype.connect = function(branch) {
