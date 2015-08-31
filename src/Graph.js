@@ -3,6 +3,7 @@ var dl = require('datalib'),
     ChangeSet = require('./ChangeSet'),
     DataSource = require('./DataSource'),
     Collector = require('./Collector'),
+    Tuple = require('./Tuple'),
     Signal = require('./Signal'),
     Deps = require('./Dependencies');
 
@@ -241,6 +242,28 @@ prototype.disconnect = function(branch) {
   }
 
   return branch;
+};
+
+prototype.synchronize = function(branch) {
+  var tids = {}, cids = {},
+      node, collector, data, i, n, j, m, d, id;
+
+  for (i=0, n=branch.length; i<n; ++i) {
+    node = branch[i];
+    collector = node._collector || (node.collector() && node);
+    if (cids[collector._id] || !collector) continue;
+
+    for (j=0, data=collector.data(), m=data.length; j<m; ++j) {
+      id = (d = data[j])._id;
+      if (tids[id]) continue; 
+      Tuple.prev_update(d);
+      tids[id] = 1; 
+    }
+
+    cids[collector._id] = 1;
+  }
+
+  return this;
 };
 
 prototype.reevaluate = function(pulse, node) {

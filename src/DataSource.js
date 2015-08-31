@@ -111,25 +111,7 @@ prototype.pipeline = function(pipeline) {
 };
 
 prototype.synchronize = function() {
-  var pipeline = this._pipeline,
-      tids = {}, cids = {},
-      node, collector, data, i, n, j, m, d, id;
-
-  for (i=0, n=pipeline.length; i<n; ++i) {
-    node = pipeline[i];
-    collector = node._collector || (node.collector() && node);
-    if (cids[collector._id] || !collector) continue;
-
-    for (j=0, data=collector.data(), m=data.length; j<m; ++j) {
-      id = (d = data[j])._id;
-      if (tids[id]) continue; 
-      Tuple.prev_update(d);
-      tids[id] = 1; 
-    }
-
-    cids[collector._id] = 1;
-  }
-
+  this._graph.synchronize(this._pipeline);
   return this;
 };
 
