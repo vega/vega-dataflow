@@ -1,5 +1,5 @@
 var log = require('vega-logging'),
-    ChangeSet = require('./ChangeSet'), 
+    ChangeSet = require('./ChangeSet'),
     Collector = require('./Collector'),
     Tuple = require('./Tuple'),
     Node = require('./Node'); // jshint ignore:line
@@ -12,6 +12,8 @@ function DataSource(graph, name, facet) {
   this._facet  = facet;
   this._input  = ChangeSet.create();
   this._output = null; // Output changeset
+  this._indexes = {};
+  this._indexFields = [];
 
   this._inputNode  = null;
   this._outputNode = null;
@@ -115,15 +117,31 @@ prototype.synchronize = function() {
   return this;
 };
 
-prototype.listener = function() { 
+prototype.listener = function() {
   return DataSourceListener(this).addListener(this._inputNode);
 };
+
+prototype.getIndex = function(field) {
+  var data = this._data,
+      index, i, len, value;
+  if (!this._indexes[field]) {
+    index = {};
+    this._indexes[field] = index;
+    this._indexFields.push(field);
+    for (i = 0, len = data.length; i < len; i++) {
+      value = this._data[i][field];
+      index[value] = (index[value] || 0) + 1;
+      Tuple.prev_init(this._data[i]);
+    }
+  }
+  return this._indexes[field];
+}
 
 prototype.addListener = function(l) {
   if (l instanceof DataSource) {
     this._collector.addListener(l.listener());
   } else {
-    this._outputNode.addListener(l);      
+    this._outputNode.addListener(l);
   }
   return this;
 };
@@ -136,7 +154,7 @@ prototype.listeners = function(ds) {
   return (ds ? this._collector : this._outputNode).listeners();
 };
 
-// Input node applies the datasource's delta, and propagates it to 
+// Input node applies the datasource's delta, and propagates it to
 // the rest of the pipeline. It receives touches to reflow data.
 function DataSourceInput(ds) {
   var input = new Node(ds._graph)
@@ -150,8 +168,8 @@ function DataSourceInput(ds) {
   input.evaluate = function(input) {
     log.debug(input, ['input', ds._name]);
 
-    var delta = ds._input, 
-        out = ChangeSet.create(input), f;
+    var delta = ds._input,
+        out = ChangeSet.create(input), f, i, j, key, value, index;
 
     // Delta might contain fields updated through API
     for (f in delta.fields) {
@@ -180,7 +198,7 @@ function DataSourceInput(ds) {
     // reset change list
     ds._input = ChangeSet.create();
 
-    out.add = delta.add; 
+    out.add = delta.add;
     out.mod = delta.mod;
     out.rem = delta.rem;
     out.facet = ds._facet;
@@ -206,7 +224,27 @@ function DataSourceOutput(ds) {
   output.evaluate = function(input) {
     log.debug(input, ['output', ds._name]);
 
-    var out = ChangeSet.create(input, true);
+    var out = ChangeSet.create(input, true), value;
+
+    for (i = 0; i < ds._indexFields.length; i++) {
+      key = ds._indexFields[i];
+      index = ds._indexes[key];
+      for (j = 0; j < input.add.length; j++) {
+        value = input.add[j][key];
+        Tuple.prev_init(input.add[j]);
+        index[value] = (index[value] || 0) + 1;
+      }
+      for (j = 0; j < input.rem.length; j++) {
+        value = input.rem[j][key];
+        index[value] = (index[value] || 0) - 1;
+      }
+      for (j = 0; j < input.mod.length; j++) {
+        value = input.mod[j]._prev[key];
+        index[value] = (index[value] || 0) - 1;
+        value = input.mod[j][key];
+        index[value] = (index[value] || 0) + 1;
+      }
+    }
 
     if (ds._facet) {
       ds._facet.values = ds.values();
@@ -227,7 +265,7 @@ function DataSourceListener(ds) {
   l.evaluate = function(input) {
     // Tuple derivation carries a cost. So only derive if the pipeline has
     // operators that mutate, and thus would override the source data.
-    if (ds.mutates()) {  
+    if (ds.mutates()) {
       var map = ds._srcMap || (ds._srcMap = {}), // to propagate tuples correctly
           output = ChangeSet.create(input);
 
@@ -239,7 +277,7 @@ function DataSourceListener(ds) {
         return Tuple.rederive(t, map[t._id]);
       });
 
-      output.rem = input.rem.map(function(t) { 
+      output.rem = input.rem.map(function(t) {
         var o = map[t._id];
         return (map[t._id] = null, o);
       });
