@@ -114,33 +114,6 @@ prototype.pipeline = function(pipeline) {
 };
 
 prototype.synchronize = function() {
-  // update indices
-  var pulse = this.last(),
-      fields = this._indexFields,
-      i, j, f, key, index, value;
-
-  for (i=0; i<fields.length; ++i) {
-    key = fields[i];
-    index = this._indexes[key];
-    f = dl.$(key);
-
-    for (j=0; j<pulse.add.length; ++j) {
-      value = f(pulse.add[j]);
-      Tuple.prev_init(pulse.add[j]);
-      index[value] = (index[value] || 0) + 1;
-    }
-    for (j=0; j<pulse.rem.length; ++j) {
-      value = f(pulse.rem[j]);
-      index[value] = (index[value] || 0) - 1;
-    }
-    for (j=0; j<pulse.mod.length; ++j) {
-      value = f(pulse.mod[j]._prev);
-      index[value] = (index[value] || 0) - 1;
-      value = f(pulse.mod[j]);
-      index[value] = (index[value] || 0) + 1;
-    }
-  }
-
   this._graph.synchronize(this._pipeline);
   return this;
 };
@@ -155,9 +128,9 @@ prototype.getIndex = function(field) {
     this._indexes[field] = index;
     this._indexFields.push(field);
     for (i=0, len=data.length; i<len; ++i) {
-      value = f(this._data[i]);
+      value = f(data[i]);
       index[value] = (index[value] || 0) + 1;
-      Tuple.prev_init(this._data[i]);
+      Tuple.prev_init(data[i]);
     }
   }
   return this._indexes[field];
@@ -247,6 +220,33 @@ function DataSourceOutput(ds) {
     .reflows(true)
     .collector(true);
 
+  function updateIndices(pulse) {
+    var fields = ds._indexFields,
+        i, j, f, key, index, value;
+
+    for (i=0; i<fields.length; ++i) {
+      key = fields[i];
+      index = ds._indexes[key];
+      f = dl.$(key);
+
+      for (j=0; j<pulse.add.length; ++j) {
+        value = f(pulse.add[j]);
+        Tuple.prev_init(pulse.add[j]);
+        index[value] = (index[value] || 0) + 1;
+      }
+      for (j=0; j<pulse.rem.length; ++j) {
+        value = f(pulse.rem[j]);
+        index[value] = (index[value] || 0) - 1;
+      }
+      for (j=0; j<pulse.mod.length; ++j) {
+        value = f(pulse.mod[j]._prev);
+        index[value] = (index[value] || 0) - 1;
+        value = f(pulse.mod[j]);
+        index[value] = (index[value] || 0) + 1;
+      }
+    }
+  }
+
   output.data = function() {
     return ds._collector ? ds._collector.data() : ds._data;
   };
@@ -254,6 +254,7 @@ function DataSourceOutput(ds) {
   output.evaluate = function(input) {
     log.debug(input, ['output', ds._name]);
 
+    updateIndices(input);
     var out = ChangeSet.create(input, true);
 
     if (ds._facet) {
