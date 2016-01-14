@@ -1,5 +1,6 @@
-var log = require('vega-logging'),
-    ChangeSet = require('./ChangeSet'), 
+var dl = require('datalib'),
+    log = require('vega-logging'),
+    ChangeSet = require('./ChangeSet'),
     Collector = require('./Collector'),
     Tuple = require('./Tuple'),
     Node = require('./Node'); // jshint ignore:line
@@ -12,6 +13,8 @@ function DataSource(graph, name, facet) {
   this._facet  = facet;
   this._input  = ChangeSet.create();
   this._output = null; // Output changeset
+  this._indexes = {};
+  this._indexFields = [];
 
   this._inputNode  = null;
   this._outputNode = null;
@@ -115,7 +118,25 @@ prototype.synchronize = function() {
   return this;
 };
 
-prototype.listener = function() { 
+prototype.getIndex = function(field) {
+  var data = this.values(),
+      f = dl.$(field),
+      index, i, len, value;
+
+  if (!this._indexes[field]) {
+    index = {};
+    this._indexes[field] = index;
+    this._indexFields.push(field);
+    for (i=0, len=data.length; i<len; ++i) {
+      value = f(data[i]);
+      index[value] = (index[value] || 0) + 1;
+      Tuple.prev_init(data[i]);
+    }
+  }
+  return this._indexes[field];
+};
+
+prototype.listener = function() {
   return DataSourceListener(this).addListener(this._inputNode);
 };
 
@@ -123,7 +144,7 @@ prototype.addListener = function(l) {
   if (l instanceof DataSource) {
     this._collector.addListener(l.listener());
   } else {
-    this._outputNode.addListener(l);      
+    this._outputNode.addListener(l);
   }
   return this;
 };
@@ -136,7 +157,7 @@ prototype.listeners = function(ds) {
   return (ds ? this._collector : this._outputNode).listeners();
 };
 
-// Input node applies the datasource's delta, and propagates it to 
+// Input node applies the datasource's delta, and propagates it to
 // the rest of the pipeline. It receives touches to reflow data.
 function DataSourceInput(ds) {
   var input = new Node(ds._graph)
@@ -150,7 +171,7 @@ function DataSourceInput(ds) {
   input.evaluate = function(input) {
     log.debug(input, ['input', ds._name]);
 
-    var delta = ds._input, 
+    var delta = ds._input,
         out = ChangeSet.create(input), f;
 
     // Delta might contain fields updated through API
@@ -180,7 +201,7 @@ function DataSourceInput(ds) {
     // reset change list
     ds._input = ChangeSet.create();
 
-    out.add = delta.add; 
+    out.add = delta.add;
     out.mod = delta.mod;
     out.rem = delta.rem;
     out.facet = ds._facet;
@@ -199,6 +220,33 @@ function DataSourceOutput(ds) {
     .reflows(true)
     .collector(true);
 
+  function updateIndices(pulse) {
+    var fields = ds._indexFields,
+        i, j, f, key, index, value;
+
+    for (i=0; i<fields.length; ++i) {
+      key = fields[i];
+      index = ds._indexes[key];
+      f = dl.$(key);
+
+      for (j=0; j<pulse.add.length; ++j) {
+        value = f(pulse.add[j]);
+        Tuple.prev_init(pulse.add[j]);
+        index[value] = (index[value] || 0) + 1;
+      }
+      for (j=0; j<pulse.rem.length; ++j) {
+        value = f(pulse.rem[j]);
+        index[value] = (index[value] || 0) - 1;
+      }
+      for (j=0; j<pulse.mod.length; ++j) {
+        value = f(pulse.mod[j]._prev);
+        index[value] = (index[value] || 0) - 1;
+        value = f(pulse.mod[j]);
+        index[value] = (index[value] || 0) + 1;
+      }
+    }
+  }
+
   output.data = function() {
     return ds._collector ? ds._collector.data() : ds._data;
   };
@@ -206,6 +254,7 @@ function DataSourceOutput(ds) {
   output.evaluate = function(input) {
     log.debug(input, ['output', ds._name]);
 
+    updateIndices(input);
     var out = ChangeSet.create(input, true);
 
     if (ds._facet) {
@@ -227,7 +276,7 @@ function DataSourceListener(ds) {
   l.evaluate = function(input) {
     // Tuple derivation carries a cost. So only derive if the pipeline has
     // operators that mutate, and thus would override the source data.
-    if (ds.mutates()) {  
+    if (ds.mutates()) {
       var map = ds._srcMap || (ds._srcMap = {}), // to propagate tuples correctly
           output = ChangeSet.create(input);
 
@@ -239,7 +288,7 @@ function DataSourceListener(ds) {
         return Tuple.rederive(t, map[t._id]);
       });
 
-      output.rem = input.rem.map(function(t) { 
+      output.rem = input.rem.map(function(t) {
         var o = map[t._id];
         return (map[t._id] = null, o);
       });
