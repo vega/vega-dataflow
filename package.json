@@ -1,0 +1,30 @@
+{
+  "name": "dataflow",
+  "version": "0.0.1",
+  "description": "Reactive dataflow.",
+  "keywords": [
+    "dataflow",
+    "reactive"
+  ],
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Jeffrey Heer",
+    "url": "http://idl.cs.washington.edu"
+  },
+  "main": "build/dataflow.js",
+  "jsnext:main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jheer/dataflow.git"
+  },
+  "scripts": {
+    "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && node_modules/.bin/rollup -f umd -n dataflow -o build/dataflow.js -- index.js",
+    "test": "tape 'test/**/*-test.js' && eslint index.js src"
+  },
+  "devDependencies": {
+    "json2module": "0.0",
+    "rollup": "0.25",
+    "tape": "4",
+    "uglify-js": "2"
+  }
+}
