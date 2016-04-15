@@ -2,6 +2,7 @@ import Transform from './Transform';
 
 // Filters data tuples according to a predicate function.
 // The 'test' parameter provides the predicate function.
+// The 'source' parameter links to the source data set.
 export default function Filter(args) {
   Transform.call(this, null, args);
   this._cache = {}; // cache the ids of filtered tuples
@@ -43,7 +44,7 @@ prototype._transform = function(_, pulse) {
 
   pulse.mod.forEach(update);
   if (_.modified('test')) {
-    pulse.reflow().forEach(update);
+    pulse.reflow(_.source).forEach(update);
   }
 
   return output;

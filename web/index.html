@@ -73,19 +73,17 @@ function data() {
       ft = df.define('ft', null, thresh, {mx:mx}),
       fv = df.define('filter', null, filter, {ft:ft}),
       dg = df.register(new dataflow.Generator({num:dn, gen:gen})),
-      fl = df.register(new dataflow.Filter({test:fv})),
+      fl = df.register(new dataflow.Filter({test:fv, source:dg})),
       c0 = df.register(new dataflow.Collector()),
-      x1 = df.register(new dataflow.Extent({field:'data'})),
+      x1 = df.register(new dataflow.Extent({field:'data', source:c0})),
       hg = df.register(new dataflow.Histogram({field:bin})),
       co = df.register(new dataflow.Collector()),
-      x2 = df.register(new dataflow.Extent({field:'count'}));
+      x2 = df.register(new dataflow.Extent({field:'count', source:co}));
 
   dg.targets.add(fl);
   fl.targets.add(c0);
-  c0.targets.add(x1);
   fl.targets.add(hg);
   hg.targets.add(co);
-  co.targets.add(x2);
   df.run();
   var len = 0;
 

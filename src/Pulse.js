@@ -25,11 +25,8 @@ prototype.fork = function() {
   return p;
 }
 
-// TODO: revisit reflow / wiring strategy
-prototype.reflow = function(all) {
-  var c = this.collector;
-  if (!c) throw Error('Reflow requires upstream collector');
-  return all ? c.value : idFilter(c.value, this.add, this.mod, this.rem);
+prototype.reflow = function(source) {
+  return idFilter(source, this.add, this.mod, this.rem);
 };
 
 prototype.modifies = function(_) {

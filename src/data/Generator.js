@@ -29,6 +29,5 @@ prototype._transform = function(_, pulse) {
   }
 
   this.value = data;
-  pulse.collector = this; // TODO: revisit
   return pulse;
 };

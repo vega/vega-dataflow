@@ -2,6 +2,7 @@ import Transform from './Transform';
 
 // Computes extents (min/max) for a data field.
 // The 'field' parameter indicates the field to process.
+// The 'source' parameter links to the source data set.
 export default function Extent(args) {
   Transform.call(this, null, args);
 }
@@ -19,7 +20,7 @@ prototype._transform = function(_, pulse) {
      || pulse.modified(field)
      || _.modified('field');
 
-  data = mod ? pulse.reflow(true) : pulse.add;
+  data = mod ? _.source : pulse.add;
 
   if (!data.length) {
     this.value = null;
