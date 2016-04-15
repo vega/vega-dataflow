@@ -58,10 +58,10 @@ function data() {
   function thresh(_) { return ~~(_.mx/5); }
 
   function filter(_) {
-    var ft = _.ft;
-    return function(t) { return t.data < ft; };
+    var ft = _.ft,
+        fn = function(t) { return t.data < ft; };
+    return (fn.fields = ['data'], fn);
   }
-  filter.fields = ['data'];
 
   function bin(t) { return 5 * ~~(t.data / 5); }
   bin.fields = ['data'];
