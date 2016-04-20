@@ -25,6 +25,7 @@ prototype.fork = function() {
   return p;
 }
 
+// TODO: refactor to take a visitor instead? (Avoid array construction.)
 prototype.reflow = function(source) {
   return idFilter(source, this.add, this.mod, this.rem);
 };

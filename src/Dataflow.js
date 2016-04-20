@@ -15,18 +15,18 @@ var prototype = Dataflow.prototype;
 
 prototype.register = function(op) {
   op.rank = ++RANK;
+  this.touch(op);
   return op;
 };
 
 prototype.touch = function(op, opt) {
   this._pulse.ops.add(op);
-  if (opt.skip) op.skip();
+  if (opt && opt.skip) op.skip();
 };
 
 prototype.define = function(name, init, func, args) {
   var op = this.register(new Operator(init, func, args));
   if (name) this._named[name] = op;
-  this._pulse.ops.add(op);
   return op;
 };
 
@@ -53,35 +53,44 @@ prototype.updateAll = function(_, opt) {
 // EVALUATE THE DATAFLOW
 
 prototype.run = function() {
-  function add(op) { enqueue(pq, op); }
-
-  var pulse = this._pulse,
-      pq = new Heap(compareNodes),
+  var pq = new Heap(pqCompare),
+      pulses = {},
+      pulse = this._pulse,
+      count = 0,
       op, nextPulse;
 
-  pulse.stamp = ++this._clock;
-  pulse.ops.forEach(add);
-  while (pq.size() > 0) {
-    op = pq.pop();
-    nextPulse = op.evaluate(pulse);
+  function enqueue(op) {
+    var p = pulses[op.id];
+    pulses[op.id] = pulse; // use most recent pulse
+    if (!p) pq.push(op); // enqueue if not already present
+  }
 
+  // initialize the pulse
+  pulse.stamp = ++this._clock;
+  pulse.ops.forEach(enqueue);
+
+  while (pq.size() > 0) {
+    // process next operator in queue
+    op = pq.pop();
+
+    nextPulse = op.evaluate(pulses[op.id]);
+
+    // propagate the pulse
     if (nextPulse !== StopPropagation) {
-      // Propagate the pulse.
       pulse = nextPulse;
-      op.targets.forEach(add);
+      op.targets.forEach(enqueue);
     }
+
+    // increment visit counter
+    ++count;
   }
 
   this._pulse = new Pulse(this);
-  return pulse.ops.length > 0;
+  return count;
 };
 
-function compareNodes(a, b) {
+function pqCompare(a, b) {
   return a.rank - b.rank;
-}
-
-function enqueue(pq, op) {
-  pq.push(op);
 }
 
 // SAVE / RESTORE DATAFLOW STATE

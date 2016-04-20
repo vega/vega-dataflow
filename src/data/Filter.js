@@ -42,9 +42,7 @@ prototype._transform = function(_, pulse) {
     }
   }
 
-  if (pulse.modified(test.fields)) {
-    pulse.mod.forEach(update);
-  }
+  pulse.mod.forEach(update);
   if (_.modified('test')) {
     pulse.reflow(_.source).forEach(update);
   }

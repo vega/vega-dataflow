@@ -1,3 +1,5 @@
+// Hash that tracks modifications to assigned values
+// Callers *must* use the set method to update values
 export default function ModMap() {
   this.__mod__ = {};
 }
@@ -14,7 +16,12 @@ prototype.set = function(key, value) {
 };
 
 prototype.modified = function(key) {
-  return this.__mod__[key];
+  var mod = this.__mod__;
+  if (!arguments.length) {
+    for (var name in mod) { if (mod[name]) return 1; }
+    return 0;
+  }
+  return mod[key];
 };
 
 prototype.clear = function() {

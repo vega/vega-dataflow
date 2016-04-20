@@ -59,14 +59,9 @@
         <rect id="b91" x="475" y="0" width="24" height="0"></rect>
       </g>
     </svg><br/>
-    <svg width="521" height="421">
-      <rect id="outer" x="0" y="0" width="100" height="100"></rect>
-      <rect id="inner" x="10" y="10" width="80" height="80"></rect>
-    </svg>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
 data();
-layout();
 
 function data() {
   var g = normal(50, 20);
@@ -78,26 +73,22 @@ function data() {
 
   function samples(_) {
       return Math.min(Math.max(100,
-        _.my <= 100 ? 10000 : (500-(_.my-100))*20), 100000);
+        _.my <= 100 ? 100000 : (500-(_.my-100))*20), 100000);
   }
 
-  function thresh(_) { return ~~(_.mx/5); }
-
-  function filter(_) {
-    var ft = _.ft,
-        fn = function(t) { return t.data < ft; };
-    return (fn.fields = ['data'], fn);
-  }
+  function range(_) { return [0, ~~(_.mx/5)]; }
 
   function bin(t) { return 5 * ~~(t.data / 5); }
   bin.fields = ['data'];
+
+  function getData(t) { return t.data; };
+  getData.fields = ['data'];
 
   var df = new dataflow.Dataflow(),
       mx = df.define('mouse-x', 1000),
       my = df.define('mouse-y', 10),
       dn = df.define('N', null, samples, {my:my}),
-      ft = df.define('ft', null, thresh, {mx:mx}),
-      fv = df.define('filter', null, filter, {ft:ft}),
+      fr = df.define('fr', [-Infinity, Infinity], range, {mx:mx}),
 
       // generate data
       dg = df.register(new dataflow.Generator({num:dn, gen:gen})),
@@ -108,11 +99,12 @@ function data() {
       x1 = df.register(new dataflow.Extent({field:'count', source:c1})),
 
       // histogram filtered data set
-      fl = df.register(new dataflow.Filter({test:fv, source:dg})),
+      fl = df.register(new dataflow.RangeFilter({range:fr, field:getData, source:dg})),
       h2 = df.register(new dataflow.Histogram({field:bin})),
       c2 = df.register(new dataflow.Collector());
 
   dg.targets.add(h1);
+  dg.targets.add(fl);
   h1.targets.add(c1);
   fl.targets.add(h2);
   h2.targets.add(c2);
@@ -122,16 +114,13 @@ function data() {
   window.addEventListener('mousemove', function(event) {
     var dt = Date.now();
 
-    // HACK until I figure out the 'wiring' strategy
-    df._pulse.collector = dg;
-
     df.update('mouse-x', event.pageX - 10)
       .update('mouse-y', event.pageY - 20)
       .run();
     render();
 
     dt = Date.now() - dt;
-    console.log(dt, dg.value.length, ft.value, x1.value+'');
+    console.log(dt, dg.value.length, fr.value);
   });
 
   var base = document.querySelectorAll('.hist .base > rect');
@@ -140,6 +129,7 @@ function data() {
   function render() {
     histogram(base, c1.value, x1.value[1]);
     histogram(filt, c2.value, x1.value[1]);
+    // console.log(c2.value.map(function(x) { return x.count; })+'');
   }
 
   function histogram(rect, data, max) {
@@ -151,62 +141,6 @@ function data() {
       rect[b].setAttribute('y', 100 - h);
     }
   }
-}
-
-function layout() {
-  // Width / Height / Padding example
-  function updateWidth(_) {
-    return Math.min(Math.max(_.mouseX, _.wMin), _.wMax);
-  }
-  function updateHeight(_) {
-    return Math.min(Math.max(_.mouseY, _.hMin), _.hMax);
-  }
-  function updateTotalWidth(_) {
-    return _.padL + _.w + _.padR;
-  }
-  function updateTotalHeight(_) {
-    return _.padT + _.h + _.padB;
-  }
-
-  var df = new dataflow.Dataflow(),
-      wMin = df.define('min-width',     100),
-      wMax = df.define('max-width',     500),
-      hMin = df.define('min-height',     50),
-      hMax = df.define('max-height',    400),
-      padL = df.define('padding-top',    10),
-      padT = df.define('padding-left',   10),
-      padR = df.define('padding-right',  10),
-      padB = df.define('padding-bottom', 10),
-      mx = df.define('mouse-x', 0),
-      my = df.define('mouse-y', 0),
-      w  = df.define('width',  200, updateWidth,  {mouseX:mx, wMin:wMin, wMax:wMax}),
-      h  = df.define('height', 100, updateHeight, {mouseY:my, hMin:hMin, hMax:hMax}),
-      tw = df.define('tw', 0, updateTotalWidth, {w:w, padL:padL, padR:padR}),
-      th = df.define('th', 0, updateTotalHeight, {h:h, padT:padT, padB:padB});
-
-  var outer = document.querySelector('rect#outer'),
-      inner = document.querySelector('rect#inner');
-
-  window.addEventListener('mousemove', function(event) {
-    if (!event.buttons) return;
-    df.updateAll({
-      'mouse-x': event.pageX -  20,
-      'mouse-y': event.pageY - 120,
-    });
-  });
-
-  function render() {
-    if (df.run()) {
-      outer.setAttribute('width',  tw.value);
-      outer.setAttribute('height', th.value);
-      inner.setAttribute('x',      padL.value);
-      inner.setAttribute('y',      padT.value);
-      inner.setAttribute('width',  w.value);
-      inner.setAttribute('height', h.value);
-    }
-    window.requestAnimationFrame(render);
-  }
-  render();
 }
 
 function normal(mean, stdev) {

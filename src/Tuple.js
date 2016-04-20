@@ -48,6 +48,7 @@ function prev_update(t) {
   }
 }
 
+// TODO: refactor this method to utilities?
 function idMap(a, ids) {
   ids = ids || {};
   for (var i=0, n=a.length; i<n; ++i) {
@@ -56,6 +57,7 @@ function idMap(a, ids) {
   return ids;
 }
 
+// TODO: refactor this method to utilities?
 function idFilter(data) {
   var ids = {};
   for (var i=arguments.length; --i>0;) {

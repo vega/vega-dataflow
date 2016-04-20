@@ -8,7 +8,6 @@ export default function Operator(init, fn, args) {
   this.id = ++OP_ID;
   this.stamp = -1;
   this.rank = -1;
-  this.qrank = -1;
   this.value = init;
   this.targets = UniqueList();
   if (fn) {
@@ -38,7 +37,7 @@ prototype.parameters = function(args) {
       val.targets.add(this);
       this._argops.push({name:name, op:val});
     } else {
-      this._argval[name] = val;
+      this._argval.set(name, val);
     }
   }
 
