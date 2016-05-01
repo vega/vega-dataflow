@@ -4,6 +4,10 @@ function reset() {
   TUPLE_ID = 0;
 }
 
+function id(t) {
+  return t._id;
+}
+
 function copy(t, c) {
   c = c || {};
   for (var k in t) {
@@ -67,7 +71,7 @@ function idFilter(data) {
 }
 
 export {
-  reset,
+  reset, id,
   ingest, derive, rederive, set,
   prev, prev_init, prev_update,
   idMap, idFilter

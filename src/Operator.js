@@ -1,10 +1,10 @@
 import UniqueList from './util/UniqueList';
-import ModMap from './util/ModMap';
+import Parameters from './util/Parameters';
 
 export var OP_ID = 0;
-var EMPTY_ARGS = new ModMap();
+var NO_PARAMS = new Parameters();
 
-export default function Operator(init, fn, args) {
+export default function Operator(init, fn, params) {
   this.id = ++OP_ID;
   this.stamp = -1;
   this.rank = -1;
@@ -14,7 +14,7 @@ export default function Operator(init, fn, args) {
     this._fn = fn;
     this._skip = false;
   }
-  if (args) this.parameters(args);
+  if (params) this.parameters(params);
 }
 
 var prototype = Operator.prototype;
@@ -27,42 +27,61 @@ prototype.skip = function() {
   this._skip = true;
 };
 
-prototype.parameters = function(args) {
-  this._argval = this._argval || new ModMap();
-  this._argops = this._argops || [];
+prototype.parameters = function(params) {
+  var self = this,
+      argval = (self._argval = self._argval || new Parameters()),
+      argops = (self._argops = self._argops || []),
+      name, value, pulse, n, i;
 
-  for (var name in args) {
-    var val = args[name];
-    if (val instanceof Operator) {
-      val.targets.add(this);
-      this._argops.push({name:name, op:val});
+  function add(name, value, index, pulse) {
+    // TODO revisit parse rules to access operator pulse (or other properties?)
+    if (value instanceof Operator) {
+      value.targets.add(self);
+      argops.push({op:value, name:name, index:index, pulse:pulse});
     } else {
-      this._argval.set(name, val);
+      argval.set(name, value, index);
+    }
+    if (name === 'source' && index < 0) {
+      self.source = value;
     }
   }
 
-  return this;
+  for (name in params) {
+    value = params[name];
+    pulse = (name[0] === '!') ? (name = name.slice(1), 1) : 0;
+
+    if (Array.isArray(value)) {
+      argval.set(name, Array(n = value.length), -1, pulse);
+      for (i=0; i<n; ++i) add(name, value[i], i, pulse);
+    } else {
+      add(name, value, -1, pulse);
+    }
+  }
+
+  return self;
 };
 
 prototype.marshall = function() {
-  var val = this._argval || EMPTY_ARGS,
-      ops = this._argops, i, n;
+  var argval = this._argval || NO_PARAMS,
+      argops = this._argops, item, value, i, n;
 
-  if (ops && (n = ops.length)) {
+  if (argops && (n = argops.length)) {
     for (i=0; i<n; ++i) {
-      val.set(ops[i].name, ops[i].op.value);
+      item = argops[i];
+      value = item.pulse ? item.op.pulse : item.op.value;
+      argval.set(item.name, value, item.index);
     }
   }
-  return val;
+  return argval;
 };
 
 // Subclasses can override to perform custom processing.
 prototype._evaluate = function(pulse) {
   if (this._fn && !this._skip) {
-    var args = this.marshall(),
-        v = this._fn(args, pulse);
+    var params = this.marshall(),
+        v = this._fn(params, pulse);
 
-    args.clear();
+    params.clear();
     if (v !== this.value) {
       this.value = v;
     } else {
@@ -76,6 +95,5 @@ prototype.evaluate = function(pulse) {
   if (pulse.stamp <= this.stamp) return pulse.StopPropagation;
   var rv = this._evaluate(pulse) || pulse;
   this.stamp = pulse.stamp;
-  this._skip = false;
-  return rv;
+  return (this._skip = false, this.pulse = rv);
 };

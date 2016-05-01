@@ -3,30 +3,30 @@ import Transform from './Transform';
 // Filters data tuples according to a predicate function.
 // The 'test' parameter provides the predicate function.
 // The 'source' parameter links to the source data set.
-export default function Filter(args) {
-  Transform.call(this, null, args);
-  this._cache = {}; // cache the ids of filtered tuples
+export default function Filter(params) {
+  Transform.call(this, {}, params);
 }
 
 var prototype = (Filter.prototype = Object.create(Transform.prototype));
 prototype.constructor = Filter;
 
 prototype._transform = function(_, pulse) {
-  var output = pulse.fork(),
-      cache = this._cache,
-      test = _.test;
+  var test = _.test,
+      cache = this.value, // cache ids of filtered tuples
+      output = pulse.fork(),
+      flags = pulse.MOD | (_.modified('test') ? pulse.REFLOW : 0);
 
-  pulse.rem.forEach(function(x) {
+  pulse.visit(pulse.REM, function(x) {
     if (cache[x._id] !== 1) output.rem.push(x);
     else cache[x._id] = 0;
   });
 
-  pulse.add.forEach(function(x) {
+  pulse.visit(pulse.ADD, function(x) {
     if (test(x)) output.add.push(x);
     else cache[x._id] = 1;
   });
 
-  function update(x) {
+  pulse.visit(flags, function(x) {
     var b = test(x),
         s = (cache[x._id] === 1);
     if (b && s) {
@@ -40,12 +40,7 @@ prototype._transform = function(_, pulse) {
       output.rem.push(x);
       cache[x._id] = 1;
     }
-  }
-
-  pulse.mod.forEach(update);
-  if (_.modified('test')) {
-    pulse.reflow(_.source).forEach(update);
-  }
+  }, _.source);
 
   return output;
 };

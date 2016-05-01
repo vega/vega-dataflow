@@ -65,6 +65,7 @@
     </svg>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
+
 data();
 layout();
 
@@ -78,10 +79,10 @@ function data() {
 
   function samples(_) {
       return Math.min(Math.max(100,
-        _.my <= 100 ? 10000 : (500-(_.my-100))*20), 100000);
+        _.my <= 100 ? 1e5 : (500-(_.my-100))*20), 1e5);
   }
 
-  function thresh(_) { return ~~(_.mx/5); }
+  function thresh(_) { return _.mx / 5; }
 
   function filter(_) {
     var ft = _.ft,
@@ -89,68 +90,55 @@ function data() {
     return (fn.fields = ['data'], fn);
   }
 
-  function bin(t) { return 5 * ~~(t.data / 5); }
-  bin.fields = ['data'];
+  function bin(t) { return 5 * ~~(t.data / 5); } bin.fields = ['data'];
 
-  var df = new dataflow.Dataflow(),
-      mx = df.define('mouse-x', 1000),
-      my = df.define('mouse-y', 10),
-      dn = df.define('N', null, samples, {my:my}),
-      ft = df.define('ft', null, thresh, {mx:mx}),
-      fv = df.define('filter', null, filter, {ft:ft}),
+  function histogram(_) {
+    var rect = document.querySelectorAll(_.el),
+        data = _.source,
+        max  = _.extent[1],
+        step = 5, i, b, h;
 
-      // generate data
-      dg = df.register(new dataflow.Generator({num:dn, gen:gen})),
-
-      // histogram full data set
-      h1 = df.register(new dataflow.Histogram({field:bin})),
-      c1 = df.register(new dataflow.Collector()),
-      x1 = df.register(new dataflow.Extent({field:'count', source:c1})),
-
-      // histogram filtered data set
-      fl = df.register(new dataflow.Filter({test:fv, source:dg})),
-      h2 = df.register(new dataflow.Histogram({field:bin})),
-      c2 = df.register(new dataflow.Collector());
-
-  dg.targets.add(h1);
-  h1.targets.add(c1);
-  fl.targets.add(h2);
-  h2.targets.add(c2);
-  df.run();
-  var len = 0;
-
-  window.addEventListener('mousemove', function(event) {
-    var dt = Date.now();
-
-    // HACK until I figure out the 'wiring' strategy
-    df._pulse.collector = dg;
-
-    df.update('mouse-x', event.pageX - 10)
-      .update('mouse-y', event.pageY - 20)
-      .run();
-    render();
-
-    dt = Date.now() - dt;
-    console.log(dt, dg.value.length, ft.value, x1.value+'');
-  });
-
-  var base = document.querySelectorAll('.hist .base > rect');
-  var filt = document.querySelectorAll('.hist .filt > rect');
-
-  function render() {
-    histogram(base, c1.value, x1.value[1]);
-    histogram(filt, c2.value, x1.value[1]);
-  }
-
-  function histogram(rect, data, max) {
-    var step = 5, i, b, h;
     for (i=0; i<data.length; ++i) {
-      b = ~~(data[i].bin / 5);
+      b = ~~(data[i].key / 5);
       h = 100 * data[i].count / max;
       rect[b].setAttribute('height', h);
       rect[b].setAttribute('y', 100 - h);
     }
   }
+
+  var df = new dataflow.Dataflow(),
+      mx = df.add(1000),
+      my = df.add(10),
+      dn = df.add(samples, {my:my}),
+      ft = df.add(thresh, {mx:mx}),
+      fv = df.add(filter, {ft:ft}),
+
+      // generate data
+      dg = df.add(new dataflow.Generate({num:dn, gen:gen})),
+
+      // histogram full data set
+      h1 = df.add(new dataflow.Histogram({field:bin, source:dg})),
+      c1 = df.add(new dataflow.Collect({source: h1})),
+      x1 = df.add(new dataflow.Extent({field:'count', source:c1})),
+      v1 = df.add(histogram, {el:'.hist .base > rect', source:c1, extent:x1}),
+
+      // histogram filtered data set
+      fl = df.add(new dataflow.Filter({test:fv, source:dg})),
+      h2 = df.add(new dataflow.Histogram({field:bin, source:fl})),
+      c2 = df.add(new dataflow.Collect({source: h2})),
+      v2 = df.add(histogram, {el:'.hist .filt > rect', source:c2, extent:x1});
+
+  window.addEventListener('mousemove', function(event) {
+    var dt = Date.now();
+
+    df.update(mx, event.pageX - 10)
+      .update(my, event.pageY - 20)
+      .run();
+
+    console.log(Date.now() - dt, dg.value.length, ft.value, x1.value);
+  });
+
+  df.run();
 }
 
 function layout() {
@@ -167,53 +155,47 @@ function layout() {
   function updateTotalHeight(_) {
     return _.padT + _.h + _.padB;
   }
+  function render(_) {
+    var outer = document.querySelector(_.outer),
+        inner = document.querySelector(_.inner);
+    outer.setAttribute('width',  _.tw);
+    outer.setAttribute('height', _.th);
+    inner.setAttribute('x',      _.padL);
+    inner.setAttribute('y',      _.padT);
+    inner.setAttribute('width',  _.w);
+    inner.setAttribute('height', _.h);
+  }
 
   var df = new dataflow.Dataflow(),
-      wMin = df.define('min-width',     100),
-      wMax = df.define('max-width',     500),
-      hMin = df.define('min-height',     50),
-      hMax = df.define('max-height',    400),
-      padL = df.define('padding-top',    10),
-      padT = df.define('padding-left',   10),
-      padR = df.define('padding-right',  10),
-      padB = df.define('padding-bottom', 10),
-      mx = df.define('mouse-x', 0),
-      my = df.define('mouse-y', 0),
-      w  = df.define('width',  200, updateWidth,  {mouseX:mx, wMin:wMin, wMax:wMax}),
-      h  = df.define('height', 100, updateHeight, {mouseY:my, hMin:hMin, hMax:hMax}),
-      tw = df.define('tw', 0, updateTotalWidth, {w:w, padL:padL, padR:padR}),
-      th = df.define('th', 0, updateTotalHeight, {h:h, padT:padT, padB:padB});
-
-  var outer = document.querySelector('rect#outer'),
-      inner = document.querySelector('rect#inner');
+      wMin = df.add(100),
+      wMax = df.add(500),
+      hMin = df.add( 50),
+      hMax = df.add(400),
+      pad  = df.add( 10),
+      mx   = df.add(  0),
+      my   = df.add(  0),
+      w    = df.add(updateWidth,  {mouseX:mx, wMin:wMin, wMax:wMax}),
+      h    = df.add(updateHeight, {mouseY:my, hMin:hMin, hMax:hMax}),
+      tw   = df.add(updateTotalWidth, {w:w, padL:pad, padR:pad}),
+      th   = df.add(updateTotalHeight, {h:h, padT:pad, padB:pad}),
+      draw = df.add(render, {inner:'rect#inner',outer:'rect#outer',
+                    w:w, h:h, tw:tw, th:th, padL:pad, padT:pad});
 
   window.addEventListener('mousemove', function(event) {
     if (!event.buttons) return;
-    df.updateAll({
-      'mouse-x': event.pageX -  20,
-      'mouse-y': event.pageY - 120,
-    });
+    df.update(mx, event.pageX - 20)
+      .update(my, event.pageY - 120)
+      .run();
   });
 
-  function render() {
-    if (df.run()) {
-      outer.setAttribute('width',  tw.value);
-      outer.setAttribute('height', th.value);
-      inner.setAttribute('x',      padL.value);
-      inner.setAttribute('y',      padT.value);
-      inner.setAttribute('width',  w.value);
-      inner.setAttribute('height', h.value);
-    }
-    window.requestAnimationFrame(render);
-  }
-  render();
+  df.run();
 }
 
 function normal(mean, stdev) {
   mean = mean || 0;
   stdev = stdev || 1;
   var next;
-  var f = function() {
+  return function() {
     var x = 0, y = 0, rds, c;
     if (next !== undefined) {
       x = next;
@@ -229,61 +211,6 @@ function normal(mean, stdev) {
     next = mean + y*c*stdev;
     return mean + x*c*stdev;
   };
-  f.samples = function(n) {
-    return gen.zeros(n).map(f);
-  };
-  f.pdf = function(x) {
-    var exp = Math.exp(Math.pow(x-mean, 2) / (-2 * Math.pow(stdev, 2)));
-    return (1 / (stdev * Math.sqrt(2*Math.PI))) * exp;
-  };
-  f.cdf = function(x) {
-    // Approximation from West (2009)
-    // Better Approximations to Cumulative Normal Functions
-    var cd,
-        z = (x - mean) / stdev,
-        Z = Math.abs(z);
-    if (Z > 37) {
-      cd = 0;
-    } else {
-      var sum, exp = Math.exp(-Z*Z/2);
-      if (Z < 7.07106781186547) {
-        sum = 3.52624965998911e-02 * Z + 0.700383064443688;
-        sum = sum * Z + 6.37396220353165;
-        sum = sum * Z + 33.912866078383;
-        sum = sum * Z + 112.079291497871;
-        sum = sum * Z + 221.213596169931;
-        sum = sum * Z + 220.206867912376;
-        cd = exp * sum;
-        sum = 8.83883476483184e-02 * Z + 1.75566716318264;
-        sum = sum * Z + 16.064177579207;
-        sum = sum * Z + 86.7807322029461;
-        sum = sum * Z + 296.564248779674;
-        sum = sum * Z + 637.333633378831;
-        sum = sum * Z + 793.826512519948;
-        sum = sum * Z + 440.413735824752;
-        cd = cd / sum;
-      } else {
-        sum = Z + 0.65;
-        sum = Z + 4 / sum;
-        sum = Z + 3 / sum;
-        sum = Z + 2 / sum;
-        sum = Z + 1 / sum;
-        cd = exp / sum / 2.506628274631;
-      }
-    }
-    return z > 0 ? 1 - cd : cd;
-  };
-  f.icdf = function(p) {
-    // Approximation of Probit function using inverse error function.
-    if (p <= 0 || p >= 1) return NaN;
-    var x = 2*p - 1,
-        v = (8 * (Math.PI - 3)) / (3 * Math.PI * (4-Math.PI)),
-        a = (2 / (Math.PI*v)) + (Math.log(1 - Math.pow(x,2)) / 2),
-        b = Math.log(1 - (x*x)) / v,
-        s = (x > 0 ? 1 : -1) * Math.sqrt(Math.sqrt((a*a) - b) - a);
-    return mean + stdev * Math.SQRT2 * s;
-  };
-  return f;
 }
     </script>
   </body>

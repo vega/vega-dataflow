@@ -1,51 +1,37 @@
 import {default as Pulse, StopPropagation} from './Pulse';
 import Operator from './Operator';
 import Heap from './util/Heap';
-import {Empty} from './util/Objects';
 
 var RANK = 0;
 
 export default function Dataflow() {
   this._clock = 0;
-  this._named = {};
   this._pulse = new Pulse(this);
 }
 
 var prototype = Dataflow.prototype;
 
-prototype.register = function(op) {
+prototype.touch = function(op, opt) {
+  this._pulse.operators().add(op);
+  if (opt && opt.skip) op.skip();
+};
+
+prototype.add = function(init, func, params) {
+  var op = (init instanceof Operator) ? init
+    : (init instanceof Function)
+      ? ((init.prototype instanceof Operator) ? new init(func, params)
+      : new Operator(null, init, func))
+    : new Operator(init, func, params);
+
   op.rank = ++RANK;
   this.touch(op);
   return op;
 };
 
-prototype.touch = function(op, opt) {
-  this._pulse.ops.add(op);
-  if (opt && opt.skip) op.skip();
-};
-
-prototype.define = function(name, init, func, args) {
-  var op = this.register(new Operator(init, func, args));
-  if (name) this._named[name] = op;
-  return op;
-};
-
-prototype.value = function(name) {
-  return this._named[name].value;
-};
-
-prototype.update = function(name, value, opt) {
-  opt = opt || Empty;
-  var op = this._named[name];
+prototype.update = function(op, value, opt) {
+  opt = opt || {};
   if (op.set(value) || opt.force) {
     this.touch(op, opt);
-  }
-  return this;
-};
-
-prototype.updateAll = function(_, opt) {
-  for (var name in _) {
-    this.update(name, _[name], opt);
   }
   return this;
 };
@@ -53,9 +39,10 @@ prototype.updateAll = function(_, opt) {
 // EVALUATE THE DATAFLOW
 
 prototype.run = function() {
-  var pq = new Heap(pqCompare),
+  var pq = new Heap(function(a, b) { return a.rank - b.rank; }),
       pulses = {},
       pulse = this._pulse,
+      stamp = ++this._clock,
       count = 0,
       op, nextPulse;
 
@@ -65,15 +52,19 @@ prototype.run = function() {
     if (!p) pq.push(op); // enqueue if not already present
   }
 
+  function getPulse(op) {
+    var p = op.source && op.source.pulse;
+    return (p && p.stamp === stamp) ? p : pulses[op.id];
+  }
+
   // initialize the pulse
-  pulse.stamp = ++this._clock;
-  pulse.ops.forEach(enqueue);
+  pulse.stamp = stamp;
+  pulse.operators().forEach(enqueue);
 
   while (pq.size() > 0) {
     // process next operator in queue
     op = pq.pop();
-
-    nextPulse = op.evaluate(pulses[op.id]);
+    nextPulse = op.evaluate(getPulse(op));
 
     // propagate the pulse
     if (nextPulse !== StopPropagation) {
@@ -89,21 +80,21 @@ prototype.run = function() {
   return count;
 };
 
-function pqCompare(a, b) {
-  return a.rank - b.rank;
-}
-
 // SAVE / RESTORE DATAFLOW STATE
 
-prototype.save = function() {
-  var named = this._named,
-      ops = {};
-  for (var name in named) {
-    ops[name] = named[name].value;
-  }
-  return {ops: ops};
+prototype.save = function(ops) {
+  return {
+    operators: ops.slice(),
+    values: JSON.stringify(ops.map(function(op) { return op.value; }))
+  };
 };
 
 prototype.restore = function(state) {
-  this.updateAll(state.ops, {skip: true});
+  var opt = {skip: true},
+      val = JSON.parse(state.values),
+      i = 0, n = val.length;
+  for (; i<n; ++i) {
+    this.update(state.operators[i], val[i], opt);
+  }
+  return this;
 };
