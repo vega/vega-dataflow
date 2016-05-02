@@ -1,5 +1,6 @@
 import {default as Pulse, StopPropagation} from './Pulse';
 import Operator from './Operator';
+import {stream, events} from './Stream';
 import Heap from './util/Heap';
 
 var RANK = 0;
@@ -35,6 +36,10 @@ prototype.update = function(op, value, opt) {
   }
   return this;
 };
+
+prototype.stream = stream;
+
+prototype.events = events;
 
 prototype.on = function(stream, target, update, params, opt) {
   var self = this,

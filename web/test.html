@@ -65,7 +65,6 @@
     </svg>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
-var $ = dataflow.events;
 
 data();
 layout();
@@ -129,7 +128,7 @@ function data() {
       c2 = df.add(dataflow.Collect, {source:h2}),
       v2 = df.add(updateChart, {el:'.hist .filt > rect', source:c2, extent:x1});
 
-  var stream = $(window, 'mousemove');
+  var stream = df.events(window, 'mousemove');
   df.on(stream, mx, function(_, e) { return e.pageX - 10; })
     .on(stream, my, function(_, e) { return e.pageY - 12; })
     .run();
@@ -137,8 +136,6 @@ function data() {
 
 // Width / Height / Padding example
 function layout() {
-
-  function buttonPressed(_) { return _.buttons; }
 
   function updateWidth(_) {
     return Math.min(Math.max(_.mouseX, _.wMin), _.wMax);
@@ -182,7 +179,8 @@ function layout() {
       draw = df.add(render, {inner:'rect#inner',outer:'rect#outer',
                     w:w, h:h, tw:tw, th:th, padL:pad, padT:pad});
 
-  var stream = $(window, 'mousemove', buttonPressed).merge($(window, 'mousedown'));
+  var stream = df.events(window, 'mousedown').merge(
+    df.events(window, 'mousemove', function(e) { return e.buttons; }));
 
   df.on(stream, mx, function(_, e) { return e.pageX - 20; })
     .on(stream, my, function(_, e) { return e.pageY - 120; })

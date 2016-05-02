@@ -42,7 +42,8 @@ prototype.receive = function(evt) {
   if (this._filter(evt)) {
     var val = (this.value = this._apply(evt));
     this.targets.forEach(function(t) { t.receive(val); });
-    evt.stopPropagation(); // TODO: ???
+    evt.preventDefault();
+    evt.stopPropagation();
   }
 };
 

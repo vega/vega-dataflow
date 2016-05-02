@@ -258,15 +258,13 @@ var df = new dataflow.Dataflow(),
 
 // EVENT HANDLING
 
-function drag(start) { return mm.between(start, mu); }
-
-function pageX(_, e) { return e.pageX; }
-
-function dragX(_, e) { return [_.x[0], e.pageX - 10]; }
-
 function setX(_, e) {
   var x = clamp(e.pageX - 10, 0, 500);
   return [x, x];
+}
+
+function dragX(_, e) {
+  return [_.x[0], e.pageX - 10];
 }
 
 function panX(_, e) {
@@ -274,31 +272,47 @@ function panX(_, e) {
   return [_.x[0] + dx, _.x[1] + dx];
 }
 
-var md = $(window, 'mousedown'),
-    mu = $(window, 'mouseup'),
-    mm = $(window, 'mousemove'),
-    v1 = md.filter(function(e) { return e.pageY <= 110; }),
-    v2 = md.filter(function(e) { return 110 < e.pageY && e.pageY <= 220; }),
-    v3 = md.filter(function(e) { return 220 < e.pageY && e.pageY <= 330; });
+function maxX() { return [0, 500]; }
 
-// set xdown on mousedown
-df.on(md, xd, pageX);
+function zoomX(_, e) {
+  var s = Math.pow(1.0005, e.deltaY * Math.pow(16, e.deltaMode)),
+      cx = (_.x[0] + _.x[1]) / 2,
+      dx = s * Math.abs(_.x[1] - _.x[0]) / 2;
+  return [cx-dx, cx+dx];
+}
 
-// drag out new brush extents
-df.on(v1, x1, setX).on(drag(v1), x1, dragX, {x:x1})
-  .on(v2, x2, setX).on(drag(v2), x2, dragX, {x:x2})
-  .on(v3, x3, setX).on(drag(v3), x3, dragX, {x:x3});
+function pageX(_, e) { return e.pageX; }
 
-// pan existing brushes
-df.on(drag($('#view1 .brush', 'mousedown')), x1, panX, {x:x1, xdown:xd})
-  .on(drag($('#view2 .brush', 'mousedown')), x2, panX, {x:x2, xdown:xd})
-  .on(drag($('#view3 .brush', 'mousedown')), x3, panX, {x:x3, xdown:xd});
+function drag(a) { return mm.between(a, mu); }
 
-// update xdown *after* drags are processed
-df.on(mm, xd, pageX);
+var views = [
+  function(e) { return e.pageY <= 110; },
+  function(e) { return 110 < e.pageY && e.pageY <= 220; },
+  function(e) { return 220 < e.pageY && e.pageY <= 330; }
+];
 
-// kick things off
-df.run();
+var md = df.events(window, 'mousedown'),
+    mu = df.events(window, 'mouseup'),
+    mm = df.events(window, 'mousemove'),
+    mw = df.events(window, 'wheel'),
+    mc = df.events(window, 'dblclick');
+
+df.on(md, xd, pageX); // set xdown on mousedown
+
+[x1, x2, x3].forEach(function(x, i) {
+  var vdown = md.filter(views[i]),
+      bdown = df.events('#view'+(i+1)+' .brush', 'mousedown');
+
+  df.on(vdown, x, setX)                        // set extent on mouse down
+    .on(drag(vdown), x, dragX, {x:x})          // drag out brush extent
+    .on(drag(bdown), x, panX, {x:x, xdown:xd}) // pan brush
+    .on(mc.filter(views[i]), x, maxX)          // maximize on double click
+    .on(mw.filter(views[i]), x, zoomX, {x:x}); // zoom on scroll wheel
+});
+
+df.on(mm, xd, pageX); // update xdown *after* drags are processed
+
+df.run(); // kick things off
 
 function normal(mean, stdev) {
   var next = null;
