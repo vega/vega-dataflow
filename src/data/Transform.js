@@ -9,9 +9,9 @@ var prototype = (Transform.prototype = Object.create(Operator.prototype));
 prototype.constructor = Transform;
 
 prototype._evaluate = function(pulse) {
-  var args = this.marshall(),
-      out = this._transform(args, pulse);
-  args.clear();
+  var params = this.marshall(),
+      out = this._transform(params, pulse);
+  params.clear();
   return out;
 };
 

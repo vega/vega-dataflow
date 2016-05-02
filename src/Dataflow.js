@@ -36,7 +36,26 @@ prototype.update = function(op, value, opt) {
   return this;
 };
 
+prototype.on = function(stream, target, update, params, opt) {
+  var self = this,
+      op = new Operator(null, update, params);
+
+  stream.apply(function(evt) {
+    op._evaluate(evt);
+    target.skip();
+    self.update(target, op.value, opt).runLater();
+  });
+
+  return self;
+};
+
 // EVALUATE THE DATAFLOW
+
+prototype.runLater = function() {
+  if (this._rid) return;
+  var self = this;
+  self._rid = setTimeout(function() { self._rid = null; self.run(); }, 0);
+};
 
 prototype.run = function() {
   var pq = new Heap(function(a, b) { return a.rank - b.rank; }),

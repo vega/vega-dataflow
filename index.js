@@ -3,6 +3,7 @@ export {version} from './build/package';
 export {default as Dataflow} from './src/Dataflow';
 export {default as Operator} from './src/Operator';
 export {default as Pulse} from './src/Pulse';
+export {stream, events} from './src/Stream';
 
 import * as Tuple from './src/Tuple';
 export {Tuple};

@@ -65,6 +65,7 @@
     </svg>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
+var $ = dataflow.events;
 
 data();
 layout();
@@ -92,7 +93,7 @@ function data() {
 
   function bin(t) { return 5 * ~~(t.data / 5); } bin.fields = ['data'];
 
-  function histogram(_) {
+  function updateChart(_) {
     var rect = document.querySelectorAll(_.el),
         data = _.source,
         max  = _.extent[1],
@@ -114,47 +115,47 @@ function data() {
       fv = df.add(filter, {ft:ft}),
 
       // generate data
-      dg = df.add(new dataflow.Generate({num:dn, gen:gen})),
+      dg = df.add(dataflow.Generate, {num:dn, gen:gen}),
 
-      // histogram full data set
-      h1 = df.add(new dataflow.Histogram({field:bin, source:dg})),
-      c1 = df.add(new dataflow.Collect({source: h1})),
-      x1 = df.add(new dataflow.Extent({field:'count', source:c1})),
-      v1 = df.add(histogram, {el:'.hist .base > rect', source:c1, extent:x1}),
+      // histogram of full data set
+      h1 = df.add(dataflow.Histogram, {field:bin, source:dg}),
+      c1 = df.add(dataflow.Collect, {source:h1}),
+      x1 = df.add(dataflow.Extent, {field:'count', source:c1}),
+      v1 = df.add(updateChart, {el:'.hist .base > rect', source:c1, extent:x1}),
 
-      // histogram filtered data set
-      fl = df.add(new dataflow.Filter({test:fv, source:dg})),
-      h2 = df.add(new dataflow.Histogram({field:bin, source:fl})),
-      c2 = df.add(new dataflow.Collect({source: h2})),
-      v2 = df.add(histogram, {el:'.hist .filt > rect', source:c2, extent:x1});
+      // histogram of filtered data set
+      fl = df.add(dataflow.Filter, {test:fv, source:dg}),
+      h2 = df.add(dataflow.Histogram, {field:bin, source:fl}),
+      c2 = df.add(dataflow.Collect, {source:h2}),
+      v2 = df.add(updateChart, {el:'.hist .filt > rect', source:c2, extent:x1});
 
-  window.addEventListener('mousemove', function(event) {
-    var dt = Date.now();
-
-    df.update(mx, event.pageX - 10)
-      .update(my, event.pageY - 20)
-      .run();
-
-    console.log(Date.now() - dt, dg.value.length, ft.value, x1.value);
-  });
-
-  df.run();
+  var stream = $(window, 'mousemove');
+  df.on(stream, mx, function(_, e) { return e.pageX - 10; })
+    .on(stream, my, function(_, e) { return e.pageY - 12; })
+    .run();
 }
 
+// Width / Height / Padding example
 function layout() {
-  // Width / Height / Padding example
+
+  function buttonPressed(_) { return _.buttons; }
+
   function updateWidth(_) {
     return Math.min(Math.max(_.mouseX, _.wMin), _.wMax);
   }
+
   function updateHeight(_) {
     return Math.min(Math.max(_.mouseY, _.hMin), _.hMax);
   }
+
   function updateTotalWidth(_) {
     return _.padL + _.w + _.padR;
   }
+
   function updateTotalHeight(_) {
     return _.padT + _.h + _.padB;
   }
+
   function render(_) {
     var outer = document.querySelector(_.outer),
         inner = document.querySelector(_.inner);
@@ -181,27 +182,18 @@ function layout() {
       draw = df.add(render, {inner:'rect#inner',outer:'rect#outer',
                     w:w, h:h, tw:tw, th:th, padL:pad, padT:pad});
 
-  window.addEventListener('mousemove', function(event) {
-    if (!event.buttons) return;
-    df.update(mx, event.pageX - 20)
-      .update(my, event.pageY - 120)
-      .run();
-  });
+  var stream = $(window, 'mousemove', buttonPressed).merge($(window, 'mousedown'));
 
-  df.run();
+  df.on(stream, mx, function(_, e) { return e.pageX - 20; })
+    .on(stream, my, function(_, e) { return e.pageY - 120; })
+    .run();
 }
 
 function normal(mean, stdev) {
-  mean = mean || 0;
-  stdev = stdev || 1;
-  var next;
+  var next = null;
   return function() {
     var x = 0, y = 0, rds, c;
-    if (next !== undefined) {
-      x = next;
-      next = undefined;
-      return x;
-    }
+    if (next != null) { x = next; next = null; return x; }
     do {
       x = Math.random()*2-1;
       y = Math.random()*2-1;

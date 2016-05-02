@@ -1,7 +1,7 @@
 import UniqueList from './util/UniqueList';
 import Parameters from './util/Parameters';
 
-export var OP_ID = 0;
+var OP_ID = 0;
 var NO_PARAMS = new Parameters();
 
 export default function Operator(init, fn, params) {
