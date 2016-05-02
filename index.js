@@ -16,4 +16,5 @@ export {default as CrossFilter} from './src/data/CrossFilter';
 export {default as ResolveFilter} from './src/data/ResolveFilter';
 export {default as Apply} from './src/data/Apply';
 export {default as Extent} from './src/data/Extent';
+export {default as CountPattern} from './src/data/CountPattern';
 export {default as Histogram} from './src/data/Histogram';

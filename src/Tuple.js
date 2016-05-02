@@ -17,10 +17,10 @@ function copy(t, c) {
 }
 
 function ingest(datum) {
-  datum = (datum === Object(datum)) ? datum : {data: datum};
-  datum._id = ++TUPLE_ID;
-  if (datum._prev) datum._prev = null;
-  return datum;
+  var tuple = (datum === Object(datum)) ? datum : {data: datum};
+  tuple._id = ++TUPLE_ID;
+  if (tuple._prev) tuple._prev = null;
+  return tuple;
 }
 
 function derive(d) {
@@ -35,17 +35,17 @@ function set(t, k, v) {
   return t[k] === v ? 0 : (t[k] = v, 1);
 }
 
-function prev(t) {
-  return t._prev || t;
+function prev(t, stamp) {
+  var p = t._prev;
+  return (p && p._stamp >= stamp) ? p : t;
 }
 
-function prev_init(t) {
-  if (!t._prev) { t._prev = {_id: t._id}; }
-}
-
-function prev_update(t) {
+function prev_init(t, stamp) {
   var p = t._prev, k, v;
-  if (p) for (k in t) {
+  if (!p) { p = t._prev = {_id: t._id, _stamp: stamp}; }
+  else p._stamp = stamp;
+
+  for (k in t) {
     if (k !== '_prev' && k !== '_id') {
       p[k] = ((v=t[k]) instanceof Object && v._prev) ? v._prev : v;
     }
@@ -73,6 +73,6 @@ function idFilter(data) {
 export {
   reset, id,
   ingest, derive, rederive, set,
-  prev, prev_init, prev_update,
+  prev, prev_init,
   idMap, idFilter
 };

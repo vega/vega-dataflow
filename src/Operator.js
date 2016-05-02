@@ -9,7 +9,6 @@ export default function Operator(init, fn, params) {
   this.stamp = -1;
   this.rank = -1;
   this.value = init;
-  this.targets = UniqueList();
   if (fn) {
     this._fn = fn;
     this._skip = false;
@@ -18,6 +17,10 @@ export default function Operator(init, fn, params) {
 }
 
 var prototype = Operator.prototype;
+
+prototype.targets = function() {
+  return this._targets || (this._targets = UniqueList());
+};
 
 prototype.set = function(_) {
   return this.value !== _ ? (this.value = _, 1) : 0;
@@ -36,7 +39,7 @@ prototype.parameters = function(params) {
   function add(name, value, index, pulse) {
     // TODO revisit parse rules to access operator pulse (or other properties?)
     if (value instanceof Operator) {
-      value.targets.add(self);
+      value.targets().add(self);
       argops.push({op:value, name:name, index:index, pulse:pulse});
     } else {
       argval.set(name, value, index);
@@ -48,6 +51,8 @@ prototype.parameters = function(params) {
 
   for (name in params) {
     value = params[name];
+
+    // prepend names with '!' to request an operator's output pulse
     pulse = (name[0] === '!') ? (name = name.slice(1), 1) : 0;
 
     if (Array.isArray(value)) {

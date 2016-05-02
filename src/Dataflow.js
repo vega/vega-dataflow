@@ -1,6 +1,7 @@
 import {default as Pulse, StopPropagation} from './Pulse';
-import Operator from './Operator';
 import {stream, events} from './Stream';
+import {Empty} from './util/Arrays';
+import Operator from './Operator';
 import Heap from './util/Heap';
 
 var RANK = 0;
@@ -43,13 +44,17 @@ prototype.events = events;
 
 prototype.on = function(stream, target, update, params, opt) {
   var self = this,
-      op = new Operator(null, update, params);
+      f = function() { self.touch(target); self.runLater(); };
 
-  stream.apply(function(evt) {
-    op._evaluate(evt);
-    target.skip();
-    self.update(target, op.value, opt).runLater();
-  });
+  if (update) {
+    var op = new Operator(null, update, params);
+    f = function(evt) {
+      op._evaluate(evt);
+      target.skip();
+      self.update(target, op.value, opt).runLater();
+    };
+  }
+  stream.apply(f);
 
   return self;
 };
@@ -93,7 +98,7 @@ prototype.run = function() {
     // propagate the pulse
     if (nextPulse !== StopPropagation) {
       pulse = nextPulse;
-      op.targets.forEach(enqueue);
+      (op._targets || Empty).forEach(enqueue);
     }
 
     // increment visit counter

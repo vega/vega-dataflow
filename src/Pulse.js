@@ -1,12 +1,16 @@
-import {array, visit} from './util/Arrays';
 import UniqueList from './util/UniqueList';
+import {array, visit} from './util/Arrays';
+import {prev} from './Tuple';
 
 export var StopPropagation = {};
-export var ADD = 1;
-export var REM = 2;
-export var MOD = 4;
-export var ALL = ADD | REM | MOD;
-export var REFLOW = 8;
+
+var ADD    = (1 << 0),
+    REM    = (1 << 1),
+    MOD    = (1 << 2),
+    REFLOW = (1 << 3),
+    PASS   = (1 << 4),
+    PREV   = (1 << 5),
+    ALL    = ADD | REM | MOD;
 
 export default function Pulse(dataflow) {
   this.dataflow = dataflow;
@@ -19,13 +23,13 @@ export default function Pulse(dataflow) {
 var prototype = Pulse.prototype;
 
 prototype.StopPropagation = StopPropagation;
+prototype.ALL = ALL;
 prototype.ADD = ADD;
 prototype.REM = REM;
 prototype.MOD = MOD;
-prototype.ALL = ALL;
 prototype.REFLOW = REFLOW;
-
-// add accessors that run filters upon invocation?
+prototype.PASS = PASS;
+prototype.PREV = PREV;
 
 prototype.fork = function(flags) {
   var p = new Pulse(this.dataflow);
@@ -61,7 +65,9 @@ prototype.modifies = function(_) {
 
 prototype.modified = function(_) {
   var fields = this.fields;
-  return !fields ? 0 : array(_).some(function(f) { return fields[f]; });
+  return !fields ? 0
+    : Array.isArray(_) ? _.some(function(f) { return fields[f]; })
+    : fields[_];
 };
 
 prototype.materialize = function(flags) {
@@ -93,14 +99,22 @@ function andf(f1, f2) {
 }
 
 prototype.visit = function(flags, visitor, data) {
-  if (flags & ADD) visit(this.add, this._addf, visitor);
-  if (flags & REM) visit(this.rem, this._remf, visitor);
-  if (flags & MOD) visit(this.mod, this._modf, visitor);
+  if (flags & PASS) {
+    data.forEach(visitor);
+    return this;
+  }
+
+  var s = this.stamp,
+      v = flags & PREV ? function(t,i) { visitor(prev(t,s), i); } : visitor;
+
+  if (flags & ADD) visit(this.add, this._addf, v);
+  if (flags & REM) visit(this.rem, this._remf, v);
+  if (flags & MOD) visit(this.mod, this._modf, v);
 
   if (flags & REFLOW) {
     var map = {};
     this.visit(ALL, function(t) { map[t._id] = 1; });
-    visit(data, function(t) { return !map[t._id]; }, visitor);
+    visit(data, function(t) { return !map[t._id]; }, v);
   }
 
   return this;
