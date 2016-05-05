@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import Subflow from './Subflow';
 import {prev} from '../Tuple';
 
 // parameter 'key'
@@ -15,20 +16,27 @@ prototype._transform = function(_, pulse) {
       key = _.key;
       // reset = _.modified('key'); // TODO: handle key change
 
-  pulse.visit(pulse.ADD, function(t) { self.getFacet(key(t), pulse).add(t); });
-  pulse.visit(pulse.REM, function(t) { self.getFacet(key(t), pulse).rem(t); });
+  this.touchFlows(pulse);
 
-  var mod = function(t) { self.getFacet(key(t), pulse).mod(t); };
+  pulse.visit(pulse.ADD, function(t) {
+    self.subflow(key(t), pulse).add(t);
+  });
+
+  pulse.visit(pulse.REM, function(t) {
+    self.subflow(key(t), pulse).rem(t);
+  });
+
+  var mod = function(t) { self.subflow(key(t), pulse).mod(t); };
   if (pulse.modified(key.fields)) {
     mod = function(t) {
-      var pt = prev(t),
+      var pt = prev(t, pulse.stamp),
           k0 = key(pt),
           k1 = key(t);
       if (k0 === k1) {
-        self.getFacet(k1, pulse).mod(t);
+        self.subflow(k1, pulse).mod(t);
       } else {
-        self.getFacet(k0, pulse).rem(pt);
-        self.getFacet(k1, pulse).add(t);
+        self.subflow(k0, pulse).rem(pt);
+        self.subflow(k1, pulse).add(t);
       }
     };
   }
@@ -37,32 +45,17 @@ prototype._transform = function(_, pulse) {
   return pulse;
 };
 
-prototype.getFacet = function(key, pulse) {
-  var f = this.value[key];
-  return f ? f.set(pulse) : (this.value[key] = this.createFacet(key, pulse));
+prototype.subflow = function(key, pulse) {
+  var sf = this.value[key], df;
+  if (!sf) {
+    df = pulse.dataflow;
+    sf = df.add(new Subflow(pulse.fork(), this, this._flowgen(df, key)));
+    this.value[key] = sf.connect();
+  }
+  return sf;
 };
 
-prototype.createFacet = function(key, pulse) {
-  var facet = {
-    pulse: pulse.fork(),
-    key: key,
-    op:  this,
-    add: function(t) { this.pulse.add.push(t); },
-    rem: function(t) { this.pulse.rem.push(t); },
-    mod: function(t) { this.pulse.mod.push(t); },
-    set: function(pulse) {
-      if (pulse.stamp > this.pulse.stamp) this.pulse.init(pulse);
-      return this;
-    },
-    connect: function() {
-      this.target.source = this;
-      this.op.targets().add(this.target);
-    },
-    disconnect: function() {
-      this.op.targets().remove(this.target);
-    },
-    target: this._flowgen(pulse.dataflow, key)
-  };
-  facet.connect();
-  return facet;
+prototype.touchFlows = function(pulse) {
+  var flows = this.value, key;
+  for (key in flows) flows[key].touch(pulse);
 };
