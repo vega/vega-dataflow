@@ -1,6 +1,13 @@
 import Operator from '../Operator';
 
-// Abstract class for operators that process data tuples.
+/**
+ * Abstract class for operators that process data tuples.
+ * Subclasses must provide a {@link transform} method for operator processing.
+ * @constructor
+ * @param {*} [init] - The initial value for this operator.
+ * @param {object} [params] - The parameters for this operator.
+ * @param {Operator} [source] - The operator from which to receive pulses.
+ */
 export default function Transform(init, params) {
   Operator.call(this, init, null, params);
 }
@@ -8,12 +15,26 @@ export default function Transform(init, params) {
 var prototype = (Transform.prototype = Object.create(Operator.prototype));
 prototype.constructor = Transform;
 
-prototype._evaluate = function(pulse) {
+/**
+ * Overrides {@link Operator.evaluate} for transform operators.
+ * Marshalls parameter values and then invokes {@link transform}.
+ * @param {Pulse} pulse - the current dataflow pulse.
+ * @return {Pulse} The output pulse (or StopPropagation). A falsy return
+     value (including undefined) will let the input pulse pass through.
+ */
+prototype.evaluate = function(pulse) {
   var params = this.marshall(),
-      out = this._transform(params, pulse);
+      out = this.transform(params, pulse);
   params.clear();
   return out;
 };
 
-// Subclasses can override to perform custom processing.
-prototype._transform = function() {};
+/**
+ * Process incoming pulses.
+ * Subclasses should override this method to implement transforms.
+ * @param {Parameters} _ - The operator parameter values.
+ * @param {Pulse} pulse - The current dataflow pulse.
+ * @return {Pulse} The output pulse (or StopPropagation). A falsy return
+ *   value (including undefined) will let the input pulse pass through.
+ */
+prototype.transform = function() {};

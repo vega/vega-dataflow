@@ -1,12 +1,16 @@
 import Transform from './Transform';
 import {ingest} from '../Tuple';
 
-// Generates data tuples using a provided generator function.
-// The 'gen' parameter provides a tuple-generating function.
-// The 'num' parameter indicates the number of tuples to produce.
-// Any other parameters are passed along to the generator function.
-// Changes to additional parameters will not trigger re-calculation
-// of previously generated tuples. Only future tuples are affected.
+/**
+ * Generates data tuples using a provided generator function.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(Parameters): object} params.gen - A tuple generating
+ *   function. This function is given the operator parameters as input.
+ *   Changes to any additional parameters will not trigger re-calculation
+ *   of previously generated tuples. Only future tuples are affected.
+ * @param {number} params.num - The number of tuples to produce.
+ */
 export default function Generate(params) {
   Transform.call(this, [], params);
 }
@@ -14,7 +18,7 @@ export default function Generate(params) {
 var prototype = (Generate.prototype = Object.create(Transform.prototype));
 prototype.constructor = Generate;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var data = this.value,
       out = pulse.fork(pulse.ALL),
       num = _.num - data.length,

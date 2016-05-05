@@ -17,11 +17,10 @@ tape("fold folds tuples", function(test) {
       fd = new dataflow.Fold({fields: fields}),
       out, d;
 
-
-  // process adds
+  // -- process adds
   pulse.stamp = 1;
   pulse.add = pulse.source = data;
-  out = fd._evaluate(pulse);
+  out = fd.evaluate(pulse);
 
   test.equal(out.add.length, 4);
   test.equal(out.mod.length, 0);
@@ -33,13 +32,13 @@ tape("fold folds tuples", function(test) {
   test.equal(d[2].key, 'b'); test.equal(d[2].value, 2); test.equal(d[2].a, '?');
   test.equal(d[3].key, 'c'); test.equal(d[3].value, 4); test.equal(d[3].a, '?');
 
-  // process mods
+  // -- process mods
   pulse.stamp++;
   pulse.modifies('b');
   pulse.source[1].b = 9;
   pulse.add = [];
   pulse.mod = [pulse.source[1]];
-  out = fd._evaluate(pulse);
+  out = fd.evaluate(pulse);
 
   test.equal(out.add.length, 0);
   test.equal(out.mod.length, 1);
@@ -48,11 +47,11 @@ tape("fold folds tuples", function(test) {
   d = out.mod;
   test.equal(d[0].key, 'b'); test.equal(d[0].value, 9); test.equal(d[0].a, '?');
 
-  // process rems
+  // -- process rems
   pulse.stamp++;
   pulse.fields = {};
   pulse.rem = [pulse.source[0]];
-  out = fd._evaluate(pulse);
+  out = fd.evaluate(pulse);
 
   test.equal(out.add.length, 0);
   test.equal(out.mod.length, 0);

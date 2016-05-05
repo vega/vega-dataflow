@@ -12,7 +12,7 @@ export default function UniqueList(idFunc) {
     return list;
   };
 
-  list.rem = function(_) {
+  list.remove = function(_) {
     var id = $(_), idx;
     if (ids[id]) {
       ids[id] = 0;

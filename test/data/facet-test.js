@@ -15,51 +15,89 @@ tape("facet facets tuples", function(test) {
     return col;
   }
 
+  function subtest(len) {
+    return function(s, i) {
+      var d = s.data.value;
+      test.equal(d.length, len===undefined ? i+1 : len);
+      test.equal(d.every(function(t) { return t.k === s.key; }), true);
+    }
+  }
+
   function key(t) { return t.k; } key.fields = ['k'];
   function val(t) { return t.v; } key.fields = ['v'];
 
   var df = new dataflow.Dataflow(),
-      c  = df.add(dataflow.Collect),
-      f  = df.add(dataflow.Facet, subflow, {key: key, source: c});
+      source = df.add(dataflow.Collect),
+      facet = df.add(dataflow.Facet, subflow, {key: key, source: source});
 
-  // test adds
-  df._pulse.add = data;
+
+  // -- test adds
+  df.nextPulse.add = data;
   df.run();
 
-  test.equal(subs.length, 3);
-  subs.forEach(function(s, i) {
-    var d = s.data.value;
-    test.equal(d.length, 2);
-    test.equal(d.every(function(t) { return t.k === s.key; }), true);
-  });
+  test.equal(facet.targets().active, 3); // 3 subflows updated
+  test.equal(subs.length, 3); // 3 subflows added
+  subs.forEach(subtest(2)); // each subflow should have 2 tuples
 
-  // test mods - key change
-  dataflow.Tuple.prev_init(data[0], df._clock + 1);
+
+  // -- test mods - key change
+  dataflow.Tuple.prev_init(data[0], df.clock + 1);
   data[0].k = 'c';
+  df.nextPulse.modifies(key.fields).mod = [data[0]];
+  df.touch(source).run();
 
-  df._pulse.mod = [data[0]];
-  df._pulse.modifies(key.fields);
-  df.touch(c);
-  df.run();
+  test.equal(facet.targets().active, 2); // 2 subflows updated
+  test.equal(subs.length, 3); // no new subflows added
+  subs.forEach(subtest()); // subflows should have 1,2,3 tuples respectively
 
-  test.equal(subs.length, 3);
-  subs.forEach(function(s, i) {
-    var d = s.data.value;
-    test.equal(d.length, i+1);
-    test.equal(d.every(function(t) { return t.k === s.key; }), true);
-  });
 
-  // test rems
-  df._pulse.rem = [data[0], data[2], data[4]];
-  df.touch(c);
-  df.run();
+  // -- test mods - value change
+  dataflow.Tuple.prev_init(data[0], df.clock + 1);
+  data[1].v = 100;
+  df.nextPulse.modifies(val.fields).mod = [data[1]];
+  df.touch(source).run();
 
-  test.equal(subs.length, 3);
-  subs.forEach(function(s, i) {
-    var d = s.data.value;
-    test.equal(d.length, 1);
-    test.equal(d.every(function(t) { return t.k === s.key; }), true);
-  });
+  test.equal(facet.targets().active, 1); // 1 subflow updated
+  test.equal(subs.length, 3); // no new subflows added
+  subs.forEach(subtest()); // subflows should have 1,2,3 tuples respectively
+
+
+  // -- test rems - no disconnects
+  df.nextPulse.rem = [data[0], data[2], data[4]];
+  df.touch(source).run();
+
+  test.equal(facet.targets().active, 2); // 2 subflows updated
+  test.equal(subs.length, 3); // no new subflows added
+  subs.forEach(subtest(1)); // each subflow should have 1 tuple
+
+
+  // -- test rems - empty out a subflow
+  df.nextPulse.rem = [data[1], data[3], data[5]];
+  df.touch(source).run();
+
+  test.equal(facet.targets().active, 3); // 3 subflows updated
+  test.equal(subs.length, 3); // no new subflows added
+  subs.forEach(subtest(0)); // each subflow should now be empty
+
+
+  // -- test adds - repopulate subflows
+  df.nextPulse.add = data;
+  df.touch(source).run();
+
+  test.equal(facet.targets().active, 3); // 3 subflows updated
+  test.equal(subs.length, 3); // no new subflows added
+  subs.forEach(subtest()); // subflows should have 1,2,3 tuples respectively
+
+
+  // -- test adds - new subflow
+  df.nextPulse.add = [
+    {k:'d', v:4}, {k:'d', v:8}, {k:'d', v:6}, {k:'d', v:0}
+  ].map(dataflow.Tuple.ingest);
+  df.touch(source).run();
+
+  test.equal(facet.targets().active, 1); // 1 subflow updated
+  test.equal(subs.length, 4); // 1 subflow added
+  subs.forEach(subtest()); // subflows should have 1,2,3,4 tuples respectively
 
   test.end();
 });

@@ -1,12 +1,15 @@
 import Transform from './Transform';
 import {ingest, prev_init, set} from '../Tuple';
 
-// Count regexp-defined pattern occurrences in a text field.
-// The 'field' parameter is an accessor for the text field to process.
-// The 'pattern' parameter is a regexp string defining patterns.
-// The 'case' parameter indicates 'lower', 'upper' or null text case.
-// The 'stopwords' parameter is a regexp string indicating what to ignore.
-// The 'source' parameter references a collector data source.
+/**
+ * Count regexp-defined pattern occurrences in a text field.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(object): *} params.field - An accessor for the text field.
+ * @param {string} [params.pattern] - RegExp string defining the text pattern.
+ * @param {string} [params.case] - One of 'lower', 'upper' or null (mixed) case.
+ * @param {string} [params.stopwords] - RegExp string of words to ignore.
+ */
 export default function CountPattern(params) {
   Transform.call(this, null, params);
 }
@@ -22,7 +25,7 @@ function tokenize(text, tcase, match) {
 var prototype = (CountPattern.prototype = Object.create(Transform.prototype));
 prototype.constructor = CountPattern;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   function process(update) {
     return function(tuple) {
       var tokens = tokenize(get(tuple), _.case, match) || [], t;

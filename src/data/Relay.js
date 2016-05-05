@@ -1,9 +1,12 @@
 import Transform from './Transform';
 import {derive, rederive} from '../Tuple';
 
-// Relays a data stream by creating derived copies of observed tuples.
-// This operator is useful for creating derived data streams in which
-// modifications to the tuples do not pollute an upstream data source.
+/**
+ * Relays a data stream by creating derived copies of observed tuples.
+ * This operator is useful for creating derived data streams in which
+ * modifications to the tuples do not pollute an upstream data source.
+ * @constructor
+ */
 export default function Relay() {
   Transform.call(this, {});
 }
@@ -11,7 +14,7 @@ export default function Relay() {
 var prototype = (Relay.prototype = Object.create(Transform.prototype));
 prototype.constructor = Relay;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var stamp = pulse.stamp,
       out = pulse.fork(),
       map = this.value;

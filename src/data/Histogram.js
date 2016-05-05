@@ -1,10 +1,14 @@
 import Transform from './Transform';
 import {ingest, set, prev} from '../Tuple';
 
-// This operator counts occurrences of a set of key values.
-// Once created a key is never removed, though it can decrease to 0.
-// This class should later be replaced by a full-featured aggregate.
-// The 'field' parameter is an accessor that provides key values.
+/**
+ * Counts occurrences of a set of key values.
+ * Once created a key is never removed, though it can decrease to 0.
+ * This class should later be replaced by a full-featured aggregator.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(object): *} params.field - An accessor for key values.
+ */
 export default function Histogram(params) {
   Transform.call(this, [], params);
   this._keys = {};
@@ -17,7 +21,7 @@ function create(k) {
   return ingest({key:k, count:0});
 }
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var keys = this._keys,
       key = _.field,
       out = pulse.fork();

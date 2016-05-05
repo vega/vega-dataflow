@@ -1,9 +1,14 @@
 import Transform from './Transform';
 
-// Selectively filters tuples by resolving against filter bitmaps.
-// Useful for processing the output of a cross-filter transform.
-// The 'ignore' parameter is a bit mask indicating which filters to ignore.
-// The 'bitmap' parameter references the per-tuple filter bitmaps.
+/**
+ * Selectively filters tuples by resolving against a filter bitmap.
+ * Useful for processing the output of a cross-filter transform.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {object} params.ignore - A bit mask indicating which filters to ignore.
+ * @param {object} params.bitmap - The per-tuple filter bitmaps. Typically this
+ *   parameter value is a reference to a {@link CrossFilter} transform.
+ */
 export default function ResolveFilter(params) {
   Transform.call(this, null, params);
 }
@@ -11,7 +16,7 @@ export default function ResolveFilter(params) {
 var prototype = (ResolveFilter.prototype = Object.create(Transform.prototype));
 prototype.constructor = ResolveFilter;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var ignore = ~(_.ignore || 0), // bit mask where zeros -> dims to ignore
       bitmap = _.bitmap,
       mask = bitmap.mask;

@@ -2,9 +2,14 @@ import Transform from './Transform';
 import {ingest} from '../Tuple';
 import {range} from '../util/Arrays';
 
-// Generates data tuples using a provided generator function.
-// The 'gen' parameter provides the tuple-generating function.
-// The 'num' parameter indicates the number of tuples to produce.
+/**
+ * Generates data tuples for a specified range of numbers.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {number} params.start - The first number in the range.
+ * @param {number} params.stop - The last number (exclusive) in the range.
+ * @param {number} [params.step=1] - The step size between numbers in the range.
+ */
 export default function GenerateRange(params) {
   Transform.call(this, [], params);
 }
@@ -12,7 +17,7 @@ export default function GenerateRange(params) {
 var prototype = (GenerateRange.prototype = Object.create(Transform.prototype));
 prototype.constructor = GenerateRange;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   if (!_.modified()) return;
 
   var out = pulse.materialize().fork(pulse.MOD);

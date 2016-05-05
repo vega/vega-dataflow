@@ -17,7 +17,20 @@ var ADD    = (1 << 0),
     ALL    = ADD | REM | MOD;
 
 /**
- * Create a new pulse instance.
+ * A Pulse enables inter-operator communication during a run of the
+ * dataflow graph. In addition to the current timestamp, a pulse may also
+ * contain a change-set of added, removed or modified data tuples, as well as
+ * a pointer to a full backing data source. Tuple change sets may not
+ * be fully materialized; for example, to prevent needless array creation
+ * a change set may include larger arrays and corresponding filter functions.
+ * The pulse provides a {@link visit} method to enable proper and efficient
+ * iteration over requested data tuples.
+ *
+ * In addition, each pulse can track modification flags for data tuple fields.
+ * Responsible transform operators should call the {@link modifies} method to
+ * indicate changes to data fields. The {@link modified} method enables
+ * querying of this modification state.
+ *
  * @constructor
  * @param {Dataflow} dataflow - The backing dataflow instance.
  */
@@ -83,41 +96,33 @@ prototype.PREV = PREV;
  *   are ADD, REM and MOD. Array references are copied directly: new array
  *   instances are not created.
  * @return {Pulse}
+ * @see init
  */
 prototype.fork = function(flags) {
   return new Pulse(this.dataflow).init(this, flags);
 };
 
-prototype.init = function(pulse, flags) {
-  this.stamp = pulse.stamp;
-  this.source = pulse.source;
-  if (pulse.fields) this.fields = pulse.fields;
-
-  if (flags & ADD) {
-    this.add = pulse.add;
-    if (pulse._addf) this._addf = pulse._addf;
-  } else {
-    this.add = [];
-    if (this._addf) this._addf = null;
-  }
-
-  if (flags & REM) {
-    this.rem = pulse.rem;
-    if (pulse._remf) this._remf = pulse._remf;
-  } else {
-    this.rem = [];
-    if (this._remf) this._remf = null;
-  }
-
-  if (flags & MOD) {
-    this.mod = pulse.mod;
-    if (pulse._modf) this._modf = pulse._modf;
-  } else {
-    this.mod = [];
-    if (this._modf) this._modf = null;
-  }
-
-  return this;
+/**
+ * Initialize this pulse based on the values of another pulse. This method
+ * is used internally by {@link fork} to initialize a new forked tuple.
+ * The dataflow, time stamp and field modification values are copied over.
+ * By default, new empty ADD, REM and MOD arrays are created.
+ * @param {Pulse} src - The source pulse to copy from.
+ * @param {number} flags - Integer of boolean flags indicating which (if any)
+ *   tuple arrays should be copied to the new pulse. The supported flag values
+ *   are ADD, REM and MOD. Array references are copied directly: new array
+ *   instances are not created.
+ * @return {Pulse}
+ */
+prototype.init = function(src, flags) {
+  var p = this;
+  p.stamp = src.stamp;
+  p.source = src.source;
+  if (src.fields) p.fields = src.fields;
+  p.add = (flags & ADD) ? (p.addF = src.addF, src.add) : (p.addF = null, []);
+  p.rem = (flags & REM) ? (p.remF = src.remF, src.rem) : (p.remF = null, []);
+  p.mod = (flags & MOD) ? (p.modF = src.modF, src.mod) : (p.modF = null, []);
+  return p;
 };
 
 /**
@@ -143,33 +148,26 @@ prototype.modified = function(_) {
     : fields[_];
 };
 
+prototype.filter = function(flags, filter) {
+  var p = this;
+  if (flags & ADD) p.addF = addFilter(p.addF, filter);
+  if (flags & REM) p.remF = addFilter(p.remF, filter);
+  if (flags & MOD) p.modF = addFilter(p.modF, filter);
+  return p;
+};
+
+function addFilter(a, b) {
+  return a ? function(t,i) { return a(t,i) && b(t,i); } : b;
+}
+
 prototype.materialize = function(flags) {
   flags = flags || ALL;
-  if ((flags & ADD) && this._addf) {
-    this.add = this.add.filter(this._addf);
-    this._addf = null;
-  }
-  if ((flags & REM) && this._remf) {
-    this.rem = this.rem.filter(this._remf);
-    this._remf = null;
-  }
-  if ((flags & MOD) && this._modf) {
-    this.mod = this.mod.filter(this._modf);
-    this._modf = null;
-  }
-  return this;
+  var p = this;
+  if ((flags & ADD) && p.addF) { p.add = p.add.filter(p.addF); p.addF = null; }
+  if ((flags & REM) && p.remF) { p.rem = p.rem.filter(p.remF); p.remF = null; }
+  if ((flags & MOD) && p.modF) { p.mod = p.mod.filter(p.modF); p.modF = null; }
+  return p;
 };
-
-prototype.filter = function(flags, filter) {
-  if (flags & ADD) this._addf = andf(filter, this._addf);
-  if (flags & REM) this._remf = andf(filter, this._remf);
-  if (flags & MOD) this._modf = andf(filter, this._modf);
-  return this;
-};
-
-function andf(f1, f2) {
-  return !f2 ? f1 : function(t, i) { return f1(t,i) && f2(t,i); };
-}
 
 prototype.visit = function(flags, visitor) {
   if (flags & SOURCE) {
@@ -180,9 +178,9 @@ prototype.visit = function(flags, visitor) {
   var s = this.stamp,
       v = flags & PREV ? function(t,i) { visitor(prev(t,s), i); } : visitor;
 
-  if (flags & ADD) visit(this.add, this._addf, v);
-  if (flags & REM) visit(this.rem, this._remf, v);
-  if (flags & MOD) visit(this.mod, this._modf, v);
+  if (flags & ADD) visit(this.add, this.addF, v);
+  if (flags & REM) visit(this.rem, this.remF, v);
+  if (flags & MOD) visit(this.mod, this.modF, v);
 
   if (flags & REFLOW) {
     var map = {};

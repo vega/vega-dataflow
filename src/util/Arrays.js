@@ -1,3 +1,5 @@
+import {error} from './Errors';
+
 export var Empty = [];
 
 export function array(_) {
@@ -21,12 +23,13 @@ export function range(start, stop, step) {
 }
 
 export function visit(array, filter, visitor) {
+  var i = 0, j = 0, n = array.length, t;
   if (filter) {
-    for (var i=0, j=0, n=array.length, t; i<n; ++i) {
-      if (filter(t=array[i])) visitor(t, j++);
-    }
+    for (; i<n; ++i) if (filter(t=array[i])) { visitor(t, j++); }
+    // for (; i<n; ++i) if (filter(t=array[i]) && visitor(t, j++)) break;
   } else {
     array.forEach(visitor);
+    // for (; i<n; ++i) if (visitor(array[i], i)) break;
   }
 }
 
@@ -75,7 +78,7 @@ export function arrayWiden(array, width) {
   switch (width) {
     case 16: copy = array16(array.length); break;
     case 32: copy = array32(array.length); break;
-    default: throw new Error("invalid array width!");
+    default: throw error('Invalid array width.');
   }
   copy.set(array);
   return copy;

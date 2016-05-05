@@ -4,10 +4,13 @@ import SortedIndex from '../util/SortedIndex';
 import {id} from '../Tuple';
 import {array32, arrayLengthen} from '../util/Arrays';
 
-// Provides an indexed, multi-dimenstional filter.
-// The 'fields' parameter takes an array of dimension accessors to filter.
-// The 'query' parameter takes an array of per-dimension range queries.
-// The 'source' parameter references an (indexed!) collector data source.
+/**
+ * Provides an indexed, multi-dimenstional filter.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {Array<function(object): *>} params.fields - An array of dimension accessors to filter.
+ * @param {Array} params.query - An array of per-dimension range queries.
+ */
 export default function CrossFilter(params) {
   Transform.call(this, Bitmaps(), params);
   this.index = [];
@@ -26,7 +29,7 @@ function Dimension(index, field, query) {
 var prototype = (CrossFilter.prototype = Object.create(Transform.prototype));
 prototype.constructor = CrossFilter;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var init = _.modified('fields')
           || _.fields.some(function(f) { return pulse.modified(f.fields); });
 

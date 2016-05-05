@@ -1,21 +1,26 @@
 import {default as Pulse, StopPropagation} from './Pulse';
 import {events} from './EventStream';
-import {Empty} from './util/Arrays';
 import Operator from './Operator';
+import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
 
 var RANK = 0;
 
+/**
+ * A dataflow graph for reactive processing of data streams.
+ * @constructor
+ */
 export default function Dataflow() {
-  this._clock = 0;
-  this._pulse = new Pulse(this);
+  this.clock = 0;
+  this.nextPulse = new Pulse(this);
 }
 
 var prototype = Dataflow.prototype;
 
 prototype.touch = function(op, opt) {
-  this._pulse.operators().add(op);
+  this.nextPulse.operators().add(op);
   if (opt && opt.skip) op.skip();
+  return this;
 };
 
 prototype.add = function(init, func, params) {
@@ -44,13 +49,13 @@ prototype.events = function(source, type, filter, apply) {
 
 prototype.on = function(stream, target, update, params, opt) {
   var self = this,
-      f = function() { self.touch(target); self.runLater(); };
+      f = function() { self.touch(target).runLater(); };
 
   if (update) {
     var op = new Operator(null, update, params);
     op.target = target;
     f = function(evt) {
-      op._evaluate(evt);
+      op.evaluate(evt);
       target.skip();
       self.update(target, op.value, opt).runLater();
     };
@@ -71,10 +76,14 @@ prototype.runLater = function() {
 prototype.run = function() {
   var pq = new Heap(function(a, b) { return a.rank - b.rank; }),
       pulses = {},
-      pulse = this._pulse,
-      stamp = ++this._clock,
+      pulse = this.nextPulse,
+      stamp = ++this.clock,
       count = 0,
-      op, nextPulse;
+      op, next;
+
+  // reset next pulse prior to propagation
+  // touched operators will be queued to run on the next pulse
+  this.nextPulse = new Pulse(this);
 
   function enqueue(op) {
     var p = pulses[op.id];
@@ -83,17 +92,12 @@ prototype.run = function() {
   }
 
   function getPulse(op) {
+    // if the operator has an explicit source, try to pull the pulse from it
+    // use the source pulse if current, else copy source data to recent pulse
     var p = op.source && op.source.pulse;
-    if (p) {
-      if (p.stamp === stamp) {
-        return p;
-      } else {
-        pulses[op.id].source = p.source;
-        return pulses[op.id];
-      }
-    } else {
-      return pulses[op.id];
-    }
+    return !p ? pulses[op.id]    // no source pulse to use
+      : (p.stamp === stamp) ? p  // use current source pulse
+      : (pulses[op.id].source = p.source, pulses[op.id]); // not current
   }
 
   // initialize the pulse
@@ -103,11 +107,11 @@ prototype.run = function() {
   while (pq.size() > 0) {
     // process next operator in queue
     op = pq.pop();
-    nextPulse = op.evaluate(getPulse(op));
+    next = op.run(getPulse(op));
 
     // propagate the pulse
-    if (nextPulse !== StopPropagation) {
-      pulse = nextPulse;
+    if (next !== StopPropagation) {
+      pulse = next;
       (op._targets || Empty).forEach(enqueue);
     }
 
@@ -115,7 +119,6 @@ prototype.run = function() {
     ++count;
   }
 
-  this._pulse = new Pulse(this);
   return count;
 };
 

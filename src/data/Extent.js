@@ -1,7 +1,11 @@
 import Transform from './Transform';
 
-// Computes extents (min/max) for a data field.
-// The 'field' parameter indicates the field to process.
+/**
+ * Computes extents (min/max) for a data field.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(object): *} params.field - The field over which to compute extends.
+ */
 export default function Extent(params) {
   Transform.call(this, [+Infinity, -Infinity], params);
 }
@@ -9,7 +13,7 @@ export default function Extent(params) {
 var prototype = (Extent.prototype = Object.create(Transform.prototype));
 prototype.constructor = Extent;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var extent = this.value,
       $ = _.field,
       min = extent[0],

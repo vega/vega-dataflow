@@ -1,7 +1,14 @@
 import Transform from './Transform';
 import {derive, rederive} from '../Tuple';
 
-// parameter 'fields'
+/**
+ * Folds one more tuple fields into multiple tuples in which the field
+ * name and values are available under new 'key' and 'value' fields.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(object): *} params.fields - An array of field accessors
+ *   for the tuple fields that should be folded.
+ */
 export default function Fold(params) {
   Transform.call(this, {}, params);
 }
@@ -13,7 +20,7 @@ function key(f) {
   return f.fields.join('|');
 }
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var cache = this.value,
       reset = _.modified('fields'),
       fields = _.fields,

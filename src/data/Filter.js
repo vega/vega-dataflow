@@ -1,8 +1,12 @@
 import Transform from './Transform';
 
-// Filters data tuples according to a predicate function.
-// The 'test' parameter provides the predicate function.
-// The 'source' parameter links to the source data set.
+/**
+ * Filters data tuples according to a predicate function.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {function(object): *} params.test - The predicate function that
+ *   determines a tuple's filter status. Truthy values pass the filter.
+ */
 export default function Filter(params) {
   Transform.call(this, {}, params);
 }
@@ -10,7 +14,7 @@ export default function Filter(params) {
 var prototype = (Filter.prototype = Object.create(Transform.prototype));
 prototype.constructor = Filter;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var test = _.test,
       cache = this.value, // cache ids of filtered tuples
       output = pulse.fork(),

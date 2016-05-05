@@ -239,7 +239,7 @@ var df = new dataflow.Dataflow(),
 
     dg  = df.add(dataflow.Generate, {num:dn, gen:gen}),
     c0  = df.add(dataflow.Collect, {index:true, source:dg}),
-    fb  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], source:c0});
+    cf  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], source:c0});
 
 // add histograms
 [binU, binV, binX].forEach(function(bin, i) {
@@ -247,13 +247,13 @@ var df = new dataflow.Dataflow(),
       c  = df.add(dataflow.Collect, {source: h}),
       x  = df.add(dataflow.Extent, {field:count, source:c}),
 
-      f  = df.add(dataflow.ResolveFilter, {ignore:(1<<i), bitmap:fb}),
-      hf = df.add(dataflow.Histogram, {field:bin, source:f}),
-      cf = df.add(dataflow.Collect, {source: hf}),
+      fr  = df.add(dataflow.ResolveFilter, {ignore:(1<<i), bitmap:cf}),
+      fh = df.add(dataflow.Histogram, {field:bin, source:fr}),
+      fc = df.add(dataflow.Collect, {source: fh}),
 
       dom = '#view' + (i+1) + ' ',
       v  = df.add(updateChart, {el:dom+'.base', source:c, extent:x}),
-      vf = df.add(updateChart, {el:dom+'.filt', source:cf, extent:x});
+      vf = df.add(updateChart, {el:dom+'.filt', source:fc, extent:x});
 });
 
 // EVENT HANDLING

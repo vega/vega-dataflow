@@ -52,7 +52,7 @@ function updatePage() {
     .map(function(t) {
       var p = t._prev;
       return t.text + ': ' + t.count +
-        (p && p._stamp === df._clock ? ' ('+p.count+')' : '');
+        (p && p._stamp === df.clock ? ' ('+p.count+')' : '');
     })
     .join('\n');
 }

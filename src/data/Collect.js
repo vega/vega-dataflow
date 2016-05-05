@@ -1,9 +1,14 @@
 import Transform from './Transform';
+import {error} from '../util/Errors';
 import {indexarray} from '../util/Arrays';
 
-// Collects all data tuples that pass through this operator.
-// The 'index' parameter control annotation of tuples by array index.
-// If truthy, a zero-based '_index' field will be added to tuples.
+/**
+ * Collects all data tuples that pass through this operator.
+ * @constructor
+ * @param {object} params - The parameters for this operator.
+ * @param {boolean} [params.index=false] - Controls annotation of tuples by
+ *   array index. If truthy, a zero-based '_index' field is added to tuples.
+ */
 export default function Collect(params) {
   Transform.call(this, [], params);
 }
@@ -11,14 +16,14 @@ export default function Collect(params) {
 var prototype = (Collect.prototype = Object.create(Transform.prototype));
 prototype.constructor = Collect;
 
-prototype._transform = function(_, pulse) {
+prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ALL),
       index = _.index || false,
       data = this.value,
       n = 0, j = 0, reindex, map;
 
   if (_.modified('index') && data.length) {
-    throw Error('Collector index parameter can not be modified.');
+    error('Collector index parameter can not be modified.');
   }
 
   // process removed tuples
