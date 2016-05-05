@@ -13,12 +13,13 @@ var prototype = (GenerateRange.prototype = Object.create(Transform.prototype));
 prototype.constructor = GenerateRange;
 
 prototype._transform = function(_, pulse) {
-  if (_.modified()) {
-    pulse.materialize();
-    var output = pulse.fork(pulse.MOD);
-    output.rem = pulse.rem.concat(this.value);
-    this.value = range(_.start, _.stop, _.step).map(ingest);
-    output.add = pulse.add.concat(this.value);
-    return output;
-  }
+  if (!_.modified()) return;
+
+  var out = pulse.materialize().fork(pulse.MOD);
+
+  out.rem = pulse.rem.concat(this.value);
+  out.source = this.value = range(_.start, _.stop, _.step).map(ingest);
+  out.add = pulse.add.concat(this.value);
+
+  return out;
 };

@@ -9,7 +9,6 @@ function id(t) {
 }
 
 function copy(t, c) {
-  c = c || {};
   for (var k in t) {
     if (k !== '_prev' && k !== '_id') c[k] = t[k];
   }
@@ -23,12 +22,15 @@ function ingest(datum) {
   return tuple;
 }
 
-function derive(d) {
-  return ingest(copy(d));
+function derive(t) {
+  return ingest(copy(t, {}));
 }
 
-function rederive(d, t) {
-  return copy(d, t);
+function rederive(t, d, stamp) {
+  copy(t, d);
+  var p = t._prev;
+  if (p && p._stamp >= stamp) prev_init(d, stamp);
+  return d;
 }
 
 function set(t, k, v) {

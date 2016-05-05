@@ -40,7 +40,7 @@ prototype._transform = function(_, pulse) {
       output.rem.push(x);
       cache[x._id] = 1;
     }
-  }, _.source);
+  });
 
   return output;
 };

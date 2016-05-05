@@ -59,16 +59,16 @@ prototype._eval = function(_, pulse) {
       mask = 0;
 
   if (pulse.rem.length) {
-    this._remove(_, pulse.rem, output.add, pulse.reindex);
+    this._remove(_, pulse, output);
     mask |= (1 << m) - 1;
   }
 
   if (_.modified('query') && !_.modified('fields')) {
-    mask |= this._update(_, pulse.stamp, output);
+    mask |= this._update(_, pulse, output);
   }
 
   if (pulse.add.length) {
-    this._insert(_, pulse.add, output.add);
+    this._insert(_, pulse, output);
     mask |= (1 << m) - 1;
   }
 
@@ -78,11 +78,13 @@ prototype._eval = function(_, pulse) {
   return output;
 };
 
-prototype._insert = function(_, tuples, out) {
-  var bits = this.value,
+prototype._insert = function(_, pulse, output) {
+  var tuples = pulse.add,
+      bits = this.value,
       dims = this.index,
+      out = output.add,
       m = dims.length,
-      n = _.source.length;
+      n = pulse.source.length;
 
   // resize bitmaps as needed
   bits.resize(n, m);
@@ -118,15 +120,17 @@ prototype._insert = function(_, tuples, out) {
   return (1 << m) - 1;
 };
 
-prototype._remove = function(_, tuples, out, reindex) {
+prototype._remove = function(_, pulse, output) {
   var dims = this.index,
       bits = this.value,
       curr = bits.curr(),
       prev = bits.prev(),
       all  = bits.all(),
       map = {},
-      m = dims.length,
+      out = output.add,
+      tuples = pulse.rem,
       n = tuples.length,
+      m = dims.length,
       i, j, k, t, f;
 
   // process tuples, output if passes at least one filter
@@ -145,15 +149,17 @@ prototype._remove = function(_, tuples, out, reindex) {
   }
 
   // reindex filters
-  bits.reindex(_.source.length, reindex);
+  bits.reindex(pulse.source.length, pulse.reindex);
 };
 
-prototype._update = function(_, stamp, output) {
+prototype._update = function(_, pulse, output) {
   var dims = this.index,
       bits = this.value,
       curr = bits.curr(),
       prev = bits.prev(),
       query = _.query,
+      stamp = pulse.stamp,
+      source = pulse.source,
       m = dims.length,
       mask = 0, i, q;
 
@@ -169,7 +175,7 @@ prototype._update = function(_, stamp, output) {
     this._incrementOne(dims[i], query[i], curr, output.add, output.rem);
   } else {
     // multiple queries changes, perform full record keeping
-    this.seen = arrayLengthen(this.seen, _.source.length);
+    this.seen = arrayLengthen(this.seen, source.length);
     for (q=0, mask=0; q<m; ++q) {
       if (!_.modified('query', q)) continue;
       mask |= dims[q].one;

@@ -39,6 +39,6 @@ prototype._transform = function(_, pulse) {
     data = data.slice(-num);
   }
 
-  this.value = data;
+  out.source = this.value = data;
   return out;
 };

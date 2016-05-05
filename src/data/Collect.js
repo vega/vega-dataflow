@@ -12,7 +12,8 @@ var prototype = (Collect.prototype = Object.create(Transform.prototype));
 prototype.constructor = Collect;
 
 prototype._transform = function(_, pulse) {
-  var index = _.index || false,
+  var out = pulse.fork(pulse.ALL),
+      index = _.index || false,
       data = this.value,
       n = 0, j = 0, reindex, map;
 
@@ -21,18 +22,18 @@ prototype._transform = function(_, pulse) {
   }
 
   // process removed tuples
-  if (pulse.rem.length) {
+  if (out.rem.length) {
     // build id map to filter data array
     map = {};
-    pulse.visit(pulse.REM, function(t) { map[t._id] = 1; ++n; });
+    out.visit(out.REM, function(t) { map[t._id] = 1; ++n; });
 
     if (index) {
       // if indexed, construct reindex map while filtering
-      reindex = pulse.reindex = indexarray(n = (data.length - n), n);
+      reindex = out.reindex = indexarray(n = (data.length - n), n);
       data = data.filter(function(t, i) {
         return map[t._id] ? 0 : (reindex[j] = i, t._index = j++, 1);
       });
-      pulse.reindex = reindex;
+      out.reindex = reindex;
     } else {
       // otherwise, simply filter the data
       data = data.filter(function(t) { return !map[t._id]; });
@@ -41,9 +42,10 @@ prototype._transform = function(_, pulse) {
 
   // process added tuples
   n = data.length;
-  pulse.visit(pulse.ADD, index
+  out.visit(out.ADD, index
     ? function(t) { data.push(t); t._index = n++; }
     : function(t) { data.push(t); });
 
-  this.value = data;
+  this.value = out.source = data;
+  return out;
 };

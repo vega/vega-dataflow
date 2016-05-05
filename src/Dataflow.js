@@ -1,5 +1,5 @@
 import {default as Pulse, StopPropagation} from './Pulse';
-import {stream, events} from './Stream';
+import {events} from './EventStream';
 import {Empty} from './util/Arrays';
 import Operator from './Operator';
 import Heap from './util/Heap';
@@ -38,9 +38,9 @@ prototype.update = function(op, value, opt) {
   return this;
 };
 
-prototype.stream = stream;
-
-prototype.events = events;
+prototype.events = function(source, type, filter, apply) {
+  return events(source, type, filter, apply);
+};
 
 prototype.on = function(stream, target, update, params, opt) {
   var self = this,
@@ -48,6 +48,7 @@ prototype.on = function(stream, target, update, params, opt) {
 
   if (update) {
     var op = new Operator(null, update, params);
+    op.target = target;
     f = function(evt) {
       op._evaluate(evt);
       target.skip();
@@ -83,7 +84,16 @@ prototype.run = function() {
 
   function getPulse(op) {
     var p = op.source && op.source.pulse;
-    return (p && p.stamp === stamp) ? p : pulses[op.id];
+    if (p) {
+      if (p.stamp === stamp) {
+        return p;
+      } else {
+        pulses[op.id].source = p.source;
+        return pulses[op.id];
+      }
+    } else {
+      return pulses[op.id];
+    }
   }
 
   // initialize the pulse

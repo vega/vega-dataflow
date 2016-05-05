@@ -2,9 +2,8 @@ import Transform from './Transform';
 
 // Computes extents (min/max) for a data field.
 // The 'field' parameter indicates the field to process.
-// The 'source' parameter links to the source data set.
 export default function Extent(params) {
-  Transform.call(this, null, params);
+  Transform.call(this, [+Infinity, -Infinity], params);
 }
 
 var prototype = (Extent.prototype = Object.create(Transform.prototype));
@@ -12,31 +11,27 @@ prototype.constructor = Extent;
 
 prototype._transform = function(_, pulse) {
   var extent = this.value,
-      field = _.field,
-      data, mod, min, max, i=0, v;
+      $ = _.field,
+      min = extent[0],
+      max = extent[1],
+      flag = pulse.ADD,
+      mod;
 
   mod = pulse.rem.length
-     || pulse.mod.length
-     || pulse.modified(field)
+     || pulse.modified($.fields)
      || _.modified('field');
 
-  data = mod ? _.source : pulse.add;
-
-  if (!data.length) {
-    this.value = null;
-    return;
-  } else if (mod || !extent) {
-    min = max = data[i++][field];
-  } else {
-    min = extent[0];
-    max = extent[1];
+  if (mod) {
+    flag = pulse.SOURCE;
+    min = +Infinity;
+    max = -Infinity;
   }
 
-  for (; i<data.length; ++i) {
-    v = data[i][field];
+  pulse.visit(flag, function(t) {
+    var v = $(t);
     if (v < min) min = v;
     if (v > max) max = v;
-  }
+  });
 
   this.value = [min, max];
 };

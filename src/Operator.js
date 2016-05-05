@@ -39,7 +39,7 @@ prototype.parameters = function(params) {
   function add(name, value, index, pulse) {
     // TODO revisit parse rules to access operator pulse (or other properties?)
     if (value instanceof Operator) {
-      value.targets().add(self);
+      if (value !== self) value.targets().add(self);
       argops.push({op:value, name:name, index:index, pulse:pulse});
     } else {
       argval.set(name, value, index);
@@ -95,7 +95,9 @@ prototype._evaluate = function(pulse) {
   }
 };
 
-// Evaluate this operator for the current pulse.
+/**
+ * Evaluate this operator for the current pulse.
+ */
 prototype.evaluate = function(pulse) {
   if (pulse.stamp <= this.stamp) return pulse.StopPropagation;
   var rv = this._evaluate(pulse) || pulse;

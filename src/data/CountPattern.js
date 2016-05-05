@@ -41,7 +41,7 @@ prototype._transform = function(_, pulse) {
       rem = process(function(t) { counts[t] -= 1; });
 
   if (init) {
-    pulse.visit(_.source ? pulse.PASS : pulse.ADD, add, _.source);
+    pulse.visit(pulse.SOURCE, add);
   } else {
     pulse.visit(pulse.ADD, add);
     pulse.visit(pulse.REM, rem);

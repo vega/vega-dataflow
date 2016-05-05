@@ -91,6 +91,7 @@ function data() {
   }
 
   function bin(t) { return 5 * ~~(t.data / 5); } bin.fields = ['data'];
+  function count(t) { return t.count; } count.fields = ['count'];
 
   function updateChart(_) {
     var rect = document.querySelectorAll(_.el),
@@ -119,7 +120,7 @@ function data() {
       // histogram of full data set
       h1 = df.add(dataflow.Histogram, {field:bin, source:dg}),
       c1 = df.add(dataflow.Collect, {source:h1}),
-      x1 = df.add(dataflow.Extent, {field:'count', source:c1}),
+      x1 = df.add(dataflow.Extent, {field:count, source:c1}),
       v1 = df.add(updateChart, {el:'.hist .base > rect', source:c1, extent:x1}),
 
       // histogram of filtered data set
