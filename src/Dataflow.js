@@ -107,6 +107,7 @@ prototype.run = function() {
   while (pq.size() > 0) {
     // process next operator in queue
     op = pq.pop();
+
     next = op.run(getPulse(op));
 
     // propagate the pulse

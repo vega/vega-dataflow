@@ -62,11 +62,11 @@ var df = new dataflow.Dataflow(),
     ff = df.add(threshold, {freq:ft})
     rt = df.add(readText),
     cp = df.add(dataflow.CountPattern, {field:get, case:'lower',
-      pattern:'[\\w\']{2,}', stopwords:stopwords, source:rt}),
-    cc = df.add(dataflow.Collect, {source:cp}),
-    fc = df.add(dataflow.Filter, {test:ff, source:cc}),
-    c1 = df.add(dataflow.Collect, {source:fc}),
-    up = df.add(updatePage, {source: c1});
+      pattern:'[\\w\']{2,}', stopwords:stopwords, pulse:rt}),
+    cc = df.add(dataflow.Collect, {pulse:cp}),
+    fc = df.add(dataflow.Filter, {test:ff, pulse:cc}),
+    c1 = df.add(dataflow.Collect, {pulse:fc}),
+    up = df.add(updatePage, {pulse: c1});
 
 df.on(df.events(area, 'keyup').debounce(250), rt)
   .on(df.events('#slider', 'input'), ft, function(_, e) { return +e.target.value; })

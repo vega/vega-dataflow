@@ -27,7 +27,7 @@ tape("facet facets tuples", function(test) {
       val = dataflow.field('v'),
       df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, subflow, {key: key, source: source});
+      facet = df.add(dataflow.Facet, subflow, {key: key, pulse: source});
 
   // -- test adds
   df.nextPulse.add = data;
@@ -127,7 +127,7 @@ tape("facet handles key parameter change", function(test) {
       val = dataflow.field('v'),
       df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, subflow, {key: key1, source: source});
+      facet = df.add(dataflow.Facet, subflow, {key: key1, pulse: source});
 
   // -- add data
   df.nextPulse.add = data;

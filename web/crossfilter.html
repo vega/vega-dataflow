@@ -199,9 +199,9 @@ function updateBrush(_) {
   brush.setAttribute('width', Math.abs(_.x[1] - _.x[0]));
 }
 
-function updateChart(_) {
+function updateChart(_, pulse) {
   var rect = document.querySelectorAll(_.el + ' > rect'),
-      data = _.source,
+      data = pulse.source,
       max  = _.extent[1],
       step = 5, i, b, h;
 
@@ -240,22 +240,22 @@ var df = new dataflow.Dataflow(),
     ],
 
     dg  = df.add(dataflow.Generate, {num:dn, gen:gen}),
-    c0  = df.add(dataflow.Collect, {source:dg}),
-    cf  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], source:c0});
+    c0  = df.add(dataflow.Collect, {pulse:dg}),
+    cf  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], pulse:c0});
 
 // add histograms
 bin.forEach(function(bin, i) {
-  var a  = df.add(dataflow.Aggregate, {groupby:bin, drop:false, source:c0}),
-      c  = df.add(dataflow.Collect, {source: a}),
-      x  = df.add(dataflow.Extent, {field:count, source:c}),
+  var a  = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:c0}),
+      c  = df.add(dataflow.Collect, {pulse: a}),
+      x  = df.add(dataflow.Extent, {field:count, pulse:c}),
 
       fr = df.add(dataflow.ResolveFilter, {ignore:(1<<i), filter:cf}),
-      fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, source:fr}),
-      fc = df.add(dataflow.Collect, {source: fa}),
+      fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:fr}),
+      fc = df.add(dataflow.Collect, {pulse: fa}),
 
       dom = '#view' + (i+1) + ' ',
-      v  = df.add(updateChart, {el:dom+'.base', source:c, extent:x}),
-      vf = df.add(updateChart, {el:dom+'.filt', source:fc, extent:x});
+      v  = df.add(updateChart, {el:dom+'.base', pulse:c, extent:x}),
+      vf = df.add(updateChart, {el:dom+'.filt', pulse:fc, extent:x});
 });
 
 // EVENT HANDLING

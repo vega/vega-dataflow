@@ -15,7 +15,7 @@ tape('aggregate aggregates tuples', function(test) {
         fields: [val, val, val, val],
         ops: ['count', 'sum', 'min', 'max']
       }),
-      out = df.add(dataflow.Collect, {source: agg});
+      out = df.add(dataflow.Collect, {pulse: agg});
 
   // -- test adds
   df.nextPulse.add = data;

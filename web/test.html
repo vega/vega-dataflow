@@ -96,14 +96,14 @@ function data() {
 
   var count = dataflow.field('count');
 
-  function updateChart(_) {
+  function updateChart(_, pulse) {
     var rect = document.querySelectorAll(_.el),
-        data = _.source,
+        data = pulse.source,
         max  = _.extent[1],
         step = 5, i, b, h;
 
     for (i=0; i<data.length; ++i) {
-      b = ~~(data[i].key / 5);
+      b = ~~(data[i].bin / 5);
       h = 100 * data[i].count / max;
       rect[b].setAttribute('height', h);
       rect[b].setAttribute('y', 100 - h);
@@ -121,16 +121,16 @@ function data() {
       dg = df.add(dataflow.Generate, {num:dn, gen:gen}),
 
       // histogram of full data set
-      h1 = df.add(dataflow.Histogram, {field:bin, source:dg}),
-      c1 = df.add(dataflow.Collect, {source:h1}),
-      x1 = df.add(dataflow.Extent, {field:count, source:c1}),
-      v1 = df.add(updateChart, {el:'.hist .base > rect', source:c1, extent:x1}),
+      h1 = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c1 = df.add(dataflow.Collect, {pulse:h1}),
+      x1 = df.add(dataflow.Extent, {field:count, pulse:c1}),
+      v1 = df.add(updateChart, {el:'.hist .base > rect', extent:x1, pulse:c1}),
 
       // histogram of filtered data set
-      fl = df.add(dataflow.Filter, {test:fv, source:dg}),
-      h2 = df.add(dataflow.Histogram, {field:bin, source:fl}),
-      c2 = df.add(dataflow.Collect, {source:h2}),
-      v2 = df.add(updateChart, {el:'.hist .filt > rect', source:c2, extent:x1});
+      fl = df.add(dataflow.Filter, {test:fv, pulse:dg}),
+      h2 = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:fl}),
+      c2 = df.add(dataflow.Collect, {pulse:h2}),
+      v2 = df.add(updateChart, {el:'.hist .filt > rect', extent:x1, pulse:c2});
 
   var stream = df.events(window, 'mousemove');
   df.on(stream, mx, function(_, e) { return e.pageX - 10; })

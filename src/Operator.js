@@ -2,6 +2,7 @@ import UniqueList from './util/UniqueList';
 import Parameters from './util/Parameters';
 
 var OP_ID = 0;
+var PULSE = 'pulse';
 var NO_PARAMS = new Parameters();
 
 /**
@@ -76,32 +77,30 @@ prototype.parameters = function(params) {
   var self = this,
       argval = (self._argval = self._argval || new Parameters()),
       argops = (self._argops = self._argops || []),
-      name, value, pulse, n, i;
+      name, value, n, i;
 
-  function add(name, value, index, pulse) {
+  function add(name, value, index) {
     // TODO: revisit parse rules to access operator pulse (or other properties?)
     if (value instanceof Operator) {
       if (value !== self) value.targets().add(self);
-      argops.push({op:value, name:name, index:index, pulse:pulse});
+      if (name === PULSE) {
+        self.source = value;
+      } else {
+        argops.push({op:value, name:name, index:index});
+      }
     } else {
       argval.set(name, value, index);
-    }
-    if (name === 'source' && index < 0) {
-      self.source = value;
     }
   }
 
   for (name in params) {
     value = params[name];
 
-    // prepend names with '!' to request an operator's output pulse
-    pulse = (name[0] === '!') ? (name = name.slice(1), 1) : 0;
-
     if (Array.isArray(value)) {
-      argval.set(name, Array(n = value.length), -1, pulse);
-      for (i=0; i<n; ++i) add(name, value[i], i, pulse);
+      argval.set(name, Array(n = value.length), -1);
+      for (i=0; i<n; ++i) add(name, value[i], i);
     } else {
-      add(name, value, -1, pulse);
+      add(name, value, -1);
     }
   }
 
@@ -116,13 +115,12 @@ prototype.parameters = function(params) {
  */
 prototype.marshall = function() {
   var argval = this._argval || NO_PARAMS,
-      argops = this._argops, item, value, i, n;
+      argops = this._argops, item, i, n;
 
   if (argops && (n = argops.length)) {
     for (i=0; i<n; ++i) {
       item = argops[i];
-      value = item.pulse ? item.op.pulse : item.op.value;
-      argval.set(item.name, value, item.index);
+      argval.set(item.name, item.op.value, item.index);
     }
   }
   return argval;
