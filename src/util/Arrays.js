@@ -3,7 +3,7 @@ import {error} from './Errors';
 export var Empty = [];
 
 export function array(_) {
-  return _ != null ? (Array.isArray(_) ? _ : [_]) : [];
+  return _ != null ? (Array.isArray(_) ? _ : [_]) : Empty;
 }
 
 export function range(start, stop, step) {
@@ -25,21 +25,50 @@ export function range(start, stop, step) {
 export function visit(array, filter, visitor) {
   var i = 0, j = 0, n = array.length, t;
   if (filter) {
-    for (; i<n; ++i) if (filter(t=array[i])) { visitor(t, j++); }
-    // for (; i<n; ++i) if (filter(t=array[i]) && visitor(t, j++)) break;
+    for (; i<n; ++i) {
+      if (t = filter(array[i])) visitor(t, j++);
+    }
   } else {
     array.forEach(visitor);
-    // for (; i<n; ++i) if (visitor(array[i], i)) break;
   }
 }
 
-function compare(a, b) {
+export function merge(compare, array0, array1, output) {
+  var n0 = array0.length,
+      n1 = array1.length;
+
+  if (!n1) return array0;
+  if (!n0) return array1;
+
+  var merged = output || new array0.constructor(n0 + n1),
+      i0 = 0, i1 = 0, i = 0;
+
+  for (; i0<n0 && i1<n1; ++i) {
+    merged[i] = compare(array0[i0], array1[i1]) > 0
+       ? array1[i1++]
+       : array0[i0++];
+  }
+
+  for (; i0<n0; ++i0, ++i) {
+    merged[i] = array0[i0];
+  }
+
+  for (; i1<n1; ++i1, ++i) {
+    merged[i] = array1[i1];
+  }
+
+  return merged;
+}
+
+export function defaultComparator(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-export function bisectLeft(a, x, lo, hi) {
+export function bisectLeft(a, x, lo, hi, comparator) {
   if (arguments.length < 3) lo = 0;
   if (arguments.length < 4) hi = a.length;
+  var compare = comparator || defaultComparator;
+
   while (lo < hi) {
     var mid = lo + hi >>> 1;
     if (compare(a[mid], x) < 0) lo = mid + 1;
@@ -48,9 +77,11 @@ export function bisectLeft(a, x, lo, hi) {
   return lo;
 }
 
-export function bisectRight(a, x, lo, hi) {
+export function bisectRight(a, x, lo, hi, comparator) {
   if (arguments.length < 3) lo = 0;
   if (arguments.length < 4) hi = a.length;
+  var compare = comparator || defaultComparator;
+
   while (lo < hi) {
     var mid = lo + hi >>> 1;
     if (compare(a[mid], x) > 0) hi = mid;
@@ -103,35 +134,5 @@ export function indexrange(n) {
   return range;
 }
 
-export function indexsort(values, index) {
-  index.sort(function(a,b) { return compare(values[a], values[b]); });
-  permute(values, index);
-}
 
-export function indexmerge(value0, index0, value1, index1, value, index) {
-  var n0 = value0.length,
-      n1 = value1.length,
-      i0 = 0,
-      i1 = 0, i;
-
-  for (i=0; i0 < n0 && i1 < n1; ++i) {
-    if (value0[i0] < value1[i1]) {
-      value[i] = value0[i0];
-      index[i] = index0[i0++];
-    } else {
-      value[i] = value1[i1];
-      index[i] = index1[i1++] + n0;
-    }
-  }
-
-  for (; i0 < n0; ++i0, ++i) {
-    value[i] = value0[i0];
-    index[i] = index0[i0];
-  }
-
-  for (; i1 < n1; ++i1, ++i) {
-    value[i] = value1[i1];
-    index[i] = index1[i1] + n0;
-  }
-}
 

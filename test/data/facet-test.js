@@ -23,13 +23,11 @@ tape("facet facets tuples", function(test) {
     }
   }
 
-  function key(t) { return t.k; } key.fields = ['k'];
-  function val(t) { return t.v; } key.fields = ['v'];
-
-  var df = new dataflow.Dataflow(),
+  var key = dataflow.field('k'),
+      val = dataflow.field('v'),
+      df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
       facet = df.add(dataflow.Facet, subflow, {key: key, source: source});
-
 
   // -- test adds
   df.nextPulse.add = data;
@@ -98,6 +96,49 @@ tape("facet facets tuples", function(test) {
   test.equal(facet.targets().active, 1); // 1 subflow updated
   test.equal(subs.length, 4); // 1 subflow added
   subs.forEach(subtest()); // subflows should have 1,2,3,4 tuples respectively
+
+  test.end();
+});
+
+tape("facet handles key parameter change", function(test) {
+  var data = [
+    {k1:'a', k2:'a', v:5}, {k1:'b', k2:'c', v:7}, {k1:'c', k2:'c', v:9},
+    {k1:'a', k2:'a', v:1}, {k1:'b', k2:'b', v:2}, {k1:'c', k2:'b', v:3}
+  ].map(dataflow.Tuple.ingest);
+
+  var subs = [];
+
+  function subflow(df, key) {
+    var col = df.add(dataflow.Collect);
+    subs.push({key: key, data: col});
+    return col;
+  }
+
+  function subtest(len) {
+    return function(s, i) {
+      var d = s.data.value;
+      test.equal(d.length, len===undefined ? i+1 : len);
+      test.equal(d.every(function(t) { return t.k2 === s.key; }), true);
+    }
+  }
+
+  var key1 = dataflow.field('k1'),
+      key2 = dataflow.field('k2'),
+      val = dataflow.field('v'),
+      df = new dataflow.Dataflow(),
+      source = df.add(dataflow.Collect),
+      facet = df.add(dataflow.Facet, subflow, {key: key1, source: source});
+
+  // -- add data
+  df.nextPulse.add = data;
+  df.run();
+
+  facet._argval.set('key', key2);
+  df.touch(facet).run();
+
+  test.equal(facet.targets().active, 2); // 2 subflows updated
+  test.equal(subs.length, 3); // 3 subflows exist
+  subs.forEach(subtest(2)); // subflows should have 2 tuples each
 
   test.end();
 });

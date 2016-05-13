@@ -7,13 +7,8 @@ tape("fold folds tuples", function(test) {
     {a:'?', b:2, c:4},
   ].map(dataflow.Tuple.ingest);
 
-  var fields = ['b', 'c'].map(function(x) {
-    var f = function(t) { return t[x]; };
-    f.fields = [x];
-    return f;
-  });
-
-  var pulse = new dataflow.Pulse(),
+  var fields = ['b', 'c'].map(dataflow.field),
+      pulse = new dataflow.Pulse(),
       fd = new dataflow.Fold({fields: fields}),
       out, d;
 

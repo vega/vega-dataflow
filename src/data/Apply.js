@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {set} from '../Tuple';
 
 /**
@@ -12,8 +13,7 @@ export default function Apply(params) {
   Transform.call(this, null, params);
 }
 
-var prototype = (Apply.prototype = Object.create(Transform.prototype));
-prototype.constructor = Apply;
+var prototype = inherits(Apply, Transform);
 
 prototype.transform = function(_, pulse) {
   var func = _.apply,

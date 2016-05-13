@@ -9,15 +9,25 @@ export {Tuple};
 
 export {default as Transform} from './src/data/Transform';
 export {default as Apply} from './src/data/Apply';
+export {default as Bin} from './src/data/Bin';
 export {default as Collect} from './src/data/Collect';
 export {default as CountPattern} from './src/data/CountPattern';
-export {default as CrossFilter} from './src/data/CrossFilter';
 export {default as Extent} from './src/data/Extent';
 export {default as Facet} from './src/data/Facet';
 export {default as Filter} from './src/data/Filter';
 export {default as Fold} from './src/data/Fold';
 export {default as Generate} from './src/data/Generate';
-export {default as GenerateRange} from './src/data/GenerateRange';
+export {default as HashIndex} from './src/data/HashIndex';
 export {default as Histogram} from './src/data/Histogram';
+export {default as Lookup} from './src/data/Lookup';
+export {default as Range} from './src/data/Range';
+export {default as Rank} from './src/data/Rank';
 export {default as Relay} from './src/data/Relay';
-export {default as ResolveFilter} from './src/data/ResolveFilter';
+export {default as Subflow} from './src/data/Subflow';
+
+export {default as Aggregate} from './src/data/aggregate/Aggregate';
+
+export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
+export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
+
+export {accessor, field, name} from './src/util/Functions';

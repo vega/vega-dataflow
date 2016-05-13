@@ -206,23 +206,20 @@ function updateChart(_) {
       step = 5, i, b, h;
 
   for (i=0; i<data.length; ++i) {
-    b = ~~(data[i].key / 5);
+    b = ~~(data[i].bin / 5);
     h = 100 * data[i].count / max;
     rect[b].setAttribute('height', h);
     rect[b].setAttribute('y', 100 - h);
   }
 }
 
-function binU(t) { return 5 * ~~(t.u / 5); } binU.fields = ['u'];
-function binV(t) { return 5 * ~~(t.v / 5); } binV.fields = ['v'];
-function binX(t) { return 5 * ~~(t.x / 5); } binX.fields = ['x'];
-function u(t) { return t.u; } u.fields = ['u'];
-function v(t) { return t.v; } v.fields = ['v'];
-function x(t) { return t.x; } x.fields = ['x'];
-function count(t) { return t.count; } count.fields = ['count'];
+var u = dataflow.field('u'),
+    v = dataflow.field('v'),
+    x = dataflow.field('x'),
+    count = dataflow.field('count');
 
 var df = new dataflow.Dataflow(),
-    dn  = df.add(1e5), // Number of tuples
+    dn  = df.add(5e5), // Number of tuples
     xd  = df.add(  0), // x-down coordinate
 
     x1  = df.add([  0, 250]),
@@ -236,20 +233,25 @@ var df = new dataflow.Dataflow(),
     b1  = df.add(updateBrush, {el:'#view1', x:x1}),
     b2  = df.add(updateBrush, {el:'#view2', x:x2}),
     b3  = df.add(updateBrush, {el:'#view3', x:x3}),
+    bin = [
+      df.add(dataflow.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
+      df.add(dataflow.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
+      df.add(dataflow.Bin, {name:'bin', field:x, extent:[0,100], step:5})
+    ],
 
     dg  = df.add(dataflow.Generate, {num:dn, gen:gen}),
-    c0  = df.add(dataflow.Collect, {index:true, source:dg}),
+    c0  = df.add(dataflow.Collect, {source:dg}),
     cf  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], source:c0});
 
 // add histograms
-[binU, binV, binX].forEach(function(bin, i) {
-  var h  = df.add(dataflow.Histogram, {field:bin, source:c0}),
-      c  = df.add(dataflow.Collect, {source: h}),
+bin.forEach(function(bin, i) {
+  var a  = df.add(dataflow.Aggregate, {groupby:bin, drop:false, source:c0}),
+      c  = df.add(dataflow.Collect, {source: a}),
       x  = df.add(dataflow.Extent, {field:count, source:c}),
 
-      fr  = df.add(dataflow.ResolveFilter, {ignore:(1<<i), bitmap:cf}),
-      fh = df.add(dataflow.Histogram, {field:bin, source:fr}),
-      fc = df.add(dataflow.Collect, {source: fh}),
+      fr = df.add(dataflow.ResolveFilter, {ignore:(1<<i), filter:cf}),
+      fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, source:fr}),
+      fc = df.add(dataflow.Collect, {source: fa}),
 
       dom = '#view' + (i+1) + ' ',
       v  = df.add(updateChart, {el:dom+'.base', source:c, extent:x}),

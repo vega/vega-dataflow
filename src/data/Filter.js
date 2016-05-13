@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 
 /**
  * Filters data tuples according to a predicate function.
@@ -11,8 +12,7 @@ export default function Filter(params) {
   Transform.call(this, {}, params);
 }
 
-var prototype = (Filter.prototype = Object.create(Transform.prototype));
-prototype.constructor = Filter;
+var prototype = inherits(Filter, Transform);
 
 prototype.transform = function(_, pulse) {
   var test = _.test,

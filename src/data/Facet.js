@@ -1,5 +1,6 @@
 import Transform from './Transform';
 import Subflow from './Subflow';
+import {inherits} from '../util/Functions';
 import {prev} from '../Tuple';
 
 /**
@@ -14,10 +15,8 @@ export default function Facet(flowgen, params) {
   Transform.call(this, {}, params);
   this.flowgen = flowgen;
 
-  // TODO: add warning if source param is provided?
-
   // keep track of active subflows, use as targets array for listeners
-  // this allows us to limit propagatation to only updated subflows
+  // this allows us to limit propagation to only updated subflows
   var a = this._targets = [];
   a.active = 0;
   a.forEach = function(f) {
@@ -25,13 +24,13 @@ export default function Facet(flowgen, params) {
   };
 }
 
-var prototype = (Facet.prototype = Object.create(Transform.prototype));
-prototype.constructor = Facet;
+var prototype = inherits(Facet, Transform);
 
 prototype.transform = function(_, pulse) {
   var self = this,
-      key = _.key;
-      // reset = _.modified('key'); // TODO: handle key change
+      pkey = this._key || _.key,
+      key = (this._key = _.key),
+      rekey = _.modified('key');
 
   this._targets.active = 0; // reset list of active subflows
 
@@ -40,14 +39,13 @@ prototype.transform = function(_, pulse) {
   });
 
   pulse.visit(pulse.REM, function(t) {
-    self.subflow(key(t), pulse).rem(t);
+    self.subflow(pkey(t), pulse).rem(t);
   });
 
-  var mod = function(t) { self.subflow(key(t), pulse).mod(t); };
-  if (pulse.modified(key.fields)) {
-    mod = function(t) {
+  if (rekey || pulse.modified(key.fields)) {
+    pulse.visit(pulse.MOD, function(t) {
       var pt = prev(t, pulse.stamp),
-          k0 = key(pt),
+          k0 = pkey(pt),
           k1 = key(t);
       if (k0 === k1) {
         self.subflow(k1, pulse).mod(t);
@@ -55,9 +53,23 @@ prototype.transform = function(_, pulse) {
         self.subflow(k0, pulse).rem(pt);
         self.subflow(k1, pulse).add(t);
       }
-    };
+    });
+  } else if (pulse.mod.length) {
+    pulse.visit(pulse.MOD, function(t) {
+      self.subflow(key(t), pulse).mod(t);
+    });
   }
-  pulse.visit(pulse.MOD, mod);
+
+  if (rekey) {
+    pulse.visit(pulse.REFLOW, function(t) {
+      var k0 = pkey(t),
+          k1 = key(t);
+      if (k0 !== k1) {
+        self.subflow(k0, pulse).rem(t);
+        self.subflow(k1, pulse).add(t);
+      }
+    });
+  }
 
   return pulse;
 };
@@ -68,7 +80,7 @@ prototype.subflow = function(key, pulse) {
     df = pulse.dataflow;
     sf = df.add(new Subflow(pulse.fork(), this, this.flowgen(df, key)));
     this.value[key] = sf;
-    this._targets[this._targets.active++] = sf; // TODO check performance of push vs. direct index
+    this._targets[this._targets.active++] = sf;
   } else if (sf.value.stamp < pulse.stamp) {
     sf.init(pulse);
     this._targets[this._targets.active++] = sf;

@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {derive, rederive} from '../Tuple';
 
 /**
@@ -11,8 +12,7 @@ export default function Relay() {
   Transform.call(this, {});
 }
 
-var prototype = (Relay.prototype = Object.create(Transform.prototype));
-prototype.constructor = Relay;
+var prototype = inherits(Relay, Transform);
 
 prototype.transform = function(_, pulse) {
   var stamp = pulse.stamp,

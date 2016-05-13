@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {derive, rederive} from '../Tuple';
 
 /**
@@ -13,8 +14,7 @@ export default function Fold(params) {
   Transform.call(this, {}, params);
 }
 
-var prototype = (Fold.prototype = Object.create(Transform.prototype));
-prototype.constructor = Fold;
+var prototype = inherits(Fold, Transform);
 
 function key(f) {
   return f.fields.join('|');

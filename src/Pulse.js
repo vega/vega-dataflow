@@ -143,7 +143,7 @@ prototype.modifies = function(_) {
 
 prototype.modified = function(_) {
   var fields = this.fields;
-  return !fields ? 0
+  return !(this.mod.length && fields) ? 0
     : Array.isArray(_) ? _.some(function(f) { return fields[f]; })
     : fields[_];
 };
@@ -183,9 +183,15 @@ prototype.visit = function(flags, visitor) {
   if (flags & MOD) visit(this.mod, this.modF, v);
 
   if (flags & REFLOW) {
-    var map = {};
-    this.visit(ALL, function(t) { map[t._id] = 1; });
-    visit(this.source, function(t) { return !map[t._id]; }, v);
+    if (this.add.length || this.rem.length || this.mod.length) {
+      // if add/rem/mod tuples, build map to skip them
+      var map = {};
+      this.visit(ALL, function(t) { map[t._id] = 1; });
+      visit(this.source, function(t) { return !map[t._id]; }, v);
+    } else {
+      // if no add/rem/mod tuples, iterate directly
+      this.source.forEach(visitor);
+    }
   }
 
   return this;

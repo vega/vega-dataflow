@@ -1,4 +1,5 @@
 import Operator from '../Operator';
+import {inherits} from '../util/Functions';
 
 /**
  * Abstract class for operators that process data tuples.
@@ -12,8 +13,7 @@ export default function Transform(init, params) {
   Operator.call(this, init, null, params);
 }
 
-var prototype = (Transform.prototype = Object.create(Operator.prototype));
-prototype.constructor = Transform;
+var prototype = inherits(Transform, Operator);
 
 /**
  * Overrides {@link Operator.evaluate} for transform operators.

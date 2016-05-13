@@ -1,5 +1,6 @@
 import Transform from './Transform';
-import {ingest, set, prev} from '../Tuple';
+import {inherits} from '../util/Functions';
+import {ingest, prev} from '../Tuple';
 
 /**
  * Counts occurrences of a set of key values.
@@ -14,8 +15,7 @@ export default function Histogram(params) {
   this._keys = {};
 }
 
-var prototype = (Histogram.prototype = Object.create(Transform.prototype));
-prototype.constructor = Histogram;
+var prototype = inherits(Histogram, Transform);
 
 function create(k) {
   return ingest({key:k, count:0});
@@ -29,24 +29,26 @@ prototype.transform = function(_, pulse) {
   pulse.visit(pulse.ADD, function(t) {
     var add = 0,
         k = key(t),
-        x = keys[k] || (add = 1, keys[k] = create(k)),
-        c = x.count + 1;
-    set(x, 'count', c);
+        x = keys[k] || (add = 1, keys[k] = create(k));
+    x.count += 1;
     if (add) out.add.push(x);
   });
 
   pulse.visit(pulse.REM, function(t) {
-    var x = keys[key(t)],
-        c = x.count - 1;
-    set(x, 'count', c);
+    var x = keys[key(t)];
+    x.count -= 1;
   });
 
   pulse.visit(pulse.MOD, function(t) {
     var u = keys[key(prev(t))],
         v = keys[key(t)];
-    set(u, 'count', u.count-1);
-    set(v, 'count', v.count+1);
+    u.count -= 1;
+    v.count += 1;
   });
+
+  // TODO: introduce proper mod tuple handling
+  // this hack forces modification checks to work
+  out.mod = [null];
 
   return out.modifies(['key', 'count']);
 };

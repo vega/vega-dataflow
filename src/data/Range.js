@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
 import {range} from '../util/Arrays';
 
@@ -10,12 +11,11 @@ import {range} from '../util/Arrays';
  * @param {number} params.stop - The last number (exclusive) in the range.
  * @param {number} [params.step=1] - The step size between numbers in the range.
  */
-export default function GenerateRange(params) {
+export default function Range(params) {
   Transform.call(this, [], params);
 }
 
-var prototype = (GenerateRange.prototype = Object.create(Transform.prototype));
-prototype.constructor = GenerateRange;
+var prototype = inherits(Range, Transform);
 
 prototype.transform = function(_, pulse) {
   if (!_.modified()) return;

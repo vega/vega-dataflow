@@ -1,4 +1,5 @@
 import Operator from '../Operator';
+import {inherits} from '../util/Functions';
 
 /**
  * Provides a bridge between a parent transform and a target subflow that
@@ -15,8 +16,7 @@ export default function Subflow(pulse, parent, target) {
   target.source = this;
 }
 
-var prototype = (Subflow.prototype = Object.create(Operator.prototype));
-prototype.constructor = Subflow;
+var prototype = inherits(Subflow, Operator);
 
 /**
  * Add an 'add' tuple to the subflow pulse.

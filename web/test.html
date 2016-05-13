@@ -90,8 +90,11 @@ function data() {
     return (fn.fields = ['data'], fn);
   }
 
-  function bin(t) { return 5 * ~~(t.data / 5); } bin.fields = ['data'];
-  function count(t) { return t.count; } count.fields = ['count'];
+  var bin = dataflow.accessor(function(t) {
+    return 5 * ~~(t.data / 5);
+  }, 'bin', ['data']);
+
+  var count = dataflow.field('count');
 
   function updateChart(_) {
     var rect = document.querySelectorAll(_.el),

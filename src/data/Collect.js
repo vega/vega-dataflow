@@ -1,55 +1,48 @@
 import Transform from './Transform';
-import {error} from '../util/Errors';
-import {indexarray} from '../util/Arrays';
+import {inherits} from '../util/Functions';
+import {merge} from '../util/Arrays';
 
 /**
  * Collects all data tuples that pass through this operator.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {boolean} [params.index=false] - Controls annotation of tuples by
- *   array index. If truthy, a zero-based '_index' field is added to tuples.
+ * @param {function(object,object): number} [params.sort] - An optional
+ *   comparator function for additionally sorting the collected tuples.
  */
 export default function Collect(params) {
   Transform.call(this, [], params);
 }
 
-var prototype = (Collect.prototype = Object.create(Transform.prototype));
-prototype.constructor = Collect;
+var prototype = inherits(Collect, Transform);
 
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ALL),
-      index = _.index || false,
+      sort = _.sort,
       data = this.value,
-      n = 0, j = 0, reindex, map;
+      push = function(t) { data.push(t); },
+      n = 0, map, adds;
 
-  if (_.modified('index') && data.length) {
-    error('Collector index parameter can not be modified.');
-  }
-
-  // process removed tuples
-  if (out.rem.length) {
-    // build id map to filter data array
+  if (out.rem.length) { // build id map and filter data array
     map = {};
     out.visit(out.REM, function(t) { map[t._id] = 1; ++n; });
-
-    if (index) {
-      // if indexed, construct reindex map while filtering
-      reindex = out.reindex = indexarray(n = (data.length - n), n);
-      data = data.filter(function(t, i) {
-        return map[t._id] ? 0 : (reindex[j] = i, t._index = j++, 1);
-      });
-      out.reindex = reindex;
-    } else {
-      // otherwise, simply filter the data
-      data = data.filter(function(t) { return !map[t._id]; });
-    }
+    data = data.filter(function(t) { return !map[t._id]; });
   }
 
-  // process added tuples
-  n = data.length;
-  out.visit(out.ADD, index
-    ? function(t) { data.push(t); t._index = n++; }
-    : function(t) { data.push(t); });
+  if (sort) {
+    if (_.modified('sort') || pulse.modified(sort.fields)) {
+      // need to re-sort the full data array
+      out.visit(out.ADD, push);
+      data.sort(sort);
+    } else if (out.add.length) {
+      // sort adds only, then merge
+      adds = [];
+      out.visit(out.ADD, function(t) { adds.push(t); });
+      data = merge(sort, data, adds.sort(sort));
+    }
+  } else if (out.add.length) {
+    // no sort, so simply add new tuples
+    out.visit(out.ADD, push);
+  }
 
   this.value = out.source = data;
   return out;

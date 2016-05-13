@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {ingest, prev_init, set} from '../Tuple';
 
 /**
@@ -22,8 +23,7 @@ function tokenize(text, tcase, match) {
   return text.match(match);
 }
 
-var prototype = (CountPattern.prototype = Object.create(Transform.prototype));
-prototype.constructor = CountPattern;
+var prototype = inherits(CountPattern, Transform);
 
 prototype.transform = function(_, pulse) {
   function process(update) {

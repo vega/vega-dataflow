@@ -1,4 +1,5 @@
 import Transform from './Transform';
+import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
 
 /**
@@ -15,8 +16,7 @@ export default function Generate(params) {
   Transform.call(this, [], params);
 }
 
-var prototype = (Generate.prototype = Object.create(Transform.prototype));
-prototype.constructor = Generate;
+var prototype = inherits(Generate, Transform);
 
 prototype.transform = function(_, pulse) {
   var data = this.value,

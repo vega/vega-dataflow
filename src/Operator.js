@@ -25,7 +25,7 @@ export default function Operator(init, update, params) {
   this.rank = -1;
   this.value = init;
   if (update) {
-    this._fn = update;
+    this._update = update;
     this._skip = false;
   }
   if (params) this.parameters(params);
@@ -105,6 +105,7 @@ prototype.parameters = function(params) {
     }
   }
 
+  this.marshall().clear(); // initialize values
   return self;
 };
 
@@ -139,9 +140,9 @@ prototype.marshall = function() {
  *   (including undefined) will let the input pulse pass through.
  */
 prototype.evaluate = function(pulse) {
-  if (this._fn && !this._skip) {
+  if (this._update && !this._skip) {
     var params = this.marshall(),
-        v = this._fn(params, pulse);
+        v = this._update(params, pulse);
 
     params.clear();
     if (v !== this.value) {
