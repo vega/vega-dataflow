@@ -18,33 +18,40 @@ prototype.transform = function(_, pulse) {
   var test = _.test,
       cache = this.value, // cache ids of filtered tuples
       output = pulse.fork(),
-      flags = pulse.MOD | (_.modified('test') ? pulse.REFLOW : 0);
+      add = output.add,
+      rem = output.rem,
+      mod = output.mod, isMod = true;
 
   pulse.visit(pulse.REM, function(x) {
-    if (cache[x._id] !== 1) output.rem.push(x);
+    if (!cache[x._id]) rem.push(x);
     else cache[x._id] = 0;
   });
 
   pulse.visit(pulse.ADD, function(x) {
-    if (test(x)) output.add.push(x);
+    if (test(x)) add.push(x);
     else cache[x._id] = 1;
   });
 
-  pulse.visit(flags, function(x) {
+  function revisit(x) {
     var b = test(x),
-        s = (cache[x._id] === 1);
+        s = cache[x._id];
     if (b && s) {
       cache[x._id] = 0;
-      output.add.push(x);
-    } else if (b && !s) {
-      output.mod.push(x);
-    } else if (!b && s) {
-      // do nothing, keep cache true
-    } else { // !b && !s
-      output.rem.push(x);
+      add.push(x);
+    } else if (!b && !s) {
       cache[x._id] = 1;
+      rem.push(x);
+    } else if (isMod && b && !s) {
+      mod.push(x);
     }
-  });
+  }
+
+  pulse.visit(pulse.MOD, revisit);
+
+  if (_.modified('test')) {
+    isMod = false;
+    pulse.visit(pulse.REFLOW, revisit);
+  }
 
   return output;
 };
