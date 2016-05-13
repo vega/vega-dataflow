@@ -187,7 +187,7 @@ prototype.visit = function(flags, visitor) {
       // if add/rem/mod tuples, build map to skip them
       var map = {};
       this.visit(ALL, function(t) { map[t._id] = 1; });
-      visit(this.source, function(t) { return !map[t._id]; }, v);
+      visit(this.source, function(t) { return map[t._id] ? null : t; }, v);
     } else {
       // if no add/rem/mod tuples, iterate directly
       this.source.forEach(visitor);
