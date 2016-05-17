@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape('crossfilter filters tuples', function(test) {
+tape('Crossfilter filters tuples', function(test) {
   var data = [
     {a: 1, b: 1, c:0}, {a: 2, b: 2, c:1},
     {a: 4, b: 4, c:2}, {a: 3, b: 3, c:3}
@@ -78,7 +78,7 @@ tape('crossfilter filters tuples', function(test) {
   test.end();
 });
 
-tape('crossfilter consolidates after remove', function(test) {
+tape('Crossfilter consolidates after remove', function(test) {
   var data = [
     {a: 1, b: 1, c:0}, {a: 2, b: 2, c:1},
     {a: 4, b: 4, c:2}, {a: 3, b: 3, c:3}

@@ -23,10 +23,11 @@ export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
 export {default as Relay} from './src/data/Relay';
 export {default as Subflow} from './src/data/Subflow';
+export {default as Values} from './src/data/Values';
 
 export {default as Aggregate} from './src/data/aggregate/Aggregate';
 
 export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
 export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 
-export {accessor, field, name} from './src/util/Functions';
+export {accessor, field, name, compare} from './src/util/Functions';

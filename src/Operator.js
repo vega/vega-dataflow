@@ -1,5 +1,7 @@
 import UniqueList from './util/UniqueList';
 import Parameters from './util/Parameters';
+import {array} from './util/Arrays';
+import {error} from './util/Errors';
 
 var OP_ID = 0;
 var PULSE = 'pulse';
@@ -80,14 +82,9 @@ prototype.parameters = function(params) {
       name, value, n, i;
 
   function add(name, value, index) {
-    // TODO: revisit parse rules to access operator pulse (or other properties?)
     if (value instanceof Operator) {
       if (value !== self) value.targets().add(self);
-      if (name === PULSE) {
-        self.source = value;
-      } else {
-        argops.push({op:value, name:name, index:index});
-      }
+      argops.push({op:value, name:name, index:index});
     } else {
       argval.set(name, value, index);
     }
@@ -96,7 +93,14 @@ prototype.parameters = function(params) {
   for (name in params) {
     value = params[name];
 
-    if (Array.isArray(value)) {
+    if (name === PULSE) {
+      array(value).forEach(function(op) {
+        if (!(op instanceof Operator)) {
+          error('Pulse parameters must be operator instances.');
+        } else if (op !== self) op.targets().add(self);
+      });
+      self.source = value;
+    } else if (Array.isArray(value)) {
       argval.set(name, Array(n = value.length), -1);
       for (i=0; i<n; ++i) add(name, value[i], i);
     } else {

@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape('aggregate aggregates tuples', function(test) {
+tape('Aggregate aggregates tuples', function(test) {
   var data = [
     {k:'a', v:1}, {k:'b', v:3},
     {k:'a', v:2}, {k:'b', v:4}

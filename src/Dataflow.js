@@ -1,10 +1,14 @@
 import {default as Pulse, StopPropagation} from './Pulse';
+import MultiPulse from './MultiPulse';
 import {events} from './EventStream';
 import Operator from './Operator';
+import {extend} from './util/Objects';
 import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
 
 var RANK = 0;
+var NO_OPT = {skip:false, force:false};
+var SKIP = {skip:true};
 
 /**
  * A dataflow graph for reactive processing of data streams.
@@ -17,9 +21,10 @@ export default function Dataflow() {
 
 var prototype = Dataflow.prototype;
 
-prototype.touch = function(op, opt) {
+prototype.touch = function(op, options) {
+  var opt = options || NO_OPT;
   this.nextPulse.operators().add(op);
-  if (opt && opt.skip) op.skip();
+  if (opt.skip) op.skip();
   return this;
 };
 
@@ -35,8 +40,8 @@ prototype.add = function(init, func, params) {
   return op;
 };
 
-prototype.update = function(op, value, opt) {
-  opt = opt || {};
+prototype.update = function(op, value, options) {
+  var opt = options || NO_OPT;
   if (op.set(value) || opt.force) {
     this.touch(op, opt);
   }
@@ -47,8 +52,9 @@ prototype.events = function(source, type, filter, apply) {
   return events(source, type, filter, apply);
 };
 
-prototype.on = function(stream, target, update, params, opt) {
+prototype.on = function(stream, target, update, params, options) {
   var self = this,
+      opt = extend({}, options, SKIP),
       f = function() { self.touch(target).runLater(); };
 
   if (update) {
@@ -56,7 +62,6 @@ prototype.on = function(stream, target, update, params, opt) {
     op.target = target;
     f = function(evt) {
       op.evaluate(evt);
-      target.skip();
       self.update(target, op.value, opt).runLater();
     };
   }
@@ -68,9 +73,13 @@ prototype.on = function(stream, target, update, params, opt) {
 // EVALUATE THE DATAFLOW
 
 prototype.runLater = function() {
-  if (this._rid) return;
   var self = this;
-  self._rid = setTimeout(function() { self._rid = null; self.run(); }, 0);
+  if (!self._timerID) {
+    self._timerID = setTimeout(function() {
+      self._timerID = null;
+      self.run();
+    }, 0);
+  }
 };
 
 prototype.run = function() {
@@ -91,15 +100,6 @@ prototype.run = function() {
     if (!p) pq.push(op); // enqueue if not already present
   }
 
-  function getPulse(op) {
-    // if the operator has an explicit source, try to pull the pulse from it
-    // use the source pulse if current, else copy source data to recent pulse
-    var p = op.source && op.source.pulse;
-    return !p ? pulses[op.id]    // no source pulse to use
-      : (p.stamp === stamp) ? p  // use current source pulse
-      : (pulses[op.id].source = p.source, pulses[op.id]); // not current
-  }
-
   // initialize the pulse
   pulse.stamp = stamp;
   pulse.operators().forEach(enqueue);
@@ -108,7 +108,7 @@ prototype.run = function() {
     // process next operator in queue
     op = pq.pop();
 
-    next = op.run(getPulse(op));
+    next = op.run(this._getPulse(op, pulses));
 
     // propagate the pulse
     if (next !== StopPropagation) {
@@ -122,6 +122,22 @@ prototype.run = function() {
 
   return count;
 };
+
+prototype._getPulse = function(op, pulses) {
+  // if the operator has an explicit source, try to pull the pulse from it
+  // use the source pulse if current, else copy source data to recent pulse
+  var src = op.source, p;
+  if (src && Array.isArray(src)) {
+    return new MultiPulse(this, this.clock, src.map($pulse));
+  } else {
+    p = src && src.pulse;
+    return !p ? pulses[op.id]
+         : (p.stamp === this.clock) ? p // use current source pulse
+         : (pulses[op.id].source = p.source, pulses[op.id]); // not current
+  }
+};
+
+function $pulse(op) { return op.pulse; }
 
 // SAVE / RESTORE DATAFLOW STATE
 

@@ -291,19 +291,18 @@ prototype.changes = function(_, out) {
       cell, t, i, n;
 
   for (i=0, n=this._alen; i<n; ++i) {
-    t = this.celltuple(adds[i]);
-    out.add.push(t);
+    out.add.push(this.celltuple(adds[i]));
     adds[i] = null; // for garbage collection
   }
 
   for (i=0, n=this._mlen; i<n; ++i) {
     cell = mods[i];
+    prev_init(cell.tuple, out.stamp);
     t = this.celltuple(cell);
 
     if (cell.num == 0 && (_.drop == null || _.drop)) {
       out.rem.push(t);
     } else {
-      prev_init(t, out.stamp);
       out.mod.push(t);
     }
 

@@ -34,9 +34,9 @@ var ADD    = (1 << 0),
  * @constructor
  * @param {Dataflow} dataflow - The backing dataflow instance.
  */
-export default function Pulse(dataflow) {
+export default function Pulse(dataflow, stamp) {
   this.dataflow = dataflow;
-  this.stamp = -1;
+  this.stamp = stamp == null ? -1 : stamp;
   this.add = [];
   this.rem = [];
   this.mod = [];
@@ -132,6 +132,13 @@ prototype.init = function(src, flags) {
  */
 prototype.operators = function() {
   return this._ops || (this._ops = UniqueList());
+};
+
+prototype.changed = function(flags) {
+  var f = flags || ALL;
+  return ((f & ADD) && this.add.length)
+      || ((f & REM) && this.rem.length)
+      || ((f & MOD) && this.mod.length);
 };
 
 prototype.modifies = function(_) {

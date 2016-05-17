@@ -1,6 +1,6 @@
 import Transform from './Transform';
 import {inherits} from '../util/Functions';
-import {set} from '../Tuple';
+import {error} from '../util/Errors';
 
 /**
  * Applies a function to a data tuple and stores the result.
@@ -20,7 +20,11 @@ prototype.transform = function(_, pulse) {
       field = _.field,
       flags = pulse.ADD | (pulse.modified(func.fields) ? pulse.MOD : 0);
 
+  if (_.modified()) {
+    error('Apply does not permit parameter changes.')
+  }
+
   return pulse
-    .visit(flags, function(t) { set(t, field, func(t)); })
+    .visit(flags, function(t) { t[field] = func(t); })
     .modifies(field);
 };

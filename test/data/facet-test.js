@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("facet facets tuples", function(test) {
+tape("Facet facets tuples", function(test) {
   var data = [
     {k:'a', v:5}, {k:'b', v:7}, {k:'c', v:9},
     {k:'a', v:1}, {k:'b', v:2}, {k:'c', v:3}
@@ -100,7 +100,7 @@ tape("facet facets tuples", function(test) {
   test.end();
 });
 
-tape("facet handles key parameter change", function(test) {
+tape("Facet handles key parameter change", function(test) {
   var data = [
     {k1:'a', k2:'a', v:5}, {k1:'b', k2:'c', v:7}, {k1:'c', k2:'c', v:9},
     {k1:'a', k2:'a', v:1}, {k1:'b', k2:'b', v:2}, {k1:'c', k2:'b', v:3}
