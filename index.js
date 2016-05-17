@@ -22,6 +22,7 @@ export {default as Lookup} from './src/data/Lookup';
 export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
 export {default as Relay} from './src/data/Relay';
+export {default as Sample} from './src/data/Sample';
 export {default as Subflow} from './src/data/Subflow';
 export {default as Values} from './src/data/Values';
 
