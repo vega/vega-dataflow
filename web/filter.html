@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Filter</title>
+    <script src="../build/dataflow.js"></script>
+    <style>
+      body { margin: 10px; }
+      rect { fill: steelblue; stroke: none; }
+      .base rect { fill: #ccc; }
+      .line { fill: firebrick; }
+      .brush {
+        fill: #fcfcfc;
+        cursor: ew-resize;
+      }
+      .base, .filt, .line {
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="501" height="320">
+      <g id="view1">
+        <rect class="brush" x="0" y="0" width="0" height="100"></rect>
+        <g class="base">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <g class="filt">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+      </g>
+      <g id="view2" transform="translate(0, 110)">
+        <rect class="brush" x="0" y="0" width="0" height="100"></rect>
+        <g class="base">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <g class="filt">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+      </g>
+      <g id="view3" transform="translate(0, 220)">
+        <rect class="brush" x="0" y="0" width="0" height="100"></rect>
+        <g class="base">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <g class="filt">
+          <rect id="b00" x=  "0" y="0" width="25" height="0"></rect>
+          <rect id="b10" x= "25" y="0" width="25" height="0"></rect>
+          <rect id="b20" x= "50" y="0" width="25" height="0"></rect>
+          <rect id="b30" x= "75" y="0" width="25" height="0"></rect>
+          <rect id="b40" x="100" y="0" width="25" height="0"></rect>
+          <rect id="b50" x="125" y="0" width="25" height="0"></rect>
+          <rect id="b60" x="150" y="0" width="25" height="0"></rect>
+          <rect id="b70" x="175" y="0" width="25" height="0"></rect>
+          <rect id="b80" x="200" y="0" width="25" height="0"></rect>
+          <rect id="b90" x="225" y="0" width="25" height="0"></rect>
+          <rect id="b01" x="250" y="0" width="25" height="0"></rect>
+          <rect id="b11" x="275" y="0" width="25" height="0"></rect>
+          <rect id="b21" x="300" y="0" width="25" height="0"></rect>
+          <rect id="b31" x="325" y="0" width="25" height="0"></rect>
+          <rect id="b41" x="350" y="0" width="25" height="0"></rect>
+          <rect id="b51" x="375" y="0" width="25" height="0"></rect>
+          <rect id="b61" x="400" y="0" width="25" height="0"></rect>
+          <rect id="b71" x="425" y="0" width="25" height="0"></rect>
+          <rect id="b81" x="450" y="0" width="25" height="0"></rect>
+          <rect id="b91" x="475" y="0" width="25" height="0"></rect>
+        </g>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+        <rect class="line" x="0" y="0" width="1" height="100"></rect>
+      </g>
+    </svg><br/>
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+
+var g = normal(50, 20);
+function gen() {
+  var u = -1, v = -1, x = -1;
+  while (u < 0 || u >= 100) { u = g(); }
+  while (v < 0 || v >= 100) { v = Math.random() < 0.8 ? g() : 100*Math.pow(u/100,2); }
+  x = Math.random() < 0.5 ? 100 * Math.random() : 25 + 50 * Math.random();
+  return {u:u, v:v, x:x};
+}
+
+function clamp(v, min, max) {
+  return Math.min(max, Math.max(v, min));
+}
+
+function range(_) {
+  var a = clamp(Math.min(_.x[0], _.x[1]), 0, 500),
+      b = clamp(Math.max(_.x[0], _.x[1]), 0, 500);
+  return [(a/5), (b/5)];
+}
+
+function filter(_) {
+  var a = _.a, ra = _.ra,
+      b = _.b, rb = _.rb;
+  var f = function(t) {
+    var va = a(t), vb = b(t);
+    return (ra[0] <= va && va <= ra[1]) && (rb[0] <= vb && vb <= rb[1]);
+  };
+  return (f.fields = ['u', 'v', 'x'], f);
+}
+
+function updateBrush(_) {
+  var line = document.querySelectorAll(_.el + ' rect.line');
+  line[0].setAttribute('x', _.x[0]);
+  line[1].setAttribute('x', _.x[1]);
+
+  var brush = document.querySelector(_.el + ' rect.brush');
+  brush.setAttribute('x', Math.min(_.x[0], _.x[1]));
+  brush.setAttribute('width', Math.abs(_.x[1] - _.x[0]));
+}
+
+function updateChart(_, pulse) {
+  var rect = document.querySelectorAll(_.el + ' > rect'),
+      data = pulse.source,
+      max  = _.extent[1],
+      step = 5, i, b, h;
+
+  for (i=0; i<data.length; ++i) {
+    b = ~~(data[i].bin / 5);
+    h = 100 * data[i].count / max;
+    rect[b].setAttribute('height', h);
+    rect[b].setAttribute('y', 100 - h);
+  }
+}
+
+var u = dataflow.field('u'),
+    v = dataflow.field('v'),
+    x = dataflow.field('x'),
+    count = dataflow.field('count');
+
+var df = new dataflow.Dataflow(),
+    dn  = df.add(5e5), // Number of tuples
+    xd  = df.add(  0), // x-down coordinate
+
+    x1  = df.add([  0, 250]),
+    x2  = df.add([250, 500]),
+    x3  = df.add([  0, 500]),
+
+    r1  = df.add(range, {x:x1}),
+    r2  = df.add(range, {x:x2}),
+    r3  = df.add(range, {x:x3}),
+    rf1 = df.add(filter, {a:v, b:x, ra:r2, rb:r3}),
+    rf2 = df.add(filter, {a:u, b:x, ra:r1, rb:r3}),
+    rf3 = df.add(filter, {a:u, b:v, ra:r1, rb:r2}),
+
+    b1  = df.add(updateBrush, {el:'#view1', x:x1}),
+    b2  = df.add(updateBrush, {el:'#view2', x:x2}),
+    b3  = df.add(updateBrush, {el:'#view3', x:x3}),
+    bin = [
+      df.add(dataflow.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
+      df.add(dataflow.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
+      df.add(dataflow.Bin, {name:'bin', field:x, extent:[0,100], step:5})
+    ],
+
+    dg  = df.add(dataflow.Generate, {num:dn, gen:gen}),
+    ff  = [
+      df.add(dataflow.Filter, {test:rf1, pulse:dg}),
+      df.add(dataflow.Filter, {test:rf2, pulse:dg}),
+      df.add(dataflow.Filter, {test:rf3, pulse:dg})
+    ];
+
+// add histograms
+bin.forEach(function(bin, i) {
+  var a  = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c  = df.add(dataflow.Collect, {pulse: a}),
+      x  = df.add(dataflow.Extent, {field:count, pulse:c}),
+
+      fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:ff[i]}),
+      fc = df.add(dataflow.Collect, {pulse: fa}),
+
+      dom = '#view' + (i+1) + ' ',
+      v  = df.add(updateChart, {el:dom+'.base', extent:x, pulse:c}),
+      vf = df.add(updateChart, {el:dom+'.filt', extent:x, pulse:fc});
+});
+
+// EVENT HANDLING
+
+function setX(_, e) {
+  var x = clamp(e.pageX - 10, 0, 500);
+  return [x, x];
+}
+
+function dragX(_, e) {
+  return [_.x[0], e.pageX - 10];
+}
+
+function panX(_, e) {
+  var dx = e.pageX - _.xdown;
+  return [_.x[0] + dx, _.x[1] + dx];
+}
+
+function maxX() { return [0, 500]; }
+
+function zoomX(_, e) {
+  var s = Math.pow(1.0005, e.deltaY * Math.pow(16, e.deltaMode)),
+      cx = (_.x[0] + _.x[1]) / 2,
+      dx = s * Math.abs(_.x[1] - _.x[0]) / 2;
+  return [cx-dx, cx+dx];
+}
+
+function pageX(_, e) { return e.pageX; }
+
+function drag(a) { return mm.between(a, mu); }
+
+var views = [
+  function(e) { return e.pageY <= 110; },
+  function(e) { return 110 < e.pageY && e.pageY <= 220; },
+  function(e) { return 220 < e.pageY && e.pageY <= 330; }
+];
+
+var md = df.events(window, 'mousedown'),
+    mu = df.events(window, 'mouseup'),
+    mm = df.events(window, 'mousemove'),
+    mw = df.events(window, 'wheel'),
+    mc = df.events(window, 'dblclick');
+
+df.on(md, xd, pageX); // set xdown on mousedown
+
+[x1, x2, x3].forEach(function(x, i) {
+  var vdown = md.filter(views[i]),
+      bdown = df.events('#view'+(i+1)+' .brush', 'mousedown');
+
+  df.on(vdown, x, setX)                        // set extent on mouse down
+    .on(drag(vdown), x, dragX, {x:x})          // drag out brush extent
+    .on(drag(bdown), x, panX, {x:x, xdown:xd}) // pan brush
+    .on(mc.filter(views[i]), x, maxX)          // maximize on double click
+    .on(mw.filter(views[i]), x, zoomX, {x:x}); // zoom on scroll wheel
+});
+
+df.on(mm, xd, pageX); // update xdown *after* drags are processed
+
+df.run(); // kick things off
+
+function normal(mean, stdev) {
+  var next = null;
+  return function() {
+    var x = 0, y = 0, rds, c;
+    if (next != null) { x = next; next = null; return x; }
+    do {
+      x = Math.random()*2-1;
+      y = Math.random()*2-1;
+      rds = x*x + y*y;
+    } while (rds === 0 || rds > 1);
+    c = Math.sqrt(-2*Math.log(rds)/rds); // Box-Muller transform
+    next = mean + y*c*stdev;
+    return mean + x*c*stdev;
+  };
+}
+    </script>
+  </body>
+</html>

@@ -66,7 +66,7 @@ prototype.transform = function(_, pulse) {
   }
 
   if (pulse.mod.length) {
-    // keep modified tuples in the sample reservoir
+    // propagate modified tuples in the sample reservoir
     pulse.visit(pulse.MOD, function(t) {
       if (map[t._id]) out.mod.push(t);
     });
@@ -79,7 +79,7 @@ prototype.transform = function(_, pulse) {
 
   if (pulse.add.length || cap < 0) {
     // output newly added tuples
-    res.forEach(function(t) { if (!map[t._id]) out.add.push(t); });
+    out.add = res.filter(function(t) { return !map[t._id]; });
   }
 
   this.count = cnt;

@@ -20,7 +20,7 @@ prototype.peek = function() {
 prototype.push = function(x) {
   var array = this.nodes;
   array.push(x);
-  return _siftdown(array, 0, array.length-1, this.cmp);
+  return siftdown(array, 0, array.length-1, this.cmp);
 };
 
 prototype.pop = function() {
@@ -31,7 +31,7 @@ prototype.pop = function() {
   if (array.length) {
     item = array[0];
     array[0] = last;
-    _siftup(array, 0, this.cmp);
+    siftup(array, 0, this.cmp);
   } else {
     item = last;
   }
@@ -42,7 +42,7 @@ prototype.replace = function(item) {
   var array = this.nodes,
       retval = array[0];
   array[0] = item;
-  _siftup(array, 0, this.cmp);
+  siftup(array, 0, this.cmp);
   return retval;
 };
 
@@ -51,12 +51,12 @@ prototype.pushpop = function(item) {
   if (array.length && this.cmp(ref, item) < 0) {
     array[0] = item;
     item = ref;
-    _siftup(array, 0, this.cmp);
+    siftup(array, 0, this.cmp);
   }
   return item;
 };
 
-function _siftdown(array, start, idx, cmp) {
+function siftdown(array, start, idx, cmp) {
   var item, parent, pidx;
 
   item = array[idx];
@@ -73,7 +73,7 @@ function _siftdown(array, start, idx, cmp) {
   return (array[idx] = item);
 }
 
-function _siftup(array, idx, cmp) {
+function siftup(array, idx, cmp) {
   var start = idx,
       end = array.length,
       item = array[idx],
@@ -89,5 +89,5 @@ function _siftup(array, idx, cmp) {
     cidx = 2 * idx + 1;
   }
   array[idx] = item;
-  return _siftdown(array, start, idx, cmp);
+  return siftdown(array, start, idx, cmp);
 }
