@@ -3,6 +3,7 @@ import MultiPulse from './MultiPulse';
 import {events} from './EventStream';
 import Operator from './Operator';
 import {extend} from './util/Objects';
+import {error} from './util/Errors';
 import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
 
@@ -17,6 +18,9 @@ var SKIP = {skip:true};
 export default function Dataflow() {
   this.clock = 0;
   this.nextPulse = new Pulse(this);
+  this._operators = null;
+  this._postrun = [];
+  this._running = false;
 }
 
 var prototype = Dataflow.prototype;
@@ -55,14 +59,14 @@ prototype.events = function(source, type, filter, apply) {
 prototype.on = function(stream, target, update, params, options) {
   var self = this,
       opt = extend({}, options, SKIP),
-      f = function() { self.touch(target).runLater(); };
+      f = function() { self.touch(target).run(); };
 
   if (update) {
     var op = new Operator(null, update, params);
     op.target = target;
     f = function(evt) {
       op.evaluate(evt);
-      self.update(target, op.value, opt).runLater();
+      self.update(target, op.value, opt).run();
     };
   }
   stream.apply(f);
@@ -72,17 +76,9 @@ prototype.on = function(stream, target, update, params, options) {
 
 // EVALUATE THE DATAFLOW
 
-prototype.runLater = function() {
-  var self = this;
-  if (!self._timerID) {
-    self._timerID = setTimeout(function() {
-      self._timerID = null;
-      self.run();
-    }, 0);
-  }
-};
-
 prototype.run = function() {
+  this._running = true;
+
   var pq = new Heap(function(a, b) { return a.rank - b.rank; }),
       pulses = {},
       pulse = this.nextPulse,
@@ -120,7 +116,26 @@ prototype.run = function() {
     ++count;
   }
 
+  this._running = false;
+  if (this._postrun.length) { // TODO: timeout?
+    this._postrun.forEach(function(f) { f(); });
+    this._postrun = [];
+  }
+
   return count;
+};
+
+prototype.runAfter = function(pulse, func) {
+  if (pulse.stamp !== this.clock) {
+    error('Can only schedule runAfter on the current timestamp.');
+  }
+  if (this._running) {
+    // pulse propagation is currently running, queue to run after
+    this._postrun.push(func);
+  } else {
+    // pulse propagation already complete, invoke immediately
+    func();
+  }
 };
 
 prototype._getPulse = function(op, pulses) {

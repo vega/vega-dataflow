@@ -27,7 +27,7 @@ export default function Bitmaps() {
       }
     },
 
-    remove: function(num, map) { // map: index -> boolean
+    remove: function(num, map) { // map: index -> boolean (true => remove)
       var n = data.length,
           copy = Array(n - num),
           reindex = data, // reuse old data array for index map
@@ -51,6 +51,7 @@ export default function Bitmaps() {
         } else {
           reindex[i] = -1;
         }
+        curr[i] = 0; // clear unused bits
       }
 
       return (data = copy, reindex);
@@ -73,8 +74,8 @@ export default function Bitmaps() {
     clear: function(k, one) { curr[k] &= ~one; },
 
     resize: function(n, m) {
-      var i = curr.length;
-      if (n >= i || m > width) {
+      var k = curr.length;
+      if (n > k || m > width) {
         width = Math.max(m, width);
         curr = indexarray(n, width, curr);
         prev = indexarray(n, width);

@@ -101,26 +101,23 @@ tape('Crossfilter consolidates after remove', function(test) {
 
   // crossfilter consolidates after removal
   // this happens *after* propagation completes
-  // use setTimeout here to ensure consolidation has finished
-  setTimeout(function() {
 
-    // were indices appropriately remapped?
-    cf.index.map(function(index) {
-      var idx = index.index();
-      test.equal(index.size(), 2);
-      test.equal(idx[0], 1);
-      test.equal(idx[1], 0);
-    });
+  // were indices appropriately remapped?
+  cf.index.map(function(index) {
+    var idx = index.index();
+    test.equal(index.size(), 2);
+    test.equal(idx[0], 1);
+    test.equal(idx[1], 0);
+  });
 
-    // was the filter state appropriately updated?
-    var d = cf.value.data(),
-        curr = cf.value.curr();
-    test.equal(cf.value.size(), 2);
-    test.equal(d[0], data[2]);
-    test.equal(d[1], data[3]);
-    test.equal(curr[0], (1 << 2) - 1); // first filter should fail all
-    test.equal(curr[1], 0); // second filter should pass all
+  // was the filter state appropriately updated?
+  var d = cf.value.data(),
+      curr = cf.value.curr();
+  test.equal(cf.value.size(), 2);
+  test.equal(d[0], data[2]);
+  test.equal(d[1], data[3]);
+  test.equal(curr[0], (1 << 2) - 1); // first filter should fail all
+  test.equal(curr[1], 0); // second filter should pass all
 
-    test.end();
-  }, 1);
+  test.end();
 });

@@ -165,10 +165,9 @@ prototype.insert = function(_, pulse, output) {
       n = k + tuples.length,
       m = dims.length, j;
 
-  // add tuples and resize bitmaps as needed
-  // TODO: consolidate resize and add?
-  bits.add(tuples);
+  // resize bitmaps and add tuples as needed
   bits.resize(n, m);
+  bits.add(tuples);
 
   var curr = bits.curr(),
       prev = bits.prev(),
@@ -225,18 +224,20 @@ prototype.remove = function(_, pulse, output) {
     dims[j].remove(n, map);
   }
 
-  return (this.reindex(n, map), map);
+  return (this.reindex(pulse, n, map), map);
 };
 
 // reindex filters and indices after propagation completes
-prototype.reindex = function(num, map) {
+prototype.reindex = function(pulse, num, map) {
   var bits = this.value,
       dims = this.index;
 
-  setTimeout(function() {
+  pulse.runAfter(function() {
     var indexMap = bits.remove(num, map);
-    dims.forEach(function(dim) { dim.reindex(indexMap); });
-  }, 0);
+    dims.forEach(function(dim) {
+      dim.reindex(indexMap);
+    });
+  });
 };
 
 prototype.update = function(_, pulse, output) {

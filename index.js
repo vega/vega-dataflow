@@ -31,4 +31,8 @@ export {default as Aggregate} from './src/data/aggregate/Aggregate';
 export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
 export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 
+export {default as Scale} from './src/vis/Scale';
+export {default as DataJoin} from './src/vis/DataJoin';
+export {default as Encode} from './src/vis/Encode';
+
 export {accessor, field, name, compare} from './src/util/Functions';

@@ -40,6 +40,8 @@ export default function Pulse(dataflow, stamp) {
   this.add = [];
   this.rem = [];
   this.mod = [];
+  this.fields = null;
+  this.encode = null;
 }
 
 var prototype = Pulse.prototype;
@@ -118,6 +120,7 @@ prototype.init = function(src, flags) {
   var p = this;
   p.stamp = src.stamp;
   p.source = src.source;
+  p.encode = src.encode;
   if (src.fields) p.fields = src.fields;
   p.add = (flags & ADD) ? (p.addF = src.addF, src.add) : (p.addF = null, []);
   p.rem = (flags & REM) ? (p.remF = src.remF, src.rem) : (p.remF = null, []);
@@ -132,6 +135,14 @@ prototype.init = function(src, flags) {
  */
 prototype.operators = function() {
   return this._ops || (this._ops = UniqueList());
+};
+
+/**
+ * Schedules a function to run after this pulse propagation completes.
+ * @param {function} func - The function to run.
+ */
+prototype.runAfter = function(func) {
+  this.dataflow.runAfter(this, func);
 };
 
 prototype.changed = function(flags) {

@@ -17,15 +17,21 @@ import {error} from './util/Errors';
 export default function MultiPulse(dataflow, stamp, pulses) {
   var p = this,
       c = 0,
-      pulse, i, n;
+      pulse, hash, i, n, f;
+
+  this.dataflow = dataflow;
+  this.stamp = stamp;
+  this.fields = null;
+  this.encode = null;
+  this.pulses = pulses;
 
   for (i=0, n=pulses.length; i<n; ++i) {
     pulse = pulses[i];
     if (pulse.stamp !== stamp) continue;
 
     if (pulse.fields) {
-      var hash = p.fields || (p.fields = {});
-      for (var f in pulse.fields) { hash[f] = 1; }
+      hash = p.fields || (p.fields = {});
+      for (f in pulse.fields) { hash[f] = 1; }
     }
 
     if (pulse.changed(p.ADD)) c |= p.ADD;
@@ -33,10 +39,7 @@ export default function MultiPulse(dataflow, stamp, pulses) {
     if (pulse.changed(p.MOD)) c |= p.MOD;
   }
 
-  p.dataflow = dataflow;
-  p.stamp = stamp;
-  p.pulses = pulses;
-  p.changes = c;
+  this.changes = c;
 }
 
 var prototype = inherits(MultiPulse, Pulse);

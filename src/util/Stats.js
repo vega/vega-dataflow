@@ -9,6 +9,17 @@ export function valid(v) {
 }
 
 /**
+ * Sums an array of numerical values, ignoring invalid values.
+ */
+export function sum(values, f) {
+  for (var sum=0, i=0, n=values.length, v; i<n; ++i) {
+    v = f ? f(values[i]) : values[i];
+    if (valid(v)) sum += v;
+  }
+  return sum;
+}
+
+/**
  * Count the number of distinct values.
  * Null, undefined and NaN are each considered distinct values.
  */

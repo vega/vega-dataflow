@@ -97,7 +97,9 @@ prototype.parameters = function(params) {
       array(value).forEach(function(op) {
         if (!(op instanceof Operator)) {
           error('Pulse parameters must be operator instances.');
-        } else if (op !== self) op.targets().add(self);
+        } else if (op !== self) {
+          op.targets().add(self);
+        }
       });
       self.source = value;
     } else if (Array.isArray(value)) {

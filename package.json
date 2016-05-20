@@ -12,18 +12,23 @@
     "url": "http://idl.cs.washington.edu"
   },
   "main": "build/dataflow.js",
-  "jsnext:main": "index.js",
+  "jsnext:main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/jheer/dataflow.git"
   },
   "scripts": {
-    "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && node_modules/.bin/rollup -f umd -n dataflow -o build/dataflow.js -- index.js",
+    "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
     "test": "tape 'test/**/*-test.js' && eslint index.js src"
   },
+  "dependencies": {
+    "d3-scale": "0.7.0"
+  },
   "devDependencies": {
+    "eslint": "2",
     "json2module": "0.0",
-    "rollup": "0.25",
+    "rollup": "0.26",
+    "rollup-plugin-node-resolve": "1",
     "tape": "4",
     "uglify-js": "2"
   }

@@ -40,6 +40,10 @@ export function compare(_) {
   return accessor(fn, null, fields);
 }
 
+export var Zero = accessor(function() { return 0; }, 'zero');
+
+export var One = accessor(function() { return 1; }, 'one');
+
 export var True = accessor(function() { return true; }, 'true');
 
 export var False = accessor(function() { return true; }, 'false');

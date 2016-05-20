@@ -37,5 +37,6 @@ prototype.transform = function(_, pulse) {
     if (v > max) max = v;
   });
 
+  if (_.zero && min > 0) min = 0;
   this.value = [min, max];
 };
