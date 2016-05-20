@@ -21,9 +21,6 @@
     "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
     "test": "tape 'test/**/*-test.js' && eslint index.js src"
   },
-  "dependencies": {
-    "d3-scale": "0.7.0"
-  },
   "devDependencies": {
     "eslint": "2",
     "json2module": "0.0",
