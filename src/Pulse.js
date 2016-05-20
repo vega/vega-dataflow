@@ -1,4 +1,3 @@
-import UniqueList from './util/UniqueList';
 import {array, visit} from './util/Arrays';
 import {prev} from './Tuple';
 
@@ -126,15 +125,6 @@ prototype.init = function(src, flags) {
   p.rem = (flags & REM) ? (p.remF = src.remF, src.rem) : (p.remF = null, []);
   p.mod = (flags & MOD) ? (p.modF = src.modF, src.mod) : (p.modF = null, []);
   return p;
-};
-
-/**
- * Returns the list of queued operators for the current propagation.
- * If the list does not exist, it is created by this list.
- * @return {UniqueList}
- */
-prototype.operators = function() {
-  return this._ops || (this._ops = UniqueList());
 };
 
 /**

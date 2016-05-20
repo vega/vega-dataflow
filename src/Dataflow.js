@@ -2,6 +2,7 @@ import {default as Pulse, StopPropagation} from './Pulse';
 import MultiPulse from './MultiPulse';
 import {events} from './EventStream';
 import Operator from './Operator';
+import UniqueList from './util/UniqueList';
 import {extend} from './util/Objects';
 import {error} from './util/Errors';
 import {Empty} from './util/Arrays';
@@ -18,7 +19,7 @@ var SKIP = {skip:true};
 export default function Dataflow() {
   this.clock = 0;
   this.nextPulse = new Pulse(this);
-  this._operators = null;
+  this._touched = UniqueList();
   this._postrun = [];
   this._running = false;
 }
@@ -27,7 +28,7 @@ var prototype = Dataflow.prototype;
 
 prototype.touch = function(op, options) {
   var opt = options || NO_OPT;
-  this.nextPulse.operators().add(op);
+  this._touched.add(op);
   if (opt.skip) op.skip();
   return this;
 };
@@ -83,11 +84,15 @@ prototype.run = function() {
       pulses = {},
       pulse = this.nextPulse,
       stamp = ++this.clock,
+      ops = this._touched,
       count = 0,
       op, next;
 
-  // reset next pulse prior to propagation
-  // touched operators will be queued to run on the next pulse
+  // if we had touched operators, re-initialize list
+  ops = ops.length ? (this._touched = UniqueList(), ops) : Empty;
+
+  // initialize current pulse, reset next pulse
+  pulse.stamp = stamp;
   this.nextPulse = new Pulse(this);
 
   function enqueue(op) {
@@ -96,14 +101,11 @@ prototype.run = function() {
     if (!p) pq.push(op); // enqueue if not already present
   }
 
-  // initialize the pulse
-  pulse.stamp = stamp;
-  pulse.operators().forEach(enqueue);
+  ops.forEach(enqueue); // initialize queue
 
   while (pq.size() > 0) {
     // process next operator in queue
     op = pq.pop();
-
     next = op.run(this._getPulse(op, pulses));
 
     // propagate the pulse
@@ -138,21 +140,24 @@ prototype.runAfter = function(pulse, func) {
   }
 };
 
+function $pulse(op) { return op.pulse; }
+
 prototype._getPulse = function(op, pulses) {
   // if the operator has an explicit source, try to pull the pulse from it
-  // use the source pulse if current, else copy source data to recent pulse
   var src = op.source, p;
   if (src && Array.isArray(src)) {
+    // if source array, conslidate pulses into a multi-pulse
     return new MultiPulse(this, this.clock, src.map($pulse));
   } else {
+    // otherwise, return curent pulse with correct source data
+    // use source pulse if current, else copy source to current pulse
     p = src && src.pulse;
     return !p ? pulses[op.id]
          : (p.stamp === this.clock) ? p // use current source pulse
-         : (pulses[op.id].source = p.source, pulses[op.id]); // not current
+         : (pulses[op.id].source = p.source, pulses[op.id]); // copy source
   }
 };
 
-function $pulse(op) { return op.pulse; }
 
 // SAVE / RESTORE DATAFLOW STATE
 
