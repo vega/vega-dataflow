@@ -36,3 +36,4 @@ export {default as DataJoin} from './src/vis/DataJoin';
 export {default as Encode} from './src/vis/Encode';
 
 export {accessor, field, name, compare} from './src/util/Functions';
+export {logLevel} from './src/util/Errors';

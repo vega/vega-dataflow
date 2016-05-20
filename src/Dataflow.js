@@ -4,7 +4,7 @@ import {events} from './EventStream';
 import Operator from './Operator';
 import UniqueList from './util/UniqueList';
 import {extend} from './util/Objects';
-import {error} from './util/Errors';
+import {error, debug, info, Levels, logLevel} from './util/Errors';
 import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
 
@@ -86,7 +86,13 @@ prototype.run = function() {
       stamp = ++this.clock,
       ops = this._touched,
       count = 0,
-      op, next;
+      level = logLevel(),
+      op, next, dt;
+
+  if (level >= Levels.Info) {
+    dt = Date.now();
+    debug('-- START PROPAGATION (' + stamp + ') -----');
+  }
 
   // if we had touched operators, re-initialize list
   ops = ops.length ? (this._touched = UniqueList(), ops) : Empty;
@@ -106,7 +112,16 @@ prototype.run = function() {
   while (pq.size() > 0) {
     // process next operator in queue
     op = pq.pop();
+
     next = op.run(this._getPulse(op, pulses));
+
+    if (level >= Levels.Debug) {
+      debug(
+        'Op: ' + op.id + ', rank:' + op.rank + ' ' + op.constructor.name,
+        next === StopPropagation ? 'STOP' : {pulse: next},
+        {value: op.value}
+      );
+    }
 
     // propagate the pulse
     if (next !== StopPropagation) {
@@ -122,6 +137,11 @@ prototype.run = function() {
   if (this._postrun.length) { // TODO: timeout?
     this._postrun.forEach(function(f) { f(); });
     this._postrun = [];
+  }
+
+  if (level >= Levels.Info) {
+    dt = Date.now() - dt;
+    info('> Pulse ' + stamp + ': ' + count + ' operators; ' + dt + ' ms');
   }
 
   return count;

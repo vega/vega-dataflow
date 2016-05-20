@@ -46,6 +46,6 @@ export var One = accessor(function() { return 1; }, 'one');
 
 export var True = accessor(function() { return true; }, 'true');
 
-export var False = accessor(function() { return true; }, 'false');
+export var False = accessor(function() { return false; }, 'false');
 
 export var Identity = accessor(function(_) { return _; }, 'identity');
