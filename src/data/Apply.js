@@ -1,6 +1,5 @@
 import Transform from './Transform';
 import {inherits} from '../util/Functions';
-import {error} from '../util/Errors';
 
 /**
  * Applies a function to a data tuple and stores the result.
@@ -18,13 +17,22 @@ var prototype = inherits(Apply, Transform);
 prototype.transform = function(_, pulse) {
   var func = _.apply,
       field = _.field,
-      flags = pulse.ADD | (pulse.modified(func.fields) ? pulse.MOD : 0);
+      flags;
 
-  if (_.modified()) {
-    error('Apply does not permit parameter changes.')
+  function set(t) {
+    t[field] = func(t, _);
   }
 
-  return pulse
-    .visit(flags, function(t) { t[field] = func(t); })
-    .modifies(field);
+  if (_.modified()) {
+    // parameters updated, need to reflow
+    pulse
+      .materialize()
+      .visit(pulse.ADD | pulse.MOD, set)
+      .visit(pulse.REFLOW, function(t) { set(t); pulse.mod.push(t); });
+  } else {
+    flags = pulse.ADD | (pulse.modified(func.fields) ? pulse.MOD : 0);
+    pulse.visit(flags, set);
+  }
+
+  return pulse.modifies(field);
 };

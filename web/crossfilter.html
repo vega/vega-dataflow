@@ -170,7 +170,7 @@
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
 
-var g = normal(50, 20);
+var g = dataflow.normal(50, 20);
 function gen() {
   var u = -1, v = -1, x = -1;
   while (u < 0 || u >= 100) { u = g(); }
@@ -313,24 +313,7 @@ df.on(md, xd, pageX); // set xdown on mousedown
 });
 
 df.on(mm, xd, pageX); // update xdown *after* drags are processed
-
 df.run(); // kick things off
-
-function normal(mean, stdev) {
-  var next = null;
-  return function() {
-    var x = 0, y = 0, rds, c;
-    if (next != null) { x = next; next = null; return x; }
-    do {
-      x = Math.random()*2-1;
-      y = Math.random()*2-1;
-      rds = x*x + y*y;
-    } while (rds === 0 || rds > 1);
-    c = Math.sqrt(-2*Math.log(rds)/rds); // Box-Muller transform
-    next = mean + y*c*stdev;
-    return mean + x*c*stdev;
-  };
-}
     </script>
   </body>
 </html>

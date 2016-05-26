@@ -23,7 +23,7 @@ var prototype = inherits(Transform, Operator);
      value (including undefined) will let the input pulse pass through.
  */
 prototype.evaluate = function(pulse) {
-  var params = this.marshall(),
+  var params = this.marshall(pulse.stamp),
       out = this.transform(params, pulse);
   params.clear();
   return out;

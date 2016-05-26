@@ -3,6 +3,7 @@ import MultiPulse from './MultiPulse';
 import {events} from './EventStream';
 import Operator from './Operator';
 import UniqueList from './util/UniqueList';
+import {Id} from './util/Functions';
 import {extend} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
 import {Empty} from './util/Arrays';
@@ -19,7 +20,7 @@ var SKIP = {skip:true};
 export default function Dataflow() {
   this.clock = 0;
   this.nextPulse = new Pulse(this);
-  this._touched = UniqueList();
+  this._touched = UniqueList(Id);
   this._postrun = [];
   this._running = false;
 }
@@ -29,7 +30,7 @@ var prototype = Dataflow.prototype;
 prototype.touch = function(op, options) {
   var opt = options || NO_OPT;
   this._touched.add(op);
-  if (opt.skip) op.skip();
+  if (opt.skip) op.skip(true);
   return this;
 };
 
@@ -94,9 +95,6 @@ prototype.run = function() {
     debug('-- START PROPAGATION (' + stamp + ') -----');
   }
 
-  // if we had touched operators, re-initialize list
-  ops = ops.length ? (this._touched = UniqueList(), ops) : Empty;
-
   // initialize current pulse, reset next pulse
   pulse.stamp = stamp;
   this.nextPulse = new Pulse(this);
@@ -128,6 +126,9 @@ prototype.run = function() {
       pulse = next;
       (op._targets || Empty).forEach(enqueue);
     }
+    if (level >= Levels.Debug) {
+      debug('Heap', pq.nodes.map(Id));
+    }
 
     // increment visit counter
     ++count;
@@ -144,6 +145,7 @@ prototype.run = function() {
     info('> Pulse ' + stamp + ': ' + count + ' operators; ' + dt + ' ms');
   }
 
+  this._touched = UniqueList(Id);
   return count;
 };
 
@@ -189,7 +191,7 @@ prototype.save = function(ops) {
 };
 
 prototype.restore = function(state) {
-  var opt = {skip: true},
+  var opt = SKIP,
       val = JSON.parse(state.values),
       i = 0, n = val.length;
   for (; i<n; ++i) {

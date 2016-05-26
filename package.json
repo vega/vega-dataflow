@@ -1,6 +1,6 @@
 {
   "name": "dataflow",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Reactive dataflow.",
   "keywords": [
     "dataflow",
@@ -15,11 +15,14 @@
   "jsnext:main": "index",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jheer/dataflow.git"
+    "url": "https://github.com/uwdata/dataflow.git"
   },
   "scripts": {
     "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
     "test": "tape 'test/**/*-test.js' && eslint index.js src"
+  },
+  "dependencies": {
+    "d3-scale": "0.7.0"
   },
   "devDependencies": {
     "eslint": "2",

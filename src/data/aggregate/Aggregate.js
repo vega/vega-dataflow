@@ -48,24 +48,32 @@ prototype.transform = function(_, pulse) {
       out = pulse.fork(),
       stamp = out.stamp;
 
-  if (this.value == null) {
+  if (this.value && _.modified()) {
+    this.removeAll(out);
+
     this.init(_);
-  } else if (_.modified()) { // TODO: support parameter changes
-    error('Aggregate does not support parameter changes.');
-  }
 
-  pulse.visit(pulse.ADD, function(t) {
-    aggr.add(t, out);
-  });
-
-  pulse.visit(pulse.REM, function(t) {
-    aggr.rem(prev(t, stamp), out);
-  });
-
-  if (this._inputs && pulse.modified(this._inputs)) {
-    pulse.visit(pulse.MOD, function(t) {
-      aggr.mod(t, prev(t, stamp), out);
+    pulse.visit(pulse.SOURCE, function(t) {
+      aggr.add(t, out);
     });
+  } else {
+    if (this.value == null) {
+      this.init(_);
+    }
+
+    pulse.visit(pulse.ADD, function(t) {
+      aggr.add(t, out);
+    });
+
+    pulse.visit(pulse.REM, function(t) {
+      aggr.rem(prev(t, stamp), out);
+    });
+
+    if (this._inputs && pulse.modified(this._inputs)) {
+      pulse.visit(pulse.MOD, function(t) {
+        aggr.mod(t, prev(t, stamp), out);
+      });
+    }
   }
 
   // Indicate output fields and return aggregate tuples.
@@ -311,4 +319,11 @@ prototype.changes = function(_, out) {
 
   this._alen = this._mlen = 0; // reset list of active cells
   return out;
+};
+
+prototype.removeAll = function(out) {
+  var cells = this.value, key;
+  for (key in cells) {
+    out.rem.push(cells[key].tuple);
+  }
 };

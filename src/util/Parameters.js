@@ -10,18 +10,18 @@ function key(name, index) {
   return (index >= 0 ? index + ':' : '') + name;
 }
 
-prototype.set = function(name, value, index) {
+prototype.set = function(name, index, value, force) {
   var o = this,
       v = o[name],
       mod = o.__mod__;
 
   if (index >= 0) {
-    if (v[index] !== value) {
+    if (v[index] !== value || force) {
       v[index] = value;
       mod[key(name, index)] = 1;
       mod[name] = 1;
     }
-  } else if (v !== value) {
+  } else if (v !== value || force) {
     o[name] = value;
     mod[name] = 1;
   }

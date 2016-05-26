@@ -78,7 +78,7 @@ prototype.subflow = function(key, pulse) {
   var sf = this.value[key], df;
   if (!sf) {
     df = pulse.dataflow;
-    sf = df.add(new Subflow(pulse.fork(), this, this.flowgen(df, key)));
+    sf = df.add(new Subflow(pulse.fork(), this)).connect(this.flowgen(df, key));
     this.value[key] = sf;
     this._targets[this._targets.active++] = sf;
   } else if (sf.value.stamp < pulse.stamp) {

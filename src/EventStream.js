@@ -1,6 +1,6 @@
 import UniqueList from './util/UniqueList';
 import {array, Empty} from './util/Arrays';
-import {True, Identity} from './util/Functions';
+import {True, Id, Identity} from './util/Functions';
 
 var STREAM_ID = 0;
 
@@ -14,7 +14,7 @@ var STREAM_ID = 0;
  * @param {function(Object)} [receive] - Event callback function to invoke
  *   upon receipt of a new event. Use to override standard event processing.
  */
-function EventStream(filter, apply, receive) {
+export default function EventStream(filter, apply, receive) {
   this.id = ++STREAM_ID;
   this.value = null;
   if (receive) this.receive = receive;
@@ -29,7 +29,7 @@ prototype._filter = True;
 prototype._apply = Identity;
 
 prototype.targets = function() {
-  return this._targets || (this._targets = UniqueList());
+  return this._targets || (this._targets = UniqueList(Id));
 };
 
 prototype.receive = function(evt) {

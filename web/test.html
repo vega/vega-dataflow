@@ -70,7 +70,7 @@ data();
 layout();
 
 function data() {
-  var g = normal(50, 20);
+  var g = dataflow.normal(50, 20);
   function gen() {
     var v = -1;
     while (v < 0 || v >= 100) { v = g(); }
@@ -180,7 +180,7 @@ function layout() {
       h    = df.add(updateHeight, {mouseY:my, hMin:hMin, hMax:hMax}),
       tw   = df.add(updateTotalWidth, {w:w, padL:pad, padR:pad}),
       th   = df.add(updateTotalHeight, {h:h, padT:pad, padB:pad}),
-      draw = df.add(render, {inner:'rect#inner',outer:'rect#outer',
+      draw = df.add(render, {inner:'rect#inner', outer:'rect#outer',
                     w:w, h:h, tw:tw, th:th, padL:pad, padT:pad});
 
   var stream = df.events(window, 'mousedown').merge(
@@ -189,22 +189,6 @@ function layout() {
   df.on(stream, mx, function(_, e) { return e.pageX - 20; })
     .on(stream, my, function(_, e) { return e.pageY - 120; })
     .run();
-}
-
-function normal(mean, stdev) {
-  var next = null;
-  return function() {
-    var x = 0, y = 0, rds, c;
-    if (next != null) { x = next; next = null; return x; }
-    do {
-      x = Math.random()*2-1;
-      y = Math.random()*2-1;
-      rds = x*x + y*y;
-    } while (rds === 0 || rds > 1);
-    c = Math.sqrt(-2*Math.log(rds)/rds); // Box-Muller transform
-    next = mean + y*c*stdev;
-    return mean + x*c*stdev;
-  };
 }
     </script>
   </body>

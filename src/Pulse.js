@@ -1,5 +1,4 @@
 import {array, visit} from './util/Arrays';
-import {prev} from './Tuple';
 
 /**
  * Sentinel value indicating pulse propagation should stop.
@@ -7,13 +6,13 @@ import {prev} from './Tuple';
 export var StopPropagation = {};
 
 // Pulse visit type flags
-var ADD    = (1 << 0),
-    REM    = (1 << 1),
-    MOD    = (1 << 2),
-    REFLOW = (1 << 3),
-    SOURCE = (1 << 4),
-    PREV   = (1 << 5),
-    ALL    = ADD | REM | MOD;
+var ADD       = (1 << 0),
+    REM       = (1 << 1),
+    MOD       = (1 << 2),
+    ALL       = ADD | REM | MOD,
+    REFLOW    = (1 << 3),
+    SOURCE    = (1 << 4),
+    NO_SOURCE = (1 << 5);
 
 /**
  * A Pulse enables inter-operator communication during a run of the
@@ -83,10 +82,10 @@ prototype.REFLOW = REFLOW;
 prototype.SOURCE = SOURCE;
 
 /**
- * Boolean flag indicating previous tuple values. Can be used in
- * conjunction with others (e.g., MOD) to target previous tuple values.
+ * Boolean flag indicating that source data should be
+ * suppressed when creating a forked pulse.
  */
-prototype.PREV = PREV;
+prototype.NO_SOURCE = NO_SOURCE;
 
 /**
  * Creates a new pulse based on the values of this pulse.
@@ -112,13 +111,14 @@ prototype.fork = function(flags) {
  * @param {number} flags - Integer of boolean flags indicating which (if any)
  *   tuple arrays should be copied to the new pulse. The supported flag values
  *   are ADD, REM and MOD. Array references are copied directly: new array
- *   instances are not created.
+ *   instances are not created. By default, source data arrays are copied
+ *   to the new pulse. Use the NO_SOURCE flag to enforce a null source.
  * @return {Pulse}
  */
 prototype.init = function(src, flags) {
   var p = this;
   p.stamp = src.stamp;
-  p.source = src.source;
+  p.source = (flags & NO_SOURCE) ? null : src.source;
   p.encode = src.encode;
   if (src.fields) p.fields = src.fields;
   p.add = (flags & ADD) ? (p.addF = src.addF, src.add) : (p.addF = null, []);
@@ -183,22 +183,23 @@ prototype.visit = function(flags, visitor) {
     return this;
   }
 
-  var s = this.stamp,
-      v = flags & PREV ? function(t,i) { visitor(prev(t,s), i); } : visitor;
-
+  var v = visitor, src, sum;
   if (flags & ADD) visit(this.add, this.addF, v);
   if (flags & REM) visit(this.rem, this.remF, v);
   if (flags & MOD) visit(this.mod, this.modF, v);
 
-  if (flags & REFLOW) {
-    if (this.add.length || this.rem.length || this.mod.length) {
+  if ((flags & REFLOW) && (src = this.source)) {
+    sum = this.add.length + this.rem.length + this.mod.length;
+    if (sum === src) {
+      // do nothing
+    } else if (sum) {
       // if add/rem/mod tuples, build map to skip them
       var map = {};
       this.visit(ALL, function(t) { map[t._id] = 1; });
-      visit(this.source, function(t) { return map[t._id] ? null : t; }, v);
+      visit(src, function(t) { return map[t._id] ? null : t; }, v);
     } else {
       // if no add/rem/mod tuples, iterate directly
-      this.source.forEach(visitor);
+      src.forEach(visitor);
     }
   }
 

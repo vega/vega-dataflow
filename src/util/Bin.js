@@ -44,8 +44,10 @@ export default function bin(_) {
   v = Math.log(step);
   precision = v >= 0 ? 0 : ~~(-v / logb) + 1;
   eps = Math.pow(base, -precision - 1);
-  min = Math.min(min, Math.floor(min / step + eps) * step);
-  max = Math.ceil(max / step) * step;
+  if (_.nice || _.nice === undefined) {
+    min = Math.min(min, Math.floor(min / step + eps) * step);
+    max = Math.ceil(max / step) * step;
+  }
 
   return {
     start: min,

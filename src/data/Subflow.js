@@ -9,14 +9,17 @@ import {inherits} from '../util/Functions';
  * @param {Transform} parent - The parent transform (typically a Facet instance).
  * @param {Transform} target - A transform that receives the subflow of tuples.
  */
-export default function Subflow(pulse, parent, target) {
+export default function Subflow(pulse, parent) {
   Operator.call(this, pulse);
   this.parent = parent;
-  this.targets().add(target);
-  target.source = this;
 }
 
 var prototype = inherits(Subflow, Operator);
+
+prototype.connect = function(target) {
+  this.targets().add(target);
+  return (target.source = this);
+};
 
 /**
  * Add an 'add' tuple to the subflow pulse.

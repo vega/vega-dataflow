@@ -40,6 +40,8 @@ export function compare(_) {
   return accessor(fn, null, fields);
 }
 
+export var Id = field('id');
+
 export var Zero = accessor(function() { return 0; }, 'zero');
 
 export var One = accessor(function() { return 1; }, 'one');

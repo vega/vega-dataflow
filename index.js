@@ -3,6 +3,8 @@ export {version} from './build/package';
 export {default as Dataflow} from './src/Dataflow';
 export {default as Operator} from './src/Operator';
 export {default as Pulse} from './src/Pulse';
+export {default as MultiPulse} from './src/MultiPulse';
+export {default as EventStream} from './src/EventStream';
 
 import * as Tuple from './src/Tuple';
 export {Tuple};
@@ -23,17 +25,22 @@ export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
 export {default as Relay} from './src/data/Relay';
 export {default as Sample} from './src/data/Sample';
+export {default as Sieve} from './src/data/Sieve';
 export {default as Subflow} from './src/data/Subflow';
 export {default as Values} from './src/data/Values';
-
 export {default as Aggregate} from './src/data/aggregate/Aggregate';
-
 export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
 export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 
-export {default as Scale} from './src/vis/Scale';
-export {default as DataJoin} from './src/vis/DataJoin';
-export {default as Encode} from './src/vis/Encode';
+export {default as DataJoin} from './src/encode/DataJoin';
+export {default as Encode} from './src/encode/Encode';
+export {default as Scale} from './src/encode/Scale';
 
+export {default as Pie} from './src/layout/Pie';
+export {default as Stack} from './src/layout/Stack';
+
+export {default as UniqueList} from './src/util/UniqueList';
 export {accessor, field, name, compare} from './src/util/Functions';
-export {logLevel} from './src/util/Errors';
+export {normal} from './src/util/Random';
+export {isString, stringValue} from './src/util/Strings';
+export {error, logLevel} from './src/util/Errors';

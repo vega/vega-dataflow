@@ -28,7 +28,7 @@ function update(_) {
   var f = function(t) {
     var v = field(t);
     return v == null ? null
-      : start + step * ~~((+v - start) / step);
+      : start + step * Math.floor((+v - start) / step);
   };
   return accessor(f, _.name || 'bin_' + name(field), field.fields);
 }

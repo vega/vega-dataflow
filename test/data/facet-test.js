@@ -133,7 +133,7 @@ tape("Facet handles key parameter change", function(test) {
   df.nextPulse.add = data;
   df.run();
 
-  facet._argval.set('key', key2);
+  facet._argval.set('key', -1, key2);
   df.touch(facet).run();
 
   test.equal(facet.targets().active, 2); // 2 subflows updated

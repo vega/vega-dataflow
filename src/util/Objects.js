@@ -1,3 +1,7 @@
+export function isObject(obj) {
+  return obj === Object(obj);
+}
+
 export function keys(_) {
   var keys = [], k;
   for (k in _) keys.push(k);

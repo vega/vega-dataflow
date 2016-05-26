@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Encode Test</title>
+    <script src="../build/dataflow.js"></script>
+    <script src="svg-encode.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ddd;}
+      circle {
+        transition: fill 0.2s, stroke 0.2s, r 0.2s;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="500" height="500">
+    </svg><br/>
+    Drag to draw bubbles. Hold shift to pop them!
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+
+function loader(_, pulse) {
+  var update = false,
+      pts = _.points, p, t, s = false;
+
+  if (_.modified('points', 0)) { // mouse move
+    p = pts[0];
+    s = p.event.shiftKey;
+    if (p.item !== svg && s) {
+      pulse.rem.push(p.item.datum);
+      update = true;
+    } else if (p.item === svg && !s && p.event.buttons) {
+      t = ingest({
+        x: _.sx.invert(p.x),
+        y: _.sy.invert(p.y)
+      });
+      pulse.add.push(t);
+      update = true;
+    }
+  }
+
+  if (_.modified('points', 2)) { // mouse over
+    p = pts[2];
+    if (p.item !== svg) {
+      pulse.mod.push(p.item.datum);
+      pulse.encode = 'hover';
+      update = true;
+    }
+  }
+
+  if (_.modified('points', 1)) { // mouse out
+    p = pts[1];
+    if (p.item !== svg) {
+      pulse.mod.push(p.item.datum);
+      update = true;
+    }
+  }
+
+  return this.value + (update ? 1 : 0);
+}
+
+var encoders = {
+  enter: parse({
+    "cx": {"scale": "sx", "field": "x"},
+    "cy": {"scale": "sy", "field": "y"},
+    "stroke": {"value": "black"},
+    "stroke-width": {"value": "1px"}
+  }),
+  update: parse({
+    "r": {"value": 10},
+    "fill": {"value": "pink"}
+  }),
+  hover: parse({
+    "r": {"value": 25},
+    "fill": {"signal": "fill"}
+  }),
+  exit: parse({
+    "r": {"value": 50},
+    "fill": {"value": "rgba(255, 0, 0, 0.05)"},
+    "stroke": {"value": "rgba(0, 0, 0, 0.05)"},
+    "pointer-events": {"value": "none"}
+  }, 'setTimeout(function() { item.parentNode.removeChild(item); }, 200);')
+};
+
+var df = new dataflow.Dataflow(),
+    fill = df.add('hotpink'),
+    move = df.add(null),
+    over = df.add(null),
+    out  = df.add(null),
+    rngx = df.add([0, 500]),
+    rngy = df.add([500, 0]),
+    domx = df.add([0, 1]),
+    domy = df.add([0, 1]),
+    sx   = df.add(dataflow.Scale, {domain:domx, range:rngx}),
+    sy   = df.add(dataflow.Scale, {domain:domy, range:rngy}),
+    load = df.add(0, loader, {points:[move, out, over], sx:sx, sy:sy}),
+    join = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:load}),
+    encd = df.add(Encoder(encoders, {signals:{fill:fill}, scales:{sx:sx, sy:sy}}, join));
+
+function XYT(_, e) {
+  return {
+    x: e.pageX - 10,
+    y: e.pageY - 10,
+    item: e.target,
+    event: e
+  };
+}
+df.on(df.events('svg.vis', 'mousemove'), move, XYT)
+  .on(df.events('svg.vis', 'mouseout'),  out,  XYT)
+  .on(df.events('svg.vis', 'mouseover'), over, XYT)
+  .run();
+    </script>
+  </body>
+</html>

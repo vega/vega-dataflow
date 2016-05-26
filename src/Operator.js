@@ -2,10 +2,15 @@ import UniqueList from './util/UniqueList';
 import Parameters from './util/Parameters';
 import {array} from './util/Arrays';
 import {error} from './util/Errors';
+import {Id} from './util/Functions';
 
 var OP_ID = 0;
 var PULSE = 'pulse';
 var NO_PARAMS = new Parameters();
+
+// Boolean Flags
+var SKIP     = 1,
+    MODIFIED = 2;
 
 /**
  * An Operator is a processing node in a dataflow graph.
@@ -24,12 +29,13 @@ var NO_PARAMS = new Parameters();
  */
 export default function Operator(init, update, params) {
   this.id = ++OP_ID;
+  this.value = init;
   this.stamp = -1;
   this.rank = -1;
-  this.value = init;
+  this.flags = 0;
+
   if (update) {
     this._update = update;
-    this._skip = false;
   }
   if (params) this.parameters(params);
 }
@@ -42,7 +48,7 @@ var prototype = Operator.prototype;
  * @return {UniqueList}
  */
 prototype.targets = function() {
-  return this._targets || (this._targets = UniqueList());
+  return this._targets || (this._targets = UniqueList(Id));
 };
 
 /**
@@ -55,15 +61,31 @@ prototype.set = function(value) {
   return this.value !== value ? (this.value = value, 1) : 0;
 };
 
+function flag(bit) {
+  return function(state) {
+    var f = this.flags;
+    if (arguments.length === 0) return f & bit;
+    this.flags = state ? (f | bit) : (f & ~bit);
+  };
+}
+
 /**
  * Indicates that operator evaluation should be skipped on the next pulse.
  * This operator will still propagate incoming pulses, but its update function
  * will not be invoked. The skip flag is reset after every pulse, so calling
  * this method will affect processing of the next pulse only.
  */
-prototype.skip = function() {
-  this._skip = true;
-};
+prototype.skip = flag(SKIP);
+
+/**
+ * Indicates that this operator's value has been modified on its most recent
+ * pulse. Normally modification is checked via strict equality; however, in
+ * some cases it is more efficient to update the internal state of an object.
+ * In those cases, the modified flag can be used to trigger propagation. Once
+ * set, the modification flag persists across pulses until unset. The flag can
+ * be used with the last timestamp to test if a modification is recent.
+ */
+prototype.modified = flag(MODIFIED);
 
 /**
  * Sets the parameters for this operator. The parameter values are analyzed for
@@ -81,12 +103,12 @@ prototype.parameters = function(params) {
       argops = (self._argops = self._argops || []),
       name, value, n, i;
 
-  function add(name, value, index) {
+  function add(name, index, value) {
     if (value instanceof Operator) {
       if (value !== self) value.targets().add(self);
       argops.push({op:value, name:name, index:index});
     } else {
-      argval.set(name, value, index);
+      argval.set(name, index, value);
     }
   }
 
@@ -103,10 +125,10 @@ prototype.parameters = function(params) {
       });
       self.source = value;
     } else if (Array.isArray(value)) {
-      argval.set(name, Array(n = value.length), -1);
-      for (i=0; i<n; ++i) add(name, value[i], i);
+      argval.set(name, -1, Array(n = value.length));
+      for (i=0; i<n; ++i) add(name, i, value[i]);
     } else {
-      add(name, value, -1);
+      add(name, -1, value);
     }
   }
 
@@ -119,14 +141,16 @@ prototype.parameters = function(params) {
  * Visits each operator dependency to pull the latest value.
  * @return {Parameters} A Parameters object to pass to the update function.
  */
-prototype.marshall = function() {
+prototype.marshall = function(stamp) {
   var argval = this._argval || NO_PARAMS,
-      argops = this._argops, item, i, n;
+      argops = this._argops, item, i, n, op, mod;
 
   if (argops && (n = argops.length)) {
     for (i=0; i<n; ++i) {
       item = argops[i];
-      argval.set(item.name, item.op.value, item.index);
+      op = item.op;
+      mod = op.modified() && op.stamp === stamp;
+      argval.set(item.name, item.index, op.value, mod);
     }
   }
   return argval;
@@ -144,8 +168,8 @@ prototype.marshall = function() {
  *   (including undefined) will let the input pulse pass through.
  */
 prototype.evaluate = function(pulse) {
-  if (this._update && !this._skip) {
-    var params = this.marshall(),
+  if (this._update && !this.skip()) {
+    var params = this.marshall(pulse.stamp),
         v = this._update(params, pulse);
 
     params.clear();
@@ -170,5 +194,5 @@ prototype.run = function(pulse) {
   if (pulse.stamp <= this.stamp) return pulse.StopPropagation;
   var rv = this.evaluate(pulse) || pulse;
   this.stamp = pulse.stamp;
-  return (this._skip = false, this.pulse = rv);
+  return (this.skip(false), this.pulse = rv);
 };

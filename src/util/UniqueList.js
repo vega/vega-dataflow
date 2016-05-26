@@ -1,5 +1,7 @@
+import {Identity} from './Functions';
+
 export default function UniqueList(idFunc) {
-  var $ = idFunc || function(_) { return _.id; },
+  var $ = idFunc || Identity,
       list = [],
       ids = {};
 
