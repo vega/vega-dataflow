@@ -1,10 +1,11 @@
 import Transform from '../data/Transform';
-import {inherits} from '../util/Functions';
+import {inherits, isFunction} from '../util/Functions';
 import {error} from '../util/Errors';
 
 import * as d3_scale from 'd3-scale';
 
-var TYPE = 'type';
+var TYPE = 'type',
+    NICE = 'nice';
 
 /**
  * Maintains a scale function mapping data values to visual channels.
@@ -20,16 +21,22 @@ var prototype = inherits(Scale, Transform);
 
 prototype.transform = function(_) {
   var scale = this.value,
-      prop;
+      prop, nice;
 
   if (!scale || _.modified(TYPE)) {
     this.value = (scale = createScale(_[TYPE]));
   }
 
   for (prop in _) {
-    if (scale.hasOwnProperty(prop) && typeof scale[prop] === 'function') {
+    if (prop === NICE) {
+      nice = _[prop];
+    } else if (isFunction(scale[prop])) {
       scale[prop](_[prop]);
     }
+  }
+
+  if (nice && scale.nice) {
+    scale.nice((nice !== true && +nice) || null);
   }
 };
 
