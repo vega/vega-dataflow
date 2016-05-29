@@ -21,7 +21,8 @@ prototype.transform = function(_, pulse) {
       flag = pulse.ADD,
       mod;
 
-  mod = pulse.modified(field.fields)
+  mod = pulse.changed()
+     || pulse.modified(field.fields)
      || _.modified('field');
 
   if (mod) {
