@@ -46,7 +46,7 @@ prototype.transform = function(_, pulse) {
     }
   }
 
-  return pulse.modifies(['layout_start', 'layout_end', 'layout_mid']);
+  return pulse.reflow().modifies(['layout_start', 'layout_end', 'layout_mid']);
 };
 
 function partition(data, groupby, sort, field) {

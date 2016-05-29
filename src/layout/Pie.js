@@ -7,7 +7,7 @@ import {sum} from '../util/Stats';
  * Pie and donut chart layout.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): *} params.field - The value field to stack.
+ * @param {function(object): *} params.field - The value field to size pie segments.
  * @param {number} [params.startAngle=0] - The start angle (in radians) of the layout.
  * @param {number} [params.endAngle=2π] - The end angle (in radians) of the layout.
  * @param {boolean} [params.sort] - Boolean flag for sorting sectors by value.
@@ -20,8 +20,8 @@ var prototype = inherits(Pie, Transform);
 
 prototype.transform = function(_, pulse) {
   var field = _.field || One,
-      start = _.startAngle,
-      stop = _.endAngle,
+      start = _.startAngle || 0,
+      stop = _.endAngle != null ? _.endAngle : 2*Math.PI,
       data = pulse.source,
       values = data.map(field),
       n = values.length,
@@ -44,5 +44,6 @@ prototype.transform = function(_, pulse) {
     t.layout_end = (a += v * k);
   }
 
-  return pulse.modifies('layout_start', 'layout_end', 'layout_mid');
+  this.value = values;
+  return pulse.reflow().modifies(['layout_start', 'layout_end', 'layout_mid']);
 };

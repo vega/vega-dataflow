@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Pie</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../encode/svg-encode.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; }
+      input[type="range"] { width: 400px; }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="500" height="500"></svg><br/>
+    <input id="ir" type="range" min="0" max="250" value="0" step="1" /> Inner Radius<br/>
+    <input id="or" type="range" min="0" max="250" value="200" step="1" /> Outer Radius<br/>
+    <input id="sa" type="range" min="0" max="6.28" value="0" step="0.01" /> Start Angle<br/>
+    <input id="ea" type="range" min="0" max="6.28" value="6.28" step="0.01" /> End Angle<br/>
+    <input id="so" type="checkbox" value="false"/> <label for="so">Sort</label></br>
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+var ri = document.querySelector('#ir');
+var ro = document.querySelector('#or');
+var rs = document.querySelector('#sa');
+var re = document.querySelector('#ea');
+var bs = document.querySelector('#so');
+
+var data = [
+  {key:'a', value:6}, {key:'b', value:8}, {key:'c', value:3},
+  {key:'d', value:2}, {key:'e', value:7}, {key:'f', value:4},
+  {key:'g', value:3}, {key:'h', value:4}, {key:'i', value:6}
+];
+
+var arcs = {
+  enter: function(item, _) {
+    item.setAttribute('stroke', 'white');
+    item.setAttribute('fill', _.sc(item.datum.key));
+  },
+  update: function(item, _) {
+    var x = _.xc, y = _.yc, i = _.ir, o = _.or,
+        a = item.datum.layout_start - Math.PI/2,
+        b = item.datum.layout_end - Math.PI/2,
+        f = (b > a) ? 1 : 0, p,
+        ca = Math.cos(a), sa = Math.sin(a),
+        cb = Math.cos(b), sb = Math.sin(b);
+
+    if (i === 0) {
+      p = 'M' + x + ',' + y;
+    } else {
+      p = 'M' + (x + i*cb) + ',' + (y + i*sb)
+        + 'A' + i + ' ' + i + ' 0 0 ' + (f?0:1) + ' '
+        + (x + i*ca) + ',' + (y + i*sa);
+    }
+    p = p
+      + 'L' + (x + o*ca) + ',' + (y + o*sa)
+      + 'A' + o + ' ' + o + ' 0 0 ' + f + ' '
+      + (x + o*cb) + ',' + (y + o*sb)
+      + 'Z';
+    return (item.setAttribute('d', p), true);
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var key = dataflow.field('key'),
+    val = dataflow.field('value'),
+    df = new dataflow.Dataflow(),
+    xc = df.add(250),
+    yc = df.add(250),
+    ir = df.add(+ri.value),
+    or = df.add(+ro.value),
+    xr = df.add([0, 500]),
+    yr = df.add([0, 500]),
+    so = df.add(false),
+    sa = df.add(+rs.value),
+    ea = df.add(+re.value),
+    sc = df.add(dataflow.Scale, {type:'category20'}),
+    c0 = df.add(dataflow.Collect),
+    pi = df.add(dataflow.Pie, {field:val, startAngle:sa, endAngle:ea, sort:so, pulse:c0}),
+    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'path'), pulse:pi}),
+    c1 = df.add(dataflow.Collect, {pulse:j1}),
+    e1 = df.add(dataflow.Encode, arcs, {sc:sc, xc:xc, yc:yc, ir:ir, or:or, pulse:c1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1});
+
+df.nextPulse.add = data.map(ingest);
+
+function value(_, e) { return +e.target.value; }
+df.on(df.events(ri, 'input'), ir, value)
+  .on(df.events(ro, 'input'), or, value)
+  .on(df.events(rs, 'input'), sa, value)
+  .on(df.events(re, 'input'), ea, value)
+  .on(df.events(bs, 'change'), so, function value(_, e) { return e.target.checked; })
+  .run();
+    </script>
+  </body>
+</html>

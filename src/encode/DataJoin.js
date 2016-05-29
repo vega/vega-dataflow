@@ -24,7 +24,7 @@ prototype.transform = function(_, pulse) {
 
   if (_.modified('key') || pulse.modified(key)) {
     // TODO: support re-keying?
-    error('DataJoin does not support modified key function or fields.');
+    error('DataJoin does not support modified key function or key fields.');
   }
 
   pulse.visit(pulse.REM, function(t) {
@@ -32,7 +32,7 @@ prototype.transform = function(_, pulse) {
         x = map[k];
 
     if (x) {
-      map[k] = null; // TODO: condense map on occasion?
+      delete map[k];
       out.rem.push(x);
     }
   });

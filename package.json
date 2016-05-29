@@ -22,7 +22,8 @@
     "test": "tape 'test/**/*-test.js' && eslint index.js src"
   },
   "dependencies": {
-    "d3-scale": "0.7.0"
+    "d3-scale": "0.7.2",
+    "d3-voronoi": "0.3.3"
   },
   "devDependencies": {
     "eslint": "2",

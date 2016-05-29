@@ -18,8 +18,7 @@ var prototype = inherits(Values, Transform);
 prototype.transform = function(_, pulse) {
   var run = !this.value
          || _.modified('field')
-         || pulse.changed(pulse.ADD | pulse.MOD)
-         || pulse.modified(_.field);
+         || pulse.changed();
 
   if (run) {
     this.value = pulse.source.map(_.field);

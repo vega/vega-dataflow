@@ -38,6 +38,7 @@ export {default as Scale} from './src/encode/Scale';
 
 export {default as Pie} from './src/layout/Pie';
 export {default as Stack} from './src/layout/Stack';
+export {default as Voronoi} from './src/layout/Voronoi';
 
 export {default as UniqueList} from './src/util/UniqueList';
 export {accessor, field, name, compare} from './src/util/Functions';

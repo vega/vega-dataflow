@@ -142,6 +142,16 @@ prototype.changed = function(flags) {
       || ((f & MOD) && this.mod.length);
 };
 
+prototype.reflow = function() {
+  var sum = this.add.length + this.mod.length,
+      len = this.source && this.source.length;
+  if (len) {
+    this.mod = this.source;
+    if (len > sum) this.filter(MOD, filter(this, ADD));
+  }
+  return this;
+};
+
 prototype.modifies = function(_) {
   var fields = array(_),
       hash = this.fields || (this.fields = {});
@@ -177,6 +187,12 @@ prototype.materialize = function(flags) {
   return p;
 };
 
+function filter(pulse, flags) {
+  var map = {};
+  pulse.visit(flags, function(t) { map[t._id] = 1; });
+  return function(t) { return map[t._id] ? null : t; };
+}
+
 prototype.visit = function(flags, visitor) {
   if (flags & SOURCE) {
     this.source.forEach(visitor);
@@ -189,14 +205,11 @@ prototype.visit = function(flags, visitor) {
   if (flags & MOD) visit(this.mod, this.modF, v);
 
   if ((flags & REFLOW) && (src = this.source)) {
-    sum = this.add.length + this.rem.length + this.mod.length;
+    sum = this.add.length + this.mod.length;
     if (sum === src) {
       // do nothing
     } else if (sum) {
-      // if add/rem/mod tuples, build map to skip them
-      var map = {};
-      this.visit(ALL, function(t) { map[t._id] = 1; });
-      visit(src, function(t) { return map[t._id] ? null : t; }, v);
+      visit(src, filter(this, ADD|MOD), v);
     } else {
       // if no add/rem/mod tuples, iterate directly
       src.forEach(visitor);

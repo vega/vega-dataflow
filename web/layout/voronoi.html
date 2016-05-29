@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Voronoi</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../encode/svg-encode.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; }
+      input[type="range"] { width: 500px; }
+      rect {
+        transition: all 1s;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="500" height="500"></svg><br/>
+    Click or hold command to add points. Hold shift to remove them.
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+
+var data = [];
+for (var i=0; i<500; ++i) {
+  data.push({u: Math.random(), v: Math.random()});
+}
+
+var points = {
+  enter: function(item, _) {
+    item.setAttribute('pointer-events', 'none');
+    item.setAttribute('fill', '#544');
+    item.setAttribute('r', 2);
+  },
+  update: function(item, _) {
+    item.setAttribute('cx', _.sx(item.datum.u));
+    item.setAttribute('cy', _.sy(item.datum.v));
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var cells = {
+  enter: function(item, _) {
+    item.setAttribute('stroke', 'firebrick');
+    item.setAttribute('stroke-width', 0.2);
+    item.setAttribute('fill', 'transparent');
+  },
+  update: function(item, _) {
+    item.setAttribute('d', item.datum.layout_path || 'M0,0');
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var u = dataflow.field('u'),
+    v = dataflow.field('v'),
+    scaleX = function(_) { return function(t) { return _.sx(t.u); }; },
+    scaleY = function(_) { return function(t) { return _.sy(t.v); }; },
+
+    df = new dataflow.Dataflow(),
+    xr = df.add([0, 500]),
+    yr = df.add([0, 500]),
+    sx = df.add(dataflow.Scale, {domain:[0,1], range:xr}),
+    sy = df.add(dataflow.Scale, {domain:[0,1], range:yr}),
+    xx = df.add(scaleX, {sx:sx}),
+    yy = df.add(scaleY, {sy:sy}),
+    c0 = df.add(dataflow.Collect),
+    vo = df.add(dataflow.Voronoi, {x:xx, y:yy, extent:[[-1,-1], [501,501]], pulse:c0}),
+
+    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:vo}),
+    e1 = df.add(dataflow.Encode, points, {sx:sx, sy:sy, pulse:j1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1}),
+
+    j2 = df.add(dataflow.DataJoin, {item:items(svg, 'path'), pulse:vo}),
+    e2 = df.add(dataflow.Encode, cells, {sx:sx, sy:sy, pulse:j2}),
+    s2 = df.add(dataflow.Sieve, {pulse: e2});
+
+df.nextPulse.add = data.map(ingest);
+df.run();
+
+function addPoint(evt) {
+  var x = sx.value.invert(evt.pageX - 11);
+  var y = sy.value.invert(evt.pageY - 11);
+  df.nextPulse.add = [ingest({u:x, v:y})];
+  df.touch(c0).run();
+}
+
+svg.addEventListener('click', addPoint);
+svg.addEventListener('mousemove', function(evt) {
+  if (evt.target !== svg && evt.shiftKey) {
+    var t = evt.target.datum;
+    df.nextPulse.rem = [t];
+    df.touch(c0).run();
+  } else if (evt.buttons || evt.metaKey) addPoint(evt);
+});
+    </script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Stack</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../encode/svg-encode.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; margin-bottom: 4px; }
+      input[type="range"] { width: 500px; }
+      rect {
+        transition: all 1s;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="500" height="310"></svg><br/>
+    <select id="offset">
+      <option value="zero">zero</option>
+      <option value="center">center</option>
+      <option value="normalize">normalize</option>
+    </select> Offset &nbsp;
+    <input id="sort" type="checkbox" value="false"/> <label for="sort">Sort</label>
+    <br/><br/>
+    Click rectangles to change value. Shift-click to remove. Click background to add.
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+var soff = document.querySelector('#offset');
+var bsrt = document.querySelector('#sort');
+
+var data = [
+  {key:'a', value:5}, {key:'a', value:8}, {key:'a', value:3},
+  {key:'b', value:2}, {key:'b', value:7}, {key:'b', value:4},
+  {key:'c', value:1}, {key:'c', value:4}, {key:'c', value:6}
+];
+
+var encoders = {
+  enter: function(item, _) {
+    item.setAttribute('fill', _.sc(item.datum.key));
+    item.setAttribute('stroke', 'white');
+  },
+  update: function(item, _) {
+    item.setAttribute('x', _.sx(item.datum.key));
+    item.setAttribute('width', _.sx.bandwidth());
+
+    var y1 = _.sy(item.datum.layout_start),
+        y2 = _.sy(item.datum.layout_end);
+    item.setAttribute('y', Math.min(y1, y2));
+    item.setAttribute('height', Math.abs(y2-y1));
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var key = dataflow.field('key'),
+    val = dataflow.field('value'),
+    end = dataflow.field('layout_end'),
+    cmp = dataflow.compare('-value'),
+
+    df = new dataflow.Dataflow(),
+    xr = df.add([0, 500]),
+    yr = df.add([300, 0]),
+    so = df.add(null),
+    of = df.add(soff),
+    sc = df.add(dataflow.Scale, {type:'category10'}),
+    c0 = df.add(dataflow.Collect),
+    st = df.add(dataflow.Stack, {field:val, offset:of, groupby:[key], sort:so, pulse:c0}),
+
+    ag = df.add(dataflow.Aggregate, {groupby:[key], drop:false, pulse:c0}),
+    ca = df.add(dataflow.Collect, {pulse: ag}),
+    dv = df.add(dataflow.Values, {field:key, pulse:ca}),
+    sx = df.add(dataflow.Scale, {type:'band', domain:dv, range:xr}),
+
+    ye = df.add(dataflow.Extent, {field:end, zero:true, pulse:st}),
+    sy = df.add(dataflow.Scale, {domain:ye, range:yr}),
+
+    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:st}),
+    c1 = df.add(dataflow.Collect, {pulse:j1}),
+    e1 = df.add(dataflow.Encode, encoders, {sc:sc, sx:sx, sy:sy, pulse:c1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1});
+
+svg.addEventListener('click', function(evt) {
+  if (evt.target === svg) {
+    var k = sx.value.invert(evt.pageX-10)[0],
+        v = 2 + ~~(18 * Math.random());
+    df.nextPulse.add = [ingest({key:k, value:v})];
+    df.touch(c0).run();
+  } else {
+    var t = evt.target.datum;
+    if (evt.shiftKey) {
+      df.nextPulse.rem = [t];
+    } else {
+      dataflow.Tuple.prev_init(t, df.clock+1);
+      df.nextPulse.modifies('value');
+      t.value = 2 + ~~(18 * Math.random());
+      df.nextPulse.mod = [t];
+    }
+    df.touch(c0).run();
+  }
+});
+
+df.nextPulse.add = data.map(ingest);
+df.on(df.events(soff, 'change'), of, function(_, e) {
+    var sel = e.target;
+    return sel.options[sel.selectedIndex].value;
+  })
+  .on(df.events(bsrt, 'change'), so, function(_, e) {
+    return e.target.checked ? cmp : null;
+  })
+  .run();
+    </script>
+  </body>
+</html>
