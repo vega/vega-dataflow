@@ -5,7 +5,7 @@ tape('Lookup looks up matching tuples', function(test) {
   var lut = [
     {'id': 1, 'value': 'foo'},
     {'id': 3, 'value': 'bar'},
-    {'id': 5, 'value': 'baz'},
+    {'id': 5, 'value': 'baz'}
   ].map(dataflow.Tuple.ingest);
 
   var data = [

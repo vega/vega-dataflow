@@ -45,5 +45,5 @@ prototype.transform = function(_, pulse) {
     );
   }
 
-  return pulse.modifies('rank');
+  return pulse.reflow().modifies('rank');
 };

@@ -10,7 +10,6 @@ tape("Rank ranks tuples", function(test) {
   var rank = dataflow.field('rank'),
       x = dataflow.field('x'),
       df = new dataflow.Dataflow(),
-      m = df.add('value'),
       f = df.add(null),
       n = df.add(false),
       c = df.add(dataflow.Collect),
@@ -20,15 +19,19 @@ tape("Rank ranks tuples", function(test) {
 
   df.run();
   test.deepEqual(c.value.map(rank), [0, 1, 2, 3]);
+  test.equal(r.pulse.add.length, 4);
 
   df.update(n, true).run();
   test.deepEqual(c.value.map(rank), [0, 1/3, 2/3, 1]);
+  test.equal(r.pulse.mod.length, 4);
 
   df.update(n, false).update(f, x).run();
   test.deepEqual(c.value.map(rank), [0, 1, 0, 1]);
+  test.equal(r.pulse.mod.length, 4);
 
   df.update(n, true).run();
   test.deepEqual(c.value.map(rank), [0, 1, 0, 1]);
+  test.equal(r.pulse.mod.length, 4);
 
   test.end();
 });

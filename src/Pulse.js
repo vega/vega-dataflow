@@ -143,11 +143,12 @@ prototype.changed = function(flags) {
 };
 
 prototype.reflow = function() {
-  var sum = this.add.length + this.mod.length,
-      len = this.source && this.source.length;
-  if (len) {
+  var len = this.add.length,
+      src = this.source && this.source.length;
+  if (src && src !== len) {
+    len += this.mod.length;
     this.mod = this.source;
-    if (len > sum) this.filter(MOD, filter(this, ADD));
+    if (src > len) this.filter(MOD, filter(this, ADD));
   }
   return this;
 };

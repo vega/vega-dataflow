@@ -4,7 +4,7 @@ var tape = require('tape'),
 tape('Fold folds tuples', function(test) {
   var data = [
     {a:'!', b:5, c:7},
-    {a:'?', b:2, c:4},
+    {a:'?', b:2, c:4}
   ].map(dataflow.Tuple.ingest);
 
   var fields = ['b', 'c'].map(dataflow.field),

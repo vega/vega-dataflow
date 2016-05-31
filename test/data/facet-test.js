@@ -124,7 +124,6 @@ tape("Facet handles key parameter change", function(test) {
 
   var key1 = dataflow.field('k1'),
       key2 = dataflow.field('k2'),
-      val = dataflow.field('v'),
       df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
       facet = df.add(dataflow.Facet, {subflow:subflow, key:key1, pulse:source});

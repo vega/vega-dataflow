@@ -19,7 +19,7 @@
   },
   "scripts": {
     "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
-    "test": "tape 'test/**/*-test.js' && eslint index.js src"
+    "test": "tape 'test/**/*-test.js' && eslint index.js src test"
   },
   "dependencies": {
     "d3-array": "0.7.1",

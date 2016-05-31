@@ -34,14 +34,14 @@ tape('Values extracts sorted domain values', function(test) {
 
   // -- initial
   df.nextPulse.add = [
-    {k:'b', v:1}, {k:'a', v:2}, {k:'a', v:3},
+    {k:'b', v:1}, {k:'a', v:2}, {k:'a', v:3}
   ].map(ingest);
   df.run();
   test.deepEqual(val.value, ['a', 'b']);
 
   // -- initial
   df.nextPulse.add = [
-    {k:'b', v:1}, {k:'b', v:2}, {k:'c', v:3},
+    {k:'b', v:1}, {k:'b', v:2}, {k:'c', v:3}
   ].map(ingest);
   df.touch(agg).run();
   test.deepEqual(val.value, ['b', 'a', 'c']);
