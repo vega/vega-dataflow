@@ -40,7 +40,7 @@ var encoders = {
     "width": {"signal": "bw"},
     "height": {"scale": "sy", "field": "count"}
   }),
-  exit: parse({}, 'item.parentNode.removeChild(item);')
+  exit: parse({}, 'item.remove();')
 };
 
 function binDomain(_) {

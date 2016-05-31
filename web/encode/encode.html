@@ -81,7 +81,7 @@ var encoders = {
     "fill": {"value": "rgba(255, 0, 0, 0.05)"},
     "stroke": {"value": "rgba(0, 0, 0, 0.05)"},
     "pointer-events": {"value": "none"}
-  }, 'setTimeout(function() { item.parentNode.removeChild(item); }, 200);')
+  }, 'setTimeout(function() { item.remove(); }, 200);')
 };
 
 var df = new dataflow.Dataflow(),

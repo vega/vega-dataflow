@@ -79,7 +79,7 @@ var key = dataflow.field('key'),
 
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:st}),
     c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, encoders, {sc:sc, sx:sx, sy:sy, pulse:c1}),
+    e1 = df.add(dataflow.Encode, {encoders:encoders, sc:sc, sx:sx, sy:sy, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
 svg.addEventListener('click', function(evt) {

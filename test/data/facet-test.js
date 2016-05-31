@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Facet facets tuples", function(test) {
+tape('Facet facets tuples', function(test) {
   var data = [
     {k:'a', v:5}, {k:'b', v:7}, {k:'c', v:9},
     {k:'a', v:1}, {k:'b', v:2}, {k:'c', v:3}
@@ -27,7 +27,7 @@ tape("Facet facets tuples", function(test) {
       val = dataflow.field('v'),
       df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, subflow, {key: key, pulse: source});
+      facet = df.add(dataflow.Facet, {subflow:subflow, key:key, pulse:source});
 
   // -- test adds
   df.nextPulse.add = data;
@@ -127,7 +127,7 @@ tape("Facet handles key parameter change", function(test) {
       val = dataflow.field('v'),
       df = new dataflow.Dataflow(),
       source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, subflow, {key: key1, pulse: source});
+      facet = df.add(dataflow.Facet, {subflow:subflow, key:key1, pulse:source});
 
   // -- add data
   df.nextPulse.add = data;

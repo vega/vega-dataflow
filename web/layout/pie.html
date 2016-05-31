@@ -82,7 +82,7 @@ var key = dataflow.field('key'),
     pi = df.add(dataflow.Pie, {field:val, startAngle:sa, endAngle:ea, sort:so, pulse:c0}),
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'path'), pulse:pi}),
     c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, arcs, {sc:sc, xc:xc, yc:yc, ir:ir, or:or, pulse:c1}),
+    e1 = df.add(dataflow.Encode, {encoders:arcs, sc:sc, xc:xc, yc:yc, ir:ir, or:or, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
 df.nextPulse.add = data.map(ingest);

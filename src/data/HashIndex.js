@@ -1,5 +1,6 @@
 import Transform from './Transform';
 import {inherits} from '../util/Functions';
+import {map} from 'd3-collection';
 
 /**
  * Creates a hash index that maps from a field value to tuple. Assumes that
@@ -9,7 +10,7 @@ import {inherits} from '../util/Functions';
  * @param {function(object): *} params.field - An accessor for the field to index.
  */
 export default function HashIndex(params) {
-  Transform.call(this, {}, params);
+  Transform.call(this, map(), params);
 }
 
 var prototype = inherits(HashIndex, Transform);
@@ -19,10 +20,10 @@ prototype.transform = function(_, pulse) {
       index = this.value,
       flag = pulse.ADD;
 
-  function set(t) { index[field(t)] = t; }
+  function set(t) { index.set(field(t), t); }
 
   if (_.modified('field')) {
-    this.value = index = {};
+    this.value = index = map();
     pulse.visit(pulse.SOURCE, set);
   } else {
     flag |= pulse.modified(field.fields) ? pulse.MOD : 0;

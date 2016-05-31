@@ -6,7 +6,7 @@ import {inherits} from '../util/Functions';
  * sorted in the desired rank orderby an upstream data source.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {object} params.index - The lookup table.
+ * @param {Map} params.index - The lookup table map.
  * @param {Array<function(object): *} params.keys - The lookup keys.
  * @param {Array<string>} params.as - The per-key output field names.
  * @param {*} [params.default] - A default value to use if lookup fails.
@@ -31,13 +31,13 @@ prototype.transform = function(_, pulse) {
     key = keys[0];
     field = as[0];
     set = function(t) {
-      var v = index[key(t)];
+      var v = index.get(key(t));
       t[field] = v==null ? defaultValue : v;
     };
   } else {
     set = function(t) {
       for (var i=0, n=keys.length, v; i<n; ++i) {
-        v = index[keys[i](t)];
+        v = index.get(keys[i](t));
         t[as[i]] = v==null ? defaultValue : v;
       }
     };

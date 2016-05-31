@@ -57,10 +57,10 @@ var circles = {
     "fill": {"value": "rgba(255, 0, 0, 0.05)"},
     "stroke": {"value": "rgba(0, 0, 0, 0.05)"},
     "pointer-events": {"value": "none"}
-  }, 'setTimeout(function() { item.parentNode.removeChild(item); }, 200);')
+  }, 'setTimeout(function() { item.remove(); }, 200);')
 };
 
-function flowgen() {
+function subflow() {
   var scope = {
     signals: {fill: fill},
     scales:  {sx: sx, sy: sy},
@@ -97,7 +97,7 @@ var df = new dataflow.Dataflow(),
     join  = df.add(dataflow.DataJoin, {item:items(svg, 'g'), pulse:apply}),
     encd  = df.add(Encoder(groups, {}, join)),
     stop  = df.add(dataflow.Sieve, {pulse:encd}),
-    facet = df.add(dataflow.Facet, flowgen(), {key:cat, pulse:init});
+    facet = df.add(dataflow.Facet, {subflow:subflow(), key:cat, pulse:init});
 
 document.querySelector('#scale').addEventListener('click', function(evt) {
   var rx = ((rx=rngx.value)[0] === 0) ? [100, 400] : [0, 500];

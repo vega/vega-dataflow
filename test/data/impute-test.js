@@ -1,10 +1,10 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Impute imputes missing records", function(test) {
+tape('Impute imputes missing tuples', function(test) {
   var data = [
-    {"x": 0, "y": 28, "c":0}, {"x": 0, "y": 55, "c":1},
-    {"x": 1, "y": 43, "c":0}
+    {'x': 0, 'y': 28, 'c':0}, {'x': 0, 'y': 55, 'c':1},
+    {'x': 1, 'y': 43, 'c':0}
   ].map(dataflow.Tuple.ingest);
 
   var x = dataflow.field('x'),

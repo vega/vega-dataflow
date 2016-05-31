@@ -1,18 +1,18 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Lookup looks up matching tuples", function(test) {
+tape('Lookup looks up matching tuples', function(test) {
   var lut = [
-    {"id": 1, "value": "foo"},
-    {"id": 3, "value": "bar"},
-    {"id": 5, "value": "baz"},
+    {'id': 1, 'value': 'foo'},
+    {'id': 3, 'value': 'bar'},
+    {'id': 5, 'value': 'baz'},
   ].map(dataflow.Tuple.ingest);
 
   var data = [
-    {"id": 0, "x": 5, "y": 1},
-    {"id": 1, "x": 3, "y": 5},
-    {"id": 2, "x": 1, "y": 5},
-    {"id": 3, "x": 3, "y": 3}
+    {'id': 0, 'x': 5, 'y': 1},
+    {'id': 1, 'x': 3, 'y': 5},
+    {'id': 2, 'x': 1, 'y': 5},
+    {'id': 3, 'x': 3, 'y': 3}
   ].map(dataflow.Tuple.ingest);
 
   var uv = function(t) { return t.u.value; }, // field('u.value')

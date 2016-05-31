@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Impute imputes missing records", function(test) {
+tape("Rank ranks tuples", function(test) {
   var data = [
     {"x": 0, "y": 28}, {"x": 1, "y": 43},
     {"x": 0, "y": 55}, {"x": 1, "y": 72}
@@ -14,8 +14,7 @@ tape("Impute imputes missing records", function(test) {
       f = df.add(null),
       n = df.add(false),
       c = df.add(dataflow.Collect),
-      r = df.add(dataflow.Rank, {field:f, normalize:n, pulse:c}),
-      p;
+      r = df.add(dataflow.Rank, {field:f, normalize:n, pulse:c});
 
   df.nextPulse.add = data;
 

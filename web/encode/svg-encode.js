@@ -10,7 +10,7 @@ function parse(encoding, footer) {
 }
 
 function Encoder(encoders, scope, pulse) {
-  var params = {pulse:pulse},
+  var params = {encoders:encoders, pulse:pulse},
       name, fn, deps;
 
   // marshall dependencies into parameter signature
@@ -23,7 +23,7 @@ function Encoder(encoders, scope, pulse) {
     params.parent = scope.parent;
   }
 
-  return new dataflow.Encode(encoders, params);
+  return new dataflow.Encode(params);
 }
 
 function items(el, tag) {

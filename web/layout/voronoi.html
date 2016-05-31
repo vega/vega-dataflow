@@ -71,11 +71,11 @@ var u = dataflow.field('u'),
     vo = df.add(dataflow.Voronoi, {x:xx, y:yy, extent:[[-1,-1], [501,501]], pulse:c0}),
 
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:vo}),
-    e1 = df.add(dataflow.Encode, points, {sx:sx, sy:sy, pulse:j1}),
+    e1 = df.add(dataflow.Encode, {encoders:points, sx:sx, sy:sy, pulse:j1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1}),
 
     j2 = df.add(dataflow.DataJoin, {item:items(svg, 'path'), pulse:vo}),
-    e2 = df.add(dataflow.Encode, cells, {sx:sx, sy:sy, pulse:j2}),
+    e2 = df.add(dataflow.Encode, {encoders:cells, sx:sx, sy:sy, pulse:j2}),
     s2 = df.add(dataflow.Sieve, {pulse: e2});
 
 df.nextPulse.add = data.map(ingest);
