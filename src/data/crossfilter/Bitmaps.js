@@ -1,4 +1,4 @@
-import {indexarray, array32, arrayLengthen} from '../../util/Arrays';
+import {array8, array16, array32} from '../../util/Arrays';
 
 /**
  * Maintains CrossFilter state.
@@ -8,15 +8,15 @@ export default function Bitmaps() {
   var width = 8,
       data = [],
       seen = array32(0),
-      curr = indexarray(0, width),
-      prev = indexarray(0, width);
+      curr = array(0, width),
+      prev = array(0, width);
 
   return {
 
     data: function() { return data; },
 
     seen: function() {
-      return (seen = arrayLengthen(seen, data.length));
+      return (seen = lengthen(seen, data.length));
     },
 
     add: function(array) {
@@ -77,9 +77,23 @@ export default function Bitmaps() {
       var k = curr.length;
       if (n > k || m > width) {
         width = Math.max(m, width);
-        curr = indexarray(n, width, curr);
-        prev = indexarray(n, width);
+        curr = array(n, width, curr);
+        prev = array(n, width);
       }
     }
   };
 }
+
+function lengthen(array, length, copy) {
+  if (array.length >= length) return array;
+  copy = copy || new array.constructor(length);
+  copy.set(array);
+  return copy;
+}
+
+function array(n, m, array) {
+  var copy = (m < 0x101 ? array8 : m < 0x10001 ? array16 : array32)(n);
+  if (array) copy.set(array);
+  return copy;
+}
+

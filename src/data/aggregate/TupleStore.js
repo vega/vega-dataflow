@@ -1,4 +1,4 @@
-import {quartile, indexExtent} from '../../util/Stats';
+import {indexExtent, quartiles} from '../../util/Arrays';
 
 export default function TupleStore(key) {
   this._key = key || '_id';
@@ -75,7 +75,7 @@ prototype.max = function(get) {
 
 prototype.quartile = function(get) {
   if (this._get !== get || !this._q) {
-    this._q = quartile(this.values(), get);
+    this._q = quartiles(this.values(), get);
     this._get = get;
   }
   return this._q;

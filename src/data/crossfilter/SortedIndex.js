@@ -1,4 +1,5 @@
-import {array32, bisectLeft, bisectRight, permute} from '../../util/Arrays';
+import {bisectLeft, bisectRight, permute} from 'd3-array';
+import {array32} from '../../util/Arrays';
 
 /**
  * Maintains a list of values, sorted by key.

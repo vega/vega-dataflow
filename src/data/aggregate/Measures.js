@@ -1,4 +1,3 @@
-import {valid, distinct} from '../../util/Stats';
 import {extend, values} from '../../util/Objects';
 import {Identity} from '../../util/Functions';
 
@@ -19,6 +18,13 @@ export var Aggregates = {
   'valid': measure({
     name: 'valid',
     set:  'this.valid'
+  }),
+  'distinct': measure({
+    name: 'distinct',
+    init: 'this.dmap = {}; this.distinct = 0;',
+    add:  'this.dmap[v] = 1 + (this.dmap[v] || (++this.distinct, 0));',
+    rem:  'if (!(--this.dmap[v])) --this.distinct;',
+    set:  'this.distinct'
   }),
   'sum': measure({
     name: 'sum',
@@ -75,11 +81,6 @@ export var Aggregates = {
   'q3': measure({
     name: 'q3',
     set:  'cell.data.q3(this.get)',
-    req:  ['values'], idx: 3
-  }),
-  'distinct': measure({
-    name: 'distinct',
-    set:  'this.distinct(cell.data.values(), this.get)',
     req:  ['values'], idx: 3
   }),
   'argmin': measure({
@@ -153,8 +154,8 @@ export function compileMeasures(agg, field) {
   var get = field || Identity,
       all = resolve(agg, true), // assume streaming removes may occur
       ctr = 'this.cell = cell; this.tuple = t; this.valid = 0; this.missing = 0;',
-      add = 'if (v==null) this.missing++; if (!this.isValid(v)) return; ++this.valid;',
-      rem = 'if (v==null) this.missing--; if (!this.isValid(v)) return; --this.valid;',
+      add = 'if(v==null){this.missing++; return;} if(v!==v) return; ++this.valid;',
+      rem = 'if(v==null){this.missing--; return;} if(v!==v) return; --this.valid;',
       set = 'var t = this.tuple; var cell = this.cell;';
 
   all.forEach(function(a) {
@@ -178,8 +179,6 @@ export function compileMeasures(agg, field) {
   ctr.prototype.rem = Function('t', 'var v = this.get(t);' + rem);
   ctr.prototype.set = Function(set);
   ctr.prototype.get = get;
-  ctr.prototype.distinct = distinct;
-  ctr.prototype.isValid = valid;
   ctr.fields = agg.map(function(_) { return _.out; });
   return ctr;
 }

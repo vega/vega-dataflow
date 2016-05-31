@@ -1,7 +1,7 @@
 import Transform from './Transform';
 import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
-import {range} from '../util/Arrays';
+import {range} from 'd3-array';
 
 /**
  * Generates data tuples for a specified range of numbers.

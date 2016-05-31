@@ -1,4 +1,4 @@
-import {error} from './Errors';
+import {quantile, ascending} from 'd3-array';
 
 export var Empty = [];
 
@@ -6,20 +6,57 @@ export function array(_) {
   return _ != null ? (Array.isArray(_) ? _ : [_]) : Empty;
 }
 
-export function range(start, stop, step) {
-  start = +start;
-  stop = +stop;
-  step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+export function array8(n) { return new Uint8Array(n); }
 
+export function array16(n) { return new Uint16Array(n); }
+
+export function array32(n) { return new Uint32Array(n); }
+
+export function indexExtent(array, f) {
   var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
+      n = array.length,
+      a, b, c, u, v;
 
-  while (++i < n) {
-    range[i] = start + i * step;
+  if (f == null) {
+    while (++i < n) if ((b = array[i]) != null && b >= b) { a = c = b; break; }
+    u = v = i;
+    while (++i < n) if ((b = array[i]) != null) {
+      if (a > b) a = b, u = i;
+      if (c < b) c = b, v = i;
+    }
+  } else {
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = c = b; break; }
+    u = v = i;
+    while (++i < n) if ((b = f(array[i], i, array)) != null) {
+      if (a > b) a = b, u = i;
+      if (c < b) c = b, v = i;
+    }
   }
 
-  return range;
+  return [u, v];
+}
+
+function number(x) {
+  return x === null ? NaN : +x;
+}
+
+export function quartiles(array, f) {
+  var numbers = [],
+      n = array.length,
+      i = -1,
+      a;
+
+  if (f == null) {
+    while (++i < n) if (!isNaN(a = number(array[i]))) numbers.push(a);
+  } else {
+    while (++i < n) if (!isNaN(a = number(f(array[i], i, array)))) numbers.push(a);
+  }
+
+  return [
+    quantile(numbers.sort(ascending), 0.25),
+    quantile(numbers, 0.50),
+    quantile(numbers, 0.75)
+  ];
 }
 
 export function visit(array, filter, visitor) {
@@ -59,80 +96,3 @@ export function merge(compare, array0, array1, output) {
 
   return merged;
 }
-
-export function defaultComparator(a, b) {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-
-export function bisectLeft(a, x, lo, hi, comparator) {
-  if (arguments.length < 3) lo = 0;
-  if (arguments.length < 4) hi = a.length;
-  var compare = comparator || defaultComparator;
-
-  while (lo < hi) {
-    var mid = lo + hi >>> 1;
-    if (compare(a[mid], x) < 0) lo = mid + 1;
-    else hi = mid;
-  }
-  return lo;
-}
-
-export function bisectRight(a, x, lo, hi, comparator) {
-  if (arguments.length < 3) lo = 0;
-  if (arguments.length < 4) hi = a.length;
-  var compare = comparator || defaultComparator;
-
-  while (lo < hi) {
-    var mid = lo + hi >>> 1;
-    if (compare(a[mid], x) > 0) hi = mid;
-    else lo = mid + 1;
-  }
-  return lo;
-}
-
-export function permute(array, index) {
-  var i = 0, n = array.length, permuted = new Array(n);
-  for (; i<n; ++i) {
-    permuted[i] = array[index[i]];
-  }
-  return permuted;
-}
-
-export function array8(n) { return new Uint8Array(n); }
-
-export function array16(n) { return new Uint16Array(n); }
-
-export function array32(n) { return new Uint32Array(n); }
-
-export function arrayWiden(array, width) {
-  var copy;
-  switch (width) {
-    case 16: copy = array16(array.length); break;
-    case 32: copy = array32(array.length); break;
-    default: throw error('Invalid array width.');
-  }
-  copy.set(array);
-  return copy;
-}
-
-export function arrayLengthen(array, length, copy) {
-  if (array.length >= length) return array;
-  copy = copy || new array.constructor(length);
-  copy.set(array);
-  return copy;
-}
-
-export function indexarray(n, m, array) {
-  var copy = (m < 0x101 ? array8 : m < 0x10001 ? array16 : array32)(n);
-  if (array) copy.set(array);
-  return copy;
-}
-
-export function indexrange(n) {
-  var range = indexarray(n, n);
-  for (var i = -1; ++i < n;) range[i] = i;
-  return range;
-}
-
-
-

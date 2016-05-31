@@ -1,4 +1,4 @@
-import {Empty, array} from './Arrays';
+import {array, Empty} from './Arrays';
 
 export function isFunction(_) {
   return typeof _ === 'function';
