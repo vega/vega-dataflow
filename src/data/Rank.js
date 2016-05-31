@@ -4,7 +4,7 @@ import {error} from '../util/Errors';
 
 /**
  * Compute rank order scores for tuples. The tuples are assumed to have been
- * sorted in the desired rank orderby an upstream data source.
+ * sorted in the desired rank order by an upstream data source.
  * @constructor
  * @param {object} params - The parameters for this operator.
  * @param {function(object): *} params.field - An accessor for the field to rank.
@@ -22,26 +22,28 @@ prototype.transform = function(_, pulse) {
 
   var norm  = _.normalize,
       field = _.field,
-      keys = {},
-      n = pulse.source.length,
-      klen = 0;
+      ranks = {},
+      n = -1, rank;
 
   if (field) {
     // If we have a field accessor, first compile distinct keys.
     pulse.visit(pulse.SOURCE, function(t) {
       var v = field(t);
-      if (!keys[v]) keys[v] = ++klen;
+      if (ranks[v] == null) ranks[v] = ++n;
     });
-    pulse.visit(pulse.SOURCE, function(t) {
-      var v = keys[field(t)];
-      t.rank = norm ? v / klen : v / n;
-    });
+    pulse.visit(pulse.SOURCE, norm && --n
+      ? function(t) { t.rank = ranks[field(t)] / n; }
+      : function(t) { t.rank = ranks[field(t)]; }
+    );
   } else {
+    n += pulse.source.length;
+    rank = -1;
     // Otherwise rank all the tuples together.
-     pulse.visit(pulse.SOURCE, function(t, i) {
-      t.rank = norm ? (i+1) / klen : (i+1) / n;
-    });
+    pulse.visit(pulse.SOURCE, norm && n
+      ? function(t) { t.rank = ++rank / n; }
+      : function(t) { t.rank = ++rank; }
+    );
   }
 
-  return pulse.modifies(field.fields);
+  return pulse.modifies('rank');
 };
