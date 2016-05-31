@@ -20,6 +20,7 @@ export {default as Filter} from './src/data/Filter';
 export {default as Fold} from './src/data/Fold';
 export {default as Generate} from './src/data/Generate';
 export {default as HashIndex} from './src/data/HashIndex';
+export {default as Impute} from './src/data/Impute';
 export {default as Lookup} from './src/data/Lookup';
 export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
