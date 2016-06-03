@@ -3,7 +3,8 @@
   <head>
     <title>Dataflow Stack</title>
     <script src="../../build/dataflow.js"></script>
-    <script src="../encode/svg-encode.js"></script>
+    <script src="../svg-encode.js"></script>
+    <script src="../interact.js"></script>
     <style>
       body { margin: 10px; font: 14px Helvetica Neue; }
       svg { border: 1px solid #ccc; margin-bottom: 4px; }
@@ -103,10 +104,7 @@ svg.addEventListener('click', function(evt) {
 });
 
 df.nextPulse.add = data.map(ingest);
-df.on(df.events(soff, 'change'), of, function(_, e) {
-    var sel = e.target;
-    return sel.options[sel.selectedIndex].value;
-  })
+df.on(df.events(soff, 'change'), of, option)
   .on(df.events(bsrt, 'change'), so, function(_, e) {
     return e.target.checked ? cmp : null;
   })

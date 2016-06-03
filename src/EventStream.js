@@ -32,12 +32,19 @@ prototype.targets = function() {
   return this._targets || (this._targets = UniqueList(Id));
 };
 
+prototype.consume = function(_) {
+  if (!arguments.length) return !!this._consume;
+  return (this._consume = !!_, this);
+};
+
 prototype.receive = function(evt) {
   if (this._filter(evt)) {
     var val = (this.value = this._apply(evt));
     (this._targets || Empty).forEach(function(t) { t.receive(val); });
-    evt.preventDefault();
-    evt.stopPropagation();
+    if (this._consume) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
   }
 };
 

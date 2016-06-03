@@ -33,6 +33,39 @@ function items(el, tag) {
   }
 }
 
+function arc(sa, ea, i, o, x, y) {
+  x = x || 0;
+  y = y || 0;
+
+  var a = sa - Math.PI/2,
+      b = ea - Math.PI/2,
+      f = (b > a) ? 1 : 0,
+      p = '',
+      d = Math.abs(b-a),
+      l = d > Math.PI ? 1 : 0,
+      ca = Math.cos(a), sa = Math.sin(a),
+      cb = Math.cos(b), sb = Math.sin(b),
+      cmd = 'L'
+
+  if (i === 0) {
+    if (d >= 6.28) {
+      cmd = 'M';
+    } else {
+      p = 'M' + x + ',' + y;
+    }
+  } else {
+    p = 'M' + (x + i*cb) + ',' + (y + i*sb)
+      + 'A' + i + ' ' + i + ' 0 ' + l + ' ' + (f?0:1) + ' '
+      + (x + i*ca) + ',' + (y + i*sa);
+    if (d >= 6.28) cmd = 'M';
+  }
+  return p
+    + cmd + (x + o*ca) + ',' + (y + o*sa)
+    + 'A' + o + ' ' + o + ' 0 ' + l + ' ' + f + ' '
+    + (x + o*cb) + ',' + (y + o*sb)
+    + 'Z';
+}
+
 var parseEncoder = (function() {
   var UniqueList = dataflow.UniqueList,
       isString = dataflow.isString,

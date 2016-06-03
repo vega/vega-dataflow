@@ -3,7 +3,7 @@ import MultiPulse from './MultiPulse';
 import {events} from './EventStream';
 import Operator from './Operator';
 import UniqueList from './util/UniqueList';
-import {Id} from './util/Functions';
+import {Id, isFunction} from './util/Functions';
 import {extend} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
 import {Empty} from './util/Arrays';
@@ -64,12 +64,16 @@ prototype.on = function(stream, target, update, params, options) {
       f = function() { self.touch(target).run(); };
 
   if (update) {
-    var op = new Operator(null, update, params);
-    op.target = target;
-    f = function(evt) {
-      op.evaluate(evt);
-      self.update(target, op.value, opt).run();
-    };
+    if (isFunction(update)) {
+      var op = new Operator(null, update, params);
+      op.target = target;
+      f = function(evt) {
+        op.evaluate(evt);
+        self.update(target, op.value, opt).run();
+      };
+    } else {
+      f = function() { self.update(target, update, opt).run(); };
+    }
   }
   stream.apply(f);
 

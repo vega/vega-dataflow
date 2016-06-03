@@ -3,6 +3,7 @@
   <head>
     <title>Dataflow Ordinal Scale Invert</title>
     <script src="../../build/dataflow.js"></script>
+    <script src="../interact.js"></script>
     <style>
       body { margin: 10px; font: 14px Helvetica Neue; }
       svg { border: 1px solid #aaa; }
@@ -67,16 +68,6 @@ function gen() {
   return {u:u};
 }
 
-function clamp(v, min, max) {
-  return Math.min(max, Math.max(v, min));
-}
-
-function range(_) {
-  var a = clamp(Math.min(_.x[0], _.x[1]), 0, 500),
-      b = clamp(Math.max(_.x[0], _.x[1]), 0, 500);
-  return [(a/5), (b/5)];
-}
-
 function updateBrush(_) {
   var line = document.querySelectorAll(_.el + ' rect.line');
   line[0].setAttribute('x', _.x[0]);
@@ -118,7 +109,7 @@ var u = dataflow.field('u'),
     count = dataflow.field('count');
 
 var df = new dataflow.Dataflow(),
-    dn = df.add(5e5), // Number of tuples
+    dn = df.add(5e4), // Number of tuples
     xd = df.add(  0), // x-down coordinate
     x  = df.add([200, 300]),
     r  = df.add(range, {x:x}),
@@ -134,57 +125,26 @@ var df = new dataflow.Dataflow(),
     c  = df.add(dataflow.Collect, {pulse: a, sort: dataflow.compare('bin')}),
     e  = df.add(dataflow.Extent, {field:count, pulse:c})
     v  = df.add(updateChart, {el:'.base', extent:e, pulse:c, scale:os, color:cl}),
-    b  = df.add(updateBrush, {el:'.vis', x:x});
+    b  = df.add(updateBrush, {el:'.vis', x:x, or:or});
 
 // EVENT HANDLING
 
-function setX(_, e) {
-  var x = clamp(e.pageX - 10, 0, 500);
-  return [x, x];
+function flip(_, e) {
+  return _.or[0]===0 ? [500,0] : [0,500];
 }
-function dragX(_, e) {
-  return [_.x[0], e.pageX - 10];
-}
-function panX(_, e) {
-  var dx = e.pageX - _.xdown;
-  return [_.x[0] + dx, _.x[1] + dx];
-}
-function maxX() { return [0, 500]; }
-function zoomX(_, e) {
-  var s = Math.pow(1.0005, e.deltaY * Math.pow(16, e.deltaMode)),
-      cx = (_.x[0] + _.x[1]) / 2,
-      dx = s * Math.abs(_.x[1] - _.x[0]) / 2;
-  return [cx-dx, cx+dx];
-}
-function pageX(_, e) { return e.pageX; }
-function value(_, e) { return +e.target.value; }
-function drag(a) { return mm.between(a, mu); }
 
-var md = df.events(svg, 'mousedown'),
-    mu = df.events(svg, 'mouseup'),
-    mm = df.events(svg, 'mousemove'),
-    mw = df.events(svg, 'wheel'),
-    mc = df.events(svg, 'dblclick'),
+var ix = interactors(df, svg),
     ii = df.events(inner, 'input'),
     oi = df.events(outer, 'input'),
-    vdown = md,
-    bdown = df.events('.brush', 'mousedown');
+    tc = df.events('.toggle', 'click');
 
-df.on(md, xd, pageX)                          // set xdown on mousedown
-  .on(vdown, x, setX)                         // set extent on mouse down
-  .on(drag(vdown), x, dragX, {x:x})           // drag out brush extent
-  .on(drag(bdown), x, panX, {x:x, xdown:xd})  // pan brush
-  .on(mc, x, maxX)                            // maximize on double click
-  .on(mw, x, zoomX, {x:x})                    // zoom on scroll wheel
-  .on(mm, xd, pageX)                          // update xdown *after* drags
-  .on(ii, pi, value).on(ii, b)                // track inner padding slider
-  .on(oi, po, value).on(oi, b)                // track outer padding slider
-  .run();                                     // kick things off
-
-document.querySelector('.toggle').addEventListener('click', function() {
-  var r = or.value[0]===0 ? [500,0] : [0,500];
-  df.touch(b).update(or, r).run();
-});
+df.on(ix.mousedown, xd, pageX);  // set xdown on mousedown
+ix.brush('.brush', null, x, xd);
+df.on(ix.mousemove, xd, pageX)   // update xdown *after* drags
+  .on(ii, pi, value).on(ii, b)   // track inner padding slider
+  .on(oi, po, value).on(oi, b)   // track outer padding slider
+  .on(tc, or, flip, {or:or})     // flip scale range
+  .run();                        // kick things off
     </script>
   </body>
 </html>

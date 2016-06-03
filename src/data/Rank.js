@@ -18,7 +18,9 @@ export default function Rank(params) {
 var prototype = inherits(Rank, Transform);
 
 prototype.transform = function(_, pulse) {
-  if (!pulse.source) error('Rank transform requires an upstream data source.');
+  if (!pulse.source) {
+    error('Rank transform requires an upstream data source.');
+  }
 
   var norm  = _.normalize,
       field = _.field,

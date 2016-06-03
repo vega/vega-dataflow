@@ -3,6 +3,7 @@
   <head>
     <title>Dataflow Filter</title>
     <script src="../../build/dataflow.js"></script>
+    <script src="../interact.js"></script>
     <style>
       body { margin: 10px; }
       rect { fill: steelblue; stroke: none; }
@@ -179,16 +180,6 @@ function gen() {
   return {u:u, v:v, x:x};
 }
 
-function clamp(v, min, max) {
-  return Math.min(max, Math.max(v, min));
-}
-
-function range(_) {
-  var a = clamp(Math.min(_.x[0], _.x[1]), 0, 500),
-      b = clamp(Math.max(_.x[0], _.x[1]), 0, 500);
-  return [(a/5), (b/5)];
-}
-
 function filter(_) {
   var a = _.a, ra = _.ra,
       b = _.b, rb = _.rb;
@@ -274,61 +265,18 @@ bin.forEach(function(bin, i) {
 });
 
 // EVENT HANDLING
+var ix = interactors(df),
+    filters = [
+      function(e) { return e.pageY <= 110; },
+      function(e) { return 110 < e.pageY && e.pageY <= 220; },
+      function(e) { return 220 < e.pageY && e.pageY <= 330; }
+    ];
 
-function setX(_, e) {
-  var x = clamp(e.pageX - 10, 0, 500);
-  return [x, x];
-}
-
-function dragX(_, e) {
-  return [_.x[0], e.pageX - 10];
-}
-
-function panX(_, e) {
-  var dx = e.pageX - _.xdown;
-  return [_.x[0] + dx, _.x[1] + dx];
-}
-
-function maxX() { return [0, 500]; }
-
-function zoomX(_, e) {
-  var s = Math.pow(1.0005, e.deltaY * Math.pow(16, e.deltaMode)),
-      cx = (_.x[0] + _.x[1]) / 2,
-      dx = s * Math.abs(_.x[1] - _.x[0]) / 2;
-  return [cx-dx, cx+dx];
-}
-
-function pageX(_, e) { return e.pageX; }
-
-function drag(a) { return mm.between(a, mu); }
-
-var views = [
-  function(e) { return e.pageY <= 110; },
-  function(e) { return 110 < e.pageY && e.pageY <= 220; },
-  function(e) { return 220 < e.pageY && e.pageY <= 330; }
-];
-
-var md = df.events(window, 'mousedown'),
-    mu = df.events(window, 'mouseup'),
-    mm = df.events(window, 'mousemove'),
-    mw = df.events(window, 'wheel'),
-    mc = df.events(window, 'dblclick');
-
-df.on(md, xd, pageX); // set xdown on mousedown
-
+df.on(ix.mousedown, xd, pageX); // set xdown on mousedown
 [x1, x2, x3].forEach(function(x, i) {
-  var vdown = md.filter(views[i]),
-      bdown = df.events('#view'+(i+1)+' .brush', 'mousedown');
-
-  df.on(vdown, x, setX)                        // set extent on mouse down
-    .on(drag(vdown), x, dragX, {x:x})          // drag out brush extent
-    .on(drag(bdown), x, panX, {x:x, xdown:xd}) // pan brush
-    .on(mc.filter(views[i]), x, maxX)          // maximize on double click
-    .on(mw.filter(views[i]), x, zoomX, {x:x}); // zoom on scroll wheel
+  ix.brush('#view'+(i+1)+' .brush', filters[i], x, xd);
 });
-
-df.on(mm, xd, pageX); // update xdown *after* drags are processed
-
+df.on(ix.mousemove, xd, pageX); // update xdown *after* drags are processed
 df.run(); // kick things off
     </script>
   </body>

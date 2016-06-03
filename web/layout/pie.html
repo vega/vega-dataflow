@@ -3,7 +3,8 @@
   <head>
     <title>Dataflow Pie</title>
     <script src="../../build/dataflow.js"></script>
-    <script src="../encode/svg-encode.js"></script>
+    <script src="../svg-encode.js"></script>
+    <script src="../interact.js"></script>
     <style>
       body { margin: 10px; font: 14px Helvetica Neue; }
       svg { border: 1px solid #ccc; }
@@ -39,26 +40,12 @@ var arcs = {
     item.setAttribute('fill', _.sc(item.datum.key));
   },
   update: function(item, _) {
-    var x = _.xc, y = _.yc, i = _.ir, o = _.or,
-        a = item.datum.layout_start - Math.PI/2,
-        b = item.datum.layout_end - Math.PI/2,
-        f = (b > a) ? 1 : 0, p,
-        ca = Math.cos(a), sa = Math.sin(a),
-        cb = Math.cos(b), sb = Math.sin(b);
-
-    if (i === 0) {
-      p = 'M' + x + ',' + y;
-    } else {
-      p = 'M' + (x + i*cb) + ',' + (y + i*sb)
-        + 'A' + i + ' ' + i + ' 0 0 ' + (f?0:1) + ' '
-        + (x + i*ca) + ',' + (y + i*sa);
-    }
-    p = p
-      + 'L' + (x + o*ca) + ',' + (y + o*sa)
-      + 'A' + o + ' ' + o + ' 0 0 ' + f + ' '
-      + (x + o*cb) + ',' + (y + o*sb)
-      + 'Z';
-    return (item.setAttribute('d', p), true);
+    item.setAttribute('d', arc(
+      item.datum.layout_start,
+      item.datum.layout_end,
+      _.ir, _.or, _.xc, _.yc
+    ));
+    return true;
   },
   exit: function(item, _) {
     item.remove();
@@ -87,12 +74,11 @@ var key = dataflow.field('key'),
 
 df.nextPulse.add = data.map(ingest);
 
-function value(_, e) { return +e.target.value; }
 df.on(df.events(ri, 'input'), ir, value)
   .on(df.events(ro, 'input'), or, value)
   .on(df.events(rs, 'input'), sa, value)
   .on(df.events(re, 'input'), ea, value)
-  .on(df.events(bs, 'change'), so, function value(_, e) { return e.target.checked; })
+  .on(df.events(bs, 'change'), so, check)
   .run();
     </script>
   </body>
