@@ -45,7 +45,7 @@ export {default as Nest} from './src/hierarchy/Nest';
 export {default as Links} from './src/hierarchy/Links';
 export {default as LinkPath} from './src/hierarchy/LinkPath';
 export {default as Stratify} from './src/hierarchy/Stratify';
-export {Cluster, Pack, Partition, Tree, Treemap} from './src/hierarchy/Layouts';
+export {Pack, Partition, Tree, Treemap} from './src/hierarchy/Layouts';
 
 export {default as UniqueList} from './src/util/UniqueList';
 export {accessor, field, name, compare} from './src/util/Functions';

@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Tree Radial</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../svg-encode.js"></script>
+    <script src="../interact.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; }
+      input[type="range"] { width: 400px; }
+    </style>
+  </head>
+  <body>
+    <svg width="500" height="500">
+      <g class="vis" transform="translate(250,250)"></g>
+    </svg><br/>
+    <select id="method">
+      <option value="tidy">tidy</option>
+      <option value="cluster">cluster</option>
+    </select> Layout Method &nbsp;
+    <select id="path">
+      <option value="line">line</option>
+      <option value="curve">curve</option>
+      <option value="diagonal">diagonal</option>
+      <option value="orthogonal">orthogonal</option>
+    </select> Link Shape<br/>
+    <input id="a" type="range" min="0" max="6.28" value="6.28" step="0.01"/> Angle<br/>
+    <input id="r" type="range" min="0" max="250" value="200"/> Radius<br/>
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg');
+var g = document.querySelector('g.vis');
+
+var data = [
+  {key:0, value:0},
+  {key:1, value:0, parent:0},
+  {key:2, value:0, parent:0},
+  {key:3, value:2, parent:1},
+  {key:4, value:4, parent:1},
+  {key:5, value:4, parent:1},
+  {key:6, value:4, parent:1},
+  {key:7, value:7, parent:2},
+  {key:8, value:4, parent:2},
+  {key:9, value:4, parent:2},
+  {key:10, value:2, parent:0},
+];
+
+var nodes = {
+  enter: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('stroke', 'white');
+    item.setAttribute('stroke-width', 2);
+    item.setAttribute('fill', _.sc(t._id));
+    item.setAttribute('r', 10);
+  },
+  update: dataflow.accessor(function(item, _) {
+    var t = item.datum, a = t.x, r = t.y;
+    item.setAttribute('cx', r*Math.cos(a));
+    item.setAttribute('cy', r*Math.sin(a));
+    return true;
+  }, null, ['x', 'y']),
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var links = {
+  enter: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('stroke', '#ccc');
+    item.setAttribute('fill', 'none');
+  },
+  update: function(item, _) {
+    item.setAttribute('d', item.datum.path);
+    return true;
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var p = dataflow.field('parent'),
+    key = dataflow.field('key');
+
+    df = new dataflow.Dataflow(),
+    ac = df.add(null),
+    a  = df.add(+document.querySelector('#a').value),
+    r  = df.add(+document.querySelector('#r').value),
+    lm = df.add('tidy'),
+    sh = df.add('line'),
+    sc = df.add(dataflow.Scale, {type:'magma', domain:[0,13]}),
+    c0 = df.add(dataflow.Collect),
+    s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tl = df.add(dataflow.Tree, {method:lm, size:[a,r], pulse:s0}),
+
+    ln = df.add(dataflow.Links, {pulse:tl}),
+    lc = df.add(dataflow.Collect, {pulse:ln}),
+    lp = df.add(dataflow.LinkPath, {shape:sh, orient:'radial', pulse:lc}),
+    j2 = df.add(dataflow.DataJoin, {item:items(g, 'path'), pulse:lp}),
+    c2 = df.add(dataflow.Collect, {pulse:j2}),
+    e2 = df.add(dataflow.Encode, {encoders:links, sc:sc, pulse:c2}),
+    s2 = df.add(dataflow.Sieve, {pulse: e2}),
+
+    j1 = df.add(dataflow.DataJoin, {item:items(g, 'circle'), pulse:tl}),
+    c1 = df.add(dataflow.Collect, {pulse:j1}),
+    e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1});
+
+df.nextPulse.add = data.map(ingest);
+df.run();
+
+var md = df.events('svg circle', 'mousedown'),
+    mm = df.events(window, 'mousemove'),
+    mu = df.events(window, 'mouseup');
+
+df.on(df.events(svg, 'dblclick'), c0) // re-run all on double-click
+  .on(df.events('#a', 'input'), a, value)
+  .on(df.events('#r', 'input'), r, value)
+  .on(df.events('#path', 'change'), sh, option)
+  .on(df.events('#method', 'change'), lm, option)
+  .on(md, ac, datum)
+  .on(mu, ac, null);
+
+mm.between(md, mu).apply(function(evt) {
+  var t = ac.value,
+      x = evt.pageX - 260,
+      y = evt.pageY - 260,
+      a = Math.atan2(y, x),
+      r = Math.sqrt(x*x + y*y);
+
+  dataflow.Tuple.prev_init(t, df.clock+1);
+  df.nextPulse.modifies(['x', 'y']);
+  df.nextPulse.mod.push((t.x = a, t.y = r, t));
+  df.touch(ln).touch(j1).run();
+});
+    </script>
+  </body>
+</html>

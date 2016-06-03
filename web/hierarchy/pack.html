@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Pack</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../svg-encode.js"></script>
+    <script src="../interact.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; }
+      input[type="range"] { width: 400px; }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="500" height="500"></svg><br/>
+    <input id="w" type="range" min="100" max="500" value="500"/> Width<br/>
+    <input id="h" type="range" min="100" max="500" value="500"/> Height<br/>
+    <input id="pad" type="range" min="0" max="50" value="4"/> Padding
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+
+var data = [
+  {key:0, value:0},
+  {key:1, value:0, parent:0},
+  {key:2, value:0, parent:0},
+  {key:3, value:2, parent:1},
+  {key:4, value:4, parent:1},
+  {key:5, value:4, parent:1},
+  {key:6, value:4, parent:1},
+  {key:7, value:7, parent:2},
+  {key:8, value:4, parent:2},
+  {key:9, value:4, parent:2},
+];
+
+var encoders = {
+  enter: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('stroke', 'white');
+    item.setAttribute('fill', _.sc(t.parent));
+  },
+  update: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('cx', t.x);
+    item.setAttribute('cy', t.y);
+    item.setAttribute('r', t.r);
+    return true;
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var p = dataflow.field('parent'),
+    key = dataflow.field('key'),
+    val = dataflow.field('value'),
+
+    df = new dataflow.Dataflow(),
+    w  = df.add(+document.querySelector('#w').value),
+    h  = df.add(+document.querySelector('#h').value),
+    pd = df.add(+document.querySelector('#pad').value),
+    sc = df.add(dataflow.Scale, {type:'category20'}),
+    c0 = df.add(dataflow.Collect),
+    s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tm = df.add(dataflow.Pack, {field:val, size:[w,h], padding:pd, pulse:s0}),
+    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:tm}),
+    c1 = df.add(dataflow.Collect, {pulse:j1}),
+    e1 = df.add(dataflow.Encode, {encoders:encoders, sc:sc, pulse:c1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1});
+
+df.nextPulse.add = data.map(ingest);
+df.run();
+
+df.on(df.events('#w', 'input'), w, value)
+  .on(df.events('#h', 'input'), h, value)
+  .on(df.events('#pad', 'input'), pd, value);
+    </script>
+  </body>
+</html>
