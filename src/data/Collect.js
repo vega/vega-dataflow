@@ -17,6 +17,8 @@ var prototype = inherits(Collect, Transform);
 
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ALL),
+      add = pulse.changed(pulse.ADD),
+      mod = pulse.changed(),
       sort = _.sort,
       data = this.value,
       push = function(t) { data.push(t); },
@@ -33,17 +35,19 @@ prototype.transform = function(_, pulse) {
       // need to re-sort the full data array
       out.visit(out.ADD, push);
       data.sort(sort);
-    } else if (out.add.length) {
+      mod = true;
+    } else if (add) {
       // sort adds only, then merge
       adds = [];
       out.visit(out.ADD, function(t) { adds.push(t); });
       data = merge(sort, data, adds.sort(sort));
     }
-  } else if (out.add.length) {
+  } else if (add) {
     // no sort, so simply add new tuples
     out.visit(out.ADD, push);
   }
 
+  this.modified(mod);
   this.value = out.source = data;
   return out;
 };

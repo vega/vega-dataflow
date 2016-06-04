@@ -31,7 +31,7 @@ tape('HashIndex maintains a hash index', function(test) {
   test.equal(!!hi.modified(), true);
 
   // change key field value
-  dataflow.Tuple.prev_init(data[0]);
+  dataflow.Tuple.prev_init(data[0], df.clock+1);
   data[0].id = 2;
   df.nextPulse.modifies('id');
   df.nextPulse.mod.push(data[0]);
