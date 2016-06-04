@@ -1,7 +1,7 @@
 // Hash that tracks modifications to assigned values
 // Callers *must* use the set method to update values
 export default function Parameters() {
-  this.__mod__ = {};
+  Object.defineProperty(this, '__mod__', {writable:true, value: {}});
 }
 
 var prototype = Parameters.prototype;
