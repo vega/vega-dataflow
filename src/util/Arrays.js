@@ -60,10 +60,10 @@ export function quartiles(array, f) {
 }
 
 export function visit(array, filter, visitor) {
-  var i = 0, j = 0, n = array.length, t;
+  var i = 0, n = array.length, t;
   if (filter) {
     for (; i<n; ++i) {
-      if (t = filter(array[i])) visitor(t, j++);
+      if (t = filter(array[i])) visitor(t, i, array);
     }
   } else {
     array.forEach(visitor);
