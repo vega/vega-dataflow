@@ -48,7 +48,7 @@ prototype.transform = function(_, pulse) {
     out = pulse.fork(pulse.ALL).reflow();
   } else {
     mods = keys.some(function(k) { return pulse.modified(k.fields); });
-    flag = pulse.ADD | (mods ? pulse.MOD : 0);
+    flag |= (mods ? pulse.MOD : 0);
   }
   pulse.visit(flag, set);
 

@@ -18,17 +18,20 @@ var prototype = inherits(HashIndex, Transform);
 prototype.transform = function(_, pulse) {
   var field = _.field,
       index = this.value,
-      flag = pulse.ADD;
+      mod = true;
 
   function set(t) { index.set(field(t), t); }
 
-  if (_.modified('field')) {
+  if (_.modified('field') || pulse.modified(field.fields)) {
     this.value = index = map();
     pulse.visit(pulse.SOURCE, set);
+  } else if (pulse.changed()) {
+    pulse.visit(pulse.ADD, set);
+    pulse.visit(pulse.REM, function(t) { index.remove(field(t)); });
   } else {
-    flag |= pulse.modified(field.fields) ? pulse.MOD : 0;
-    pulse.visit(flag, set);
+    mod = false;
   }
 
+  this.modified(mod);
   return pulse;
 };
