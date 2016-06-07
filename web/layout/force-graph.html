@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Dataflow Force-Directed Graph</title>
+    <script src="../../build/dataflow.js"></script>
+    <script src="../svg-encode.js"></script>
+    <script src="../interact.js"></script>
+    <script src="./miserables.js"></script>
+    <style>
+      body { margin: 10px; font: 14px Helvetica Neue; }
+      svg { border: 1px solid #ccc; }
+      input[type="range"] { width: 400px; }
+    </style>
+  </head>
+  <body>
+    <svg class="vis" width="800" height="500">
+      <g class="links"></g>
+      <g class="nodes"></g>
+    </svg><br/>
+    <select id="path">
+      <option value="line">line</option>
+      <option value="curve">curve</option>
+      <option value="diagonal">diagonal</option>
+      <option value="orthogonal">orthogonal</option>
+    </select> Link Shape<br/>
+    <input id="ld" type="range" min="1" max="200" value="30" step="1" /> Link Distance<br/>
+    <input id="nr" type="range" min="1" max="50" value="6" step="1" /> Node Radius<br/>
+    <input id="st" type="range" min="-100" max="100" value="-30" step="1" /> N-Body Force<br/>
+    <input id="si" type="range" min="0" max="500" value="0" step="1" /> Iterations<br/>
+    <script type="text/javascript">
+console.log('DATAFLOW version', dataflow.version);
+var ingest = dataflow.Tuple.ingest;
+var svg = document.querySelector('svg.vis');
+var gn = svg.querySelector('.nodes');
+var gl = svg.querySelector('.links');
+
+var nodes = {
+  enter: function(item, _) {
+    item.setAttribute('fill', _.sc(item.datum.group));
+  },
+  update: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('cx', t.x);
+    item.setAttribute('cy', t.y);
+    item.setAttribute('r', nr.value);
+    return true;
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+var links = {
+  enter: function(item, _) {
+    var t = item.datum;
+    item.setAttribute('stroke', '#ccc');
+    item.setAttribute('fill', 'none');
+  },
+  update: function(item, _) {
+    item.setAttribute('d', item.datum.path);
+    return true;
+  },
+  exit: function(item, _) {
+    item.remove();
+  }
+};
+
+
+var index = dataflow.field('index'),
+    source = dataflow.field('source'),
+    target = dataflow.field('target');
+
+var df = new dataflow.Dataflow(),
+    ac = df.add(null).modified(true),
+    cx = df.add(400),
+    cy = df.add(250),
+    sh = df.add('line'),
+    ld = df.add(+document.querySelector('#ld').value),
+    nr = df.add(+document.querySelector('#nr').value),
+    st = df.add(+document.querySelector('#st').value),
+    si = df.add(+document.querySelector('#si').value),
+    sc = df.add(dataflow.Scale, {type:'category20c'}),
+
+    nc = df.add(dataflow.Collect), // nodes
+    lc = df.add(dataflow.Collect), // links
+
+    fs = df.add(dataflow.Force, {
+      iterations: si,
+      forces: [
+        df.add(dataflow.Params, {type:'center', x:cx, y:cy}),
+        df.add(dataflow.Params, {type:'collide', radius:nr}),
+        df.add(dataflow.Params, {type:'nbody', strength:st}),
+        df.add(dataflow.Params, {type:'link', links:lc, distance:ld})
+      ],
+      fixed: ac,
+      pulse: nc
+    }),
+    j1 = df.add(dataflow.DataJoin, {item:items(gn, 'circle'), pulse:fs}),
+    c1 = df.add(dataflow.Collect, {pulse:j1}),
+    e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(dataflow.Sieve, {pulse: e1})
+
+    rf = df.add(dataflow.Reflow, {force:s1, pulse:lc}),
+    lp = df.add(dataflow.LinkPath, {shape:sh, pulse:rf}),
+    j2 = df.add(dataflow.DataJoin, {item:items(gl, 'path'), pulse:lp}),
+    c2 = df.add(dataflow.Collect, {pulse:j2}),
+    e2 = df.add(dataflow.Encode, {encoders:links, sc:sc, pulse:c2}),
+    s2 = df.add(dataflow.Sieve, {pulse: e2});
+
+df.pulse(nc, dataflow.changeset().insert(miserables.nodes))
+  .pulse(lc, dataflow.changeset().insert(miserables.links))
+  .run();
+
+function xy(_, e) {
+  df.touch(ac);
+  return dataflow.changeset()
+    .modify(ac.value, 'x', e.pageX - 10)
+    .modify(ac.value, 'y', e.pageY - 10);
+}
+
+var mf = function(e) { return !e.buttons; },
+    mi = df.events('circle', 'mouseover').filter(mf)
+    mo = df.events('circle', 'mouseout').filter(mf),
+    md = df.events('circle', 'mousedown'),
+    mm = df.events(window, 'mousemove'),
+    mu = df.events(window, 'mouseup')
+    drag = mm.between(md, mu).consume(true);
+
+df.on(df.events('#ld', 'input'), ld, value)
+  .on(df.events('#nr', 'input'), nr, value)
+  .on(df.events('#st', 'input'), st, value)
+  .on(df.events('#si', 'input'), si, value)
+  .on(df.events('#path', 'change'), sh, option)
+  .on(mi, ac, datum) // set active node on non-drag mouseover
+  .on(mo, ac, null)  // clear active node on non-drag mouseout
+  .on(mu, ac, null)  // clear active node on mouseup
+  .on(drag, nc, xy);
+    </script>
+  </body>
+</html>

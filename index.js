@@ -40,6 +40,7 @@ export {default as DataJoin} from './src/encode/DataJoin';
 export {default as Encode} from './src/encode/Encode';
 export {default as Scale} from './src/encode/Scale';
 
+export {default as Force} from './src/layout/Force';
 export {default as Pie} from './src/layout/Pie';
 export {default as Stack} from './src/layout/Stack';
 export {default as Voronoi} from './src/layout/Voronoi';
