@@ -26,6 +26,7 @@ export {default as Lookup} from './src/data/Lookup';
 export {default as Params} from './src/data/Params';
 export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
+export {default as Reflow} from './src/data/Reflow';
 export {default as Relay} from './src/data/Relay';
 export {default as Sample} from './src/data/Sample';
 export {default as Sieve} from './src/data/Sieve';
