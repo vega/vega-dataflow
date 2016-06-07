@@ -1,5 +1,6 @@
-import Transform from './Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
+
 import {map} from 'd3-collection';
 
 /**

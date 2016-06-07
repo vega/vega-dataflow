@@ -1,4 +1,4 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits, isFunction} from '../util/Functions';
 import {array} from '../util/Arrays';
 import {error} from '../util/Errors';

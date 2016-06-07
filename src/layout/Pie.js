@@ -1,6 +1,7 @@
-import {range, sum} from 'd3-array';
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits, One} from '../util/Functions';
+
+import {range, sum} from 'd3-array';
 
 /**
  * Pie and donut chart layout.

@@ -1,9 +1,10 @@
-import {mean, min, max, median} from 'd3-array';
-import Transform from './Transform';
+import Transform from '../Transform';
 import {inherits, name} from '../util/Functions';
 import {ingest} from '../Tuple';
 import {Empty} from '../util/Arrays';
 import {error} from '../util/Errors';
+
+import {mean, min, max, median} from 'd3-array';
 
 var METHODS = {
   value: 'value',

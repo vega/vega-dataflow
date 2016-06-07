@@ -1,4 +1,4 @@
-import Transform from '../Transform';
+import Transform from '../../Transform';
 import {inherits} from '../../util/Functions';
 import SortedIndex from './SortedIndex';
 import Bitmaps from './Bitmaps';

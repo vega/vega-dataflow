@@ -95,7 +95,7 @@ var p = dataflow.field('parent'),
     s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
     tl = df.add(dataflow.Tree, {method:lm, size:[w,h], pulse:s0}),
 
-    ln = df.add(dataflow.Links, {pulse:tl}),
+    ln = df.add(dataflow.TreeLinks, {pulse:tl}),
     lc = df.add(dataflow.Collect, {pulse:ln}),
     lp = df.add(dataflow.LinkPath, {shape:sh, pulse:lc}),
     j2 = df.add(dataflow.DataJoin, {item:items(g, 'path'), pulse:lp}),

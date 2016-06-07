@@ -1,4 +1,4 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 
 var CENTER = 'center',

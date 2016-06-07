@@ -1,5 +1,6 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
+
 import {voronoi} from 'd3-voronoi';
 
 export default function Voronoi(params) {

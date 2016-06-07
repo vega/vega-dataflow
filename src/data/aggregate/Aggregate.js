@@ -1,4 +1,4 @@
-import Transform from '../Transform';
+import Transform from '../../Transform';
 import TupleStore from './TupleStore';
 import {createMeasure, compileMeasures} from './Measures';
 import {ingest, prev, prev_init} from '../../Tuple';

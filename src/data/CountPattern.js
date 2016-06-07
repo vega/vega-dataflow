@@ -1,4 +1,4 @@
-import Transform from './Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 import {ingest, prev_init, set} from '../Tuple';
 

@@ -1,4 +1,4 @@
-import Transform from './Transform';
+import Transform from '../Transform';
 import Subflow from './Subflow';
 import {inherits} from '../util/Functions';
 import {prev} from '../Tuple';

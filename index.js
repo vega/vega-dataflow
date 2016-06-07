@@ -1,16 +1,22 @@
 export {version} from './build/package';
 
+// Utilities
+export {accessor, field, name, compare} from './src/util/Functions';
+export {normal} from './src/util/Random'; // TODO remove
+export {isString, stringValue} from './src/util/Strings'; // TODO remove
+export {error, info, warn, logLevel} from './src/util/Errors';
+
+// Core Runtime
+import * as Tuple from './src/Tuple'; export {Tuple};
+export {default as changeset} from './src/ChangeSet';
 export {default as Dataflow} from './src/Dataflow';
-export {default as Operator} from './src/Operator';
+export {default as EventStream} from './src/EventStream';
 export {default as Pulse} from './src/Pulse';
 export {default as MultiPulse} from './src/MultiPulse';
-export {default as EventStream} from './src/EventStream';
-export {default as changeset} from './src/ChangeSet';
+export {default as Operator} from './src/Operator';
+export {default as Transform} from './src/Transform';
 
-import * as Tuple from './src/Tuple';
-export {Tuple};
-
-export {default as Transform} from './src/data/Transform';
+// Data Transforms
 export {default as Apply} from './src/data/Apply';
 export {default as Bin} from './src/data/Bin';
 export {default as Collect} from './src/data/Collect';
@@ -36,23 +42,20 @@ export {default as Aggregate} from './src/data/aggregate/Aggregate';
 export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
 export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 
+// Encoding Transforms
 export {default as DataJoin} from './src/encode/DataJoin';
 export {default as Encode} from './src/encode/Encode';
 export {default as Scale} from './src/encode/Scale';
 
+// Layout Transforms
 export {default as Force} from './src/layout/Force';
+export {default as LinkPath} from './src/layout/LinkPath';
 export {default as Pie} from './src/layout/Pie';
 export {default as Stack} from './src/layout/Stack';
 export {default as Voronoi} from './src/layout/Voronoi';
 
+// Hierarchy Transforms
 export {default as Nest} from './src/hierarchy/Nest';
-export {default as Links} from './src/hierarchy/Links';
-export {default as LinkPath} from './src/hierarchy/LinkPath';
 export {default as Stratify} from './src/hierarchy/Stratify';
+export {default as TreeLinks} from './src/hierarchy/TreeLinks';
 export {Pack, Partition, Tree, Treemap} from './src/hierarchy/Layouts';
-
-export {default as UniqueList} from './src/util/UniqueList';
-export {accessor, field, name, compare} from './src/util/Functions';
-export {normal} from './src/util/Random';
-export {isString, stringValue} from './src/util/Strings';
-export {error, logLevel} from './src/util/Errors';

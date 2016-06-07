@@ -1,4 +1,4 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
 import {error} from '../util/Errors';
@@ -10,11 +10,11 @@ import {error} from '../util/Errors';
   * @constructor
   * @param {object} params - The parameters for this operator.
   */
-export default function Links(params) {
+export default function TreeLinks(params) {
   Transform.call(this, {}, params);
 }
 
-var prototype = inherits(Links, Transform);
+var prototype = inherits(TreeLinks, Transform);
 
 function parentTuple(node) {
   var p;
@@ -25,7 +25,7 @@ function parentTuple(node) {
 
 prototype.transform = function(_, pulse) {
   if (!pulse.source || !pulse.source.root) {
-    error('Links transform requires a backing tree data source.');
+    error('TreeLinks transform requires a backing tree data source.');
   }
 
   var root = pulse.source.root,

@@ -1,5 +1,5 @@
-import Operator from '../Operator';
-import {inherits} from '../util/Functions';
+import Operator from './Operator';
+import {inherits} from './util/Functions';
 
 /**
  * Abstract class for operators that process data tuples.

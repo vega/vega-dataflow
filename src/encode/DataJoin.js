@@ -1,7 +1,8 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 import {error} from '../util/Errors';
 import {id} from '../Tuple';
+
 import {map} from 'd3-collection';
 
 /**

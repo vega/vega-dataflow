@@ -1,6 +1,7 @@
-import Transform from './Transform';
+import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
+
 import {range} from 'd3-array';
 
 /**

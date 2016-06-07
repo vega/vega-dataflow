@@ -1,4 +1,4 @@
-import Transform from '../data/Transform';
+import Transform from '../Transform';
 import {inherits, False} from '../util/Functions';
 
 /**
