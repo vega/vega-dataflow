@@ -18,6 +18,7 @@
     "url": "https://github.com/uwdata/dataflow.git"
   },
   "scripts": {
+    "build": "npm run test && uglifyjs build/dataflow.js -c -m -o build/dataflow.min.js",
     "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
     "test": "tape 'test/**/*-test.js' && eslint index.js src test"
   },
