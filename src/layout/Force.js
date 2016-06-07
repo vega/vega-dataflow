@@ -67,6 +67,7 @@ prototype.transform = function(_, pulse) {
     this.value = sim = initialize(simulation(pulse.source), _, true);
     sim.on('tick', rerun(pulse.dataflow, this));
     sim.on('end', (function() { this.stopped = true; }).bind(this));
+    if (!iter) tuples = true, sim.tick(); // ensure we run on init
   } else {
     if (tuples) sim.nodes(pulse.source);
     if (params) initialize(sim, _, false);
