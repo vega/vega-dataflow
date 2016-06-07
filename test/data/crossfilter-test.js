@@ -15,11 +15,11 @@ tape('Crossfilter filters tuples', function(test) {
       r2 = df.add([0, 5]),
       c0 = df.add(dataflow.Collect),
       cf = df.add(dataflow.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0}),
-      f1 = df.add(dataflow.ResolveFilter, {ignore:2, filter:cf}),
+      f1 = df.add(dataflow.ResolveFilter, {ignore:2, filter:cf, pulse:cf}),
       o1 = df.add(dataflow.Collect, {pulse: f1}),
-      f2 = df.add(dataflow.ResolveFilter, {ignore:1, filter:cf}),
+      f2 = df.add(dataflow.ResolveFilter, {ignore:1, filter:cf, pulse:cf}),
       o2 = df.add(dataflow.Collect, {pulse: f2}),
-      fn = df.add(dataflow.ResolveFilter, {ignore:0, filter:cf}),
+      fn = df.add(dataflow.ResolveFilter, {ignore:0, filter:cf, pulse:cf}),
       on = df.add(dataflow.Collect, {pulse: fn});
 
   // -- add data

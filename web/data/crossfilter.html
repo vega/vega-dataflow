@@ -240,7 +240,7 @@ bin.forEach(function(bin, i) {
       c  = df.add(dataflow.Collect, {pulse: a}),
       x  = df.add(dataflow.Extent, {field:count, pulse:c}),
 
-      fr = df.add(dataflow.ResolveFilter, {ignore:(1<<i), filter:cf}),
+      fr = df.add(dataflow.ResolveFilter, {ignore:(1<<i), filter:cf, pulse:cf}),
       fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:fr}),
       fc = df.add(dataflow.Collect, {pulse: fa}),
 

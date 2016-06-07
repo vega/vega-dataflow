@@ -181,7 +181,7 @@ prototype.on = function(stream, target, update, params, options) {
   return self;
 };
 
-// EVALUATE THE DATAFLOW
+// RUN PROPAGATION CYCLE
 
 /**
  * Runs the dataflow. This method will increment the current timestamp
@@ -213,10 +213,8 @@ prototype.run = function() {
   this._pulses = {};
 
   while (pq.size() > 0) {
-    // process next operator in queue
-    op = pq.pop();
-
-    next = op.run(this._getPulse(op, pulses));
+    op = pq.pop(); // process next operator in queue
+    next = op.run(getPulse(this, this._clock, op, pulses));
 
     if (level >= Levels.Debug) {
       debug(
@@ -230,25 +228,17 @@ prototype.run = function() {
     if (next !== StopPropagation) {
       pulse = next;
       (op._targets || Empty).forEach(function(op) {
-        var p = pulses[op.id];
-        if (!p) {
-          pq.push(op); // enqueue if not already present
-          pulses[op.id] = pulse;
-        } else if (op !== p.target) {
-          pulses[op.id] = pulse;
-        }
+        if (!pulses[op.id]) pq.push(op), pulses[op.id] = pulse;
       });
-    }
-    if (level >= Levels.Debug) {
-      debug('Heap', pq.nodes.map(Id));
     }
 
     // increment visit counter
     ++count;
   }
 
+  // invoke callbacks queued via runAfter
   this._running = false;
-  if (this._postrun.length) { // TODO: timeout?
+  if (this._postrun.length) {
     this._postrun.forEach(function(f) { f(); });
     this._postrun = [];
   }
@@ -282,29 +272,21 @@ prototype.runAfter = function(pulse, callback) {
   }
 };
 
-function $pulse(op) { return op.pulse; }
-
-prototype._getPulse = function(op, pulses) {
+function getPulse(df, stamp, op, pulses) {
   // if the operator has an explicit source, try to pull the pulse from it
   var s = op.source, p, q;
   if (s && Array.isArray(s)) {
     // if source array, consolidate pulses into a multi-pulse
-    return new MultiPulse(this, this._clock, s.map($pulse));
+    return new MultiPulse(df, stamp, s.map(function(_) { return _.pulse; }));
   } else {
-    // otherwise, return current pulse with correct source data
-    // prioritize targetted pulses, then current source pulse
-    // copy source data as available
-    s = s && s.pulse;
+    // return current pulse with correct source data; copy source as needed
+    // priority: 1. pulse with explicit target, 2. current pulse from source
     q = pulses[op.id];
-    p = (!s || s.stamp !== this._clock || q.target === op) ? q : s;
+    p = (s && (s=s.pulse) && s.stamp === stamp && q.target !== op) ? s : q;
     if (s) p.source = s.source;
     return p;
-    // return !p || pulses[op.id].target === op ? pulses[op.id]
-    //      : (p.stamp === this._clock) ? p // use current source pulse
-    //      : (pulses[op.id].source = p.source, pulses[op.id]); // copy source
   }
-};
-
+}
 
 // SAVE / RESTORE DATAFLOW STATE
 
