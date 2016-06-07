@@ -1,12 +1,13 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    dataflow = require('../../'),
+    changeset = dataflow.changeset;
 
 tape('HashIndex maintains a hash index', function(test) {
   var data = [
     {'id': 1, 'value': 'foo'},
     {'id': 3, 'value': 'bar'},
     {'id': 5, 'value': 'baz'}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var id = dataflow.field('id'),
       va = dataflow.field('value'),
@@ -16,12 +17,10 @@ tape('HashIndex maintains a hash index', function(test) {
       hi = df.add(dataflow.HashIndex, {field:fi, pulse:c0}),
       map;
 
-  df.update(fi, id);
-  df.run(); // initialize
+  df.update(fi, id).run(); // initialize
 
   // add data
-  df.nextPulse.add = data;
-  df.touch(c0).run();
+  df.pulse(c0, changeset().insert(data)).run();
   map = hi.value;
   test.equal(map.size(), 3);
   test.equal(map.get(1), data[0]);
@@ -31,11 +30,7 @@ tape('HashIndex maintains a hash index', function(test) {
   test.equal(!!hi.modified(), true);
 
   // change key field value
-  dataflow.Tuple.prev_init(data[0], df.clock+1);
-  data[0].id = 2;
-  df.nextPulse.modifies('id');
-  df.nextPulse.mod.push(data[0]);
-  df.touch(c0).run();
+  df.pulse(c0, changeset().modify(data[0], 'id', 2)).run();
   map = hi.value;
   test.equal(map.size(), 3);
   test.equal(map.get(2), data[0]);
@@ -45,11 +40,7 @@ tape('HashIndex maintains a hash index', function(test) {
   test.equal(!!hi.modified(), true);
 
   // change non-key field value
-  dataflow.Tuple.prev_init(data[1]);
-  data[1].value = 'boo';
-  df.nextPulse.modifies('value');
-  df.nextPulse.mod.push(data[1]);
-  df.touch(c0).run();
+  df.pulse(c0, changeset().modify(data[1], 'value', 'boo')).run();
   map = hi.value;
   test.equal(map.size(), 3);
   test.equal(map.get(2), data[0]);
@@ -77,8 +68,7 @@ tape('HashIndex maintains a hash index', function(test) {
   test.equal(!!hi.modified(), true);
 
   // remove data
-  df.nextPulse.rem.push(data[1]);
-  df.touch(c0).run();
+  df.pulse(c0, changeset().remove(data[1])).run();
   test.equal(map.size(), 2);
   test.equal(map.get('foo'), data[0]);
   test.equal(map.get('boo'), undefined);

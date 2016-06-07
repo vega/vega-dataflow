@@ -66,6 +66,7 @@ function flag(bit) {
     var f = this.flags;
     if (arguments.length === 0) return f & bit;
     this.flags = state ? (f | bit) : (f & ~bit);
+    return this;
   };
 }
 
@@ -97,7 +98,7 @@ prototype.modified = flag(MODIFIED);
  * @param {object} params - A hash of operator parameters.
  * @return {Operator} this operator instance.
  */
-prototype.parameters = function(params) {
+prototype.parameters = function(params, nosub) {
   var self = this,
       argval = (self._argval = self._argval || new Parameters()),
       argops = (self._argops = self._argops || []),
@@ -105,7 +106,7 @@ prototype.parameters = function(params) {
 
   function add(name, index, value) {
     if (value instanceof Operator) {
-      if (value !== self) value.targets().add(self);
+      if (value !== self && !nosub) value.targets().add(self);
       argops.push({op:value, name:name, index:index});
     } else {
       argval.set(name, index, value);
@@ -168,7 +169,7 @@ prototype.marshall = function(stamp) {
  *   (including undefined) will let the input pulse pass through.
  */
 prototype.evaluate = function(pulse) {
-  if (this._update && !this.skip()) {
+  if (this._update) {
     var params = this.marshall(pulse.stamp),
         v = this._update(params, pulse);
 
@@ -192,7 +193,7 @@ prototype.evaluate = function(pulse) {
  */
 prototype.run = function(pulse) {
   if (pulse.stamp <= this.stamp) return pulse.StopPropagation;
-  var rv = this.evaluate(pulse) || pulse;
+  var rv = (!this.skip() && this.evaluate(pulse)) || pulse;
   this.stamp = pulse.stamp;
   return (this.skip(false), this.pulse = rv);
 };

@@ -1,11 +1,12 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    dataflow = require('../../'),
+    changeset = dataflow.changeset;
 
 tape('Impute imputes missing tuples', function(test) {
   var data = [
     {'x': 0, 'y': 28, 'c':0}, {'x': 0, 'y': 55, 'c':1},
     {'x': 1, 'y': 43, 'c':0}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var x = dataflow.field('x'),
       y = dataflow.field('y'),
@@ -16,8 +17,7 @@ tape('Impute imputes missing tuples', function(test) {
       im = df.add(dataflow.Impute, {field:y, method:m, value:-1, groupby:[c], orderby:[x], pulse:co}),
       p;
 
-  df.nextPulse.add = data;
-  df.run();
+  df.pulse(co, changeset().insert(data)).run();
   p = im.pulse;
   test.equal(p.add.length, 4);
   test.equal(p.add[3].c, 1);

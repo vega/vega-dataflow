@@ -1,11 +1,12 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    dataflow = require('../../'),
+    changeset = dataflow.changeset;
 
 tape("Rank ranks tuples", function(test) {
   var data = [
     {"x": 0, "y": 28}, {"x": 1, "y": 43},
     {"x": 0, "y": 55}, {"x": 1, "y": 72}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var rank = dataflow.field('rank'),
       x = dataflow.field('x'),
@@ -15,9 +16,7 @@ tape("Rank ranks tuples", function(test) {
       c = df.add(dataflow.Collect),
       r = df.add(dataflow.Rank, {field:f, normalize:n, pulse:c});
 
-  df.nextPulse.add = data;
-
-  df.run();
+  df.pulse(c, changeset().insert(data)).run();
   test.deepEqual(c.value.map(rank), [0, 1, 2, 3]);
   test.equal(r.pulse.add.length, 4);
 

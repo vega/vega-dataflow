@@ -1,10 +1,10 @@
-var TUPLE_ID = 0;
+var TUPLE_ID = 1;
 
 /**
  * Resets the internal tuple id counter to zero.
  */
 function reset() {
-  TUPLE_ID = 0;
+  TUPLE_ID = 1;
 }
 
 /**
@@ -40,7 +40,7 @@ function copy(t, c) {
  */
 function ingest(datum) {
   var tuple = (datum === Object(datum)) ? datum : {data: datum};
-  tuple._id = ++TUPLE_ID;
+  if (!tuple._id) tuple._id = ++TUPLE_ID;
   if (tuple._prev) tuple._prev = null;
   return tuple;
 }
@@ -101,6 +101,7 @@ function prev(t, stamp) {
 function prev_init(t, stamp) {
   var p = t._prev, k, v;
   if (!p) { p = t._prev = {_id: t._id, _stamp: stamp}; }
+  else if (p._stamp === stamp) return;
   else p._stamp = stamp;
 
   for (k in t) {

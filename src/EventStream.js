@@ -39,8 +39,12 @@ prototype.consume = function(_) {
 
 prototype.receive = function(evt) {
   if (this._filter(evt)) {
-    var val = (this.value = this._apply(evt));
-    (this._targets || Empty).forEach(function(t) { t.receive(val); });
+    var val = (this.value = this._apply(evt)),
+        trg = this._targets || Empty,
+        n = trg.length, i = 0;
+
+    for (; i<n; ++i) trg[i].receive(val);
+
     if (this._consume) {
       evt.preventDefault();
       evt.stopPropagation();

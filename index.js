@@ -5,6 +5,7 @@ export {default as Operator} from './src/Operator';
 export {default as Pulse} from './src/Pulse';
 export {default as MultiPulse} from './src/MultiPulse';
 export {default as EventStream} from './src/EventStream';
+export {default as changeset} from './src/ChangeSet';
 
 import * as Tuple from './src/Tuple';
 export {Tuple};

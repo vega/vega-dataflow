@@ -1,12 +1,13 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    dataflow = require('../../'),
+    changeset = dataflow.changeset;
 
 tape('Collect collects tuples', function(test) {
   var data = [
     {'id': 1, 'value': 'foo'},
     {'id': 3, 'value': 'bar'},
     {'id': 5, 'value': 'baz'}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var df = new dataflow.Dataflow(),
       so = df.add(null),
@@ -17,8 +18,7 @@ tape('Collect collects tuples', function(test) {
   test.equal(!!c0.modified(), false);
 
   // add data
-  df.nextPulse.add = data;
-  df.touch(c0).run();
+  df.pulse(c0, changeset().insert(data)).run();
   test.equal(c0.value.length, 3);
   test.equal(c0.value[0], data[0]);
   test.equal(c0.value[1], data[1]);
@@ -34,9 +34,8 @@ tape('Collect collects tuples', function(test) {
   test.equal(!!c0.modified(), true);
 
   // add new data
-  data.push(dataflow.Tuple.ingest({id:2, value:'abc'}));
-  df.nextPulse.add.push(data[3]);
-  df.touch(c0).run();
+  data.push({id:2, value:'abc'});
+  df.pulse(c0, changeset().insert(data[3])).run();
   test.equal(c0.value.length, 4);
   test.equal(c0.value[0], data[3]);
   test.equal(c0.value[1], data[1]);
@@ -45,8 +44,7 @@ tape('Collect collects tuples', function(test) {
   test.equal(!!c0.modified(), true);
 
   // remove data
-  df.nextPulse.rem.push(data[1]);
-  df.touch(c0).run();
+  df.pulse(c0, changeset().remove(data[1])).run();
   test.equal(c0.value.length, 3);
   test.equal(c0.value[0], data[3]);
   test.equal(c0.value[1], data[2]);
@@ -54,11 +52,7 @@ tape('Collect collects tuples', function(test) {
   test.equal(!!c0.modified(), true);
 
   // modify data
-  dataflow.Tuple.prev_init(data[0], df.clock + 1);
-  data[0].value = 'boo';
-  df.nextPulse.mod.push(data[0]);
-  df.nextPulse.modifies('value');
-  df.touch(c0).run();
+  df.pulse(c0, changeset().modify(data[0], 'value', 'boo')).run();
   test.equal(c0.value.length, 3);
   test.equal(c0.value[0], data[3]);
   test.equal(c0.value[1], data[2]);

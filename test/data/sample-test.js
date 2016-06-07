@@ -1,24 +1,21 @@
 var tape = require('tape'),
     dataflow = require('../../'),
-    ingest = dataflow.Tuple.ingest;
+    changeset = dataflow.changeset;
 
-tape('Sample samples tuples', function(test) {
+tape('Sample samples tuples without backing source', function(test) {
   var n = 100,
       ns = 20,
       data = Array(n),
       map = {},
       i, t;
 
-  for (i=0; i<n; ++i) {
-    data[i] = ingest({v:Math.random()});
-  }
+  for (i=0; i<n; ++i) data[i] = {v:Math.random()};
 
   var df = new dataflow.Dataflow(),
-      s = df.add(dataflow.Sample, {num: ns});
+      s = df.add(dataflow.Sample, {num:ns});
 
   // -- initial sample
-  df.nextPulse.add = data;
-  df.run();
+  df.pulse(s, changeset().insert(data)).run();
   test.equal(s.value.length, ns);
   test.notDeepEqual(s.value.length, data.slice(0, ns));
 
@@ -32,9 +29,9 @@ tape('Sample samples tuples', function(test) {
     if (!map[t._id]) { outTuple = t; break; }
   }
 
-  inTuple.v = outTuple.v = -1;
-  df.nextPulse.mod = [inTuple, outTuple];
-  df.touch(s).run();
+  df.pulse(s, changeset()
+    .modify(inTuple, 'v', -1)
+    .modify(outTuple, 'v', -1)).run();
   test.equal(s.value.length, ns);
   test.deepEqual(s.pulse.mod, [inTuple]);
 
@@ -42,15 +39,49 @@ tape('Sample samples tuples', function(test) {
   map = {};
   var rems = s.value.slice(0, 10);
   rems.forEach(function(t) { map[t._id] = 1; });
-  df.nextPulse.rem = rems;
-  df.touch(s).run();
+  df.pulse(s, changeset().remove(rems)).run();
   test.equal(s.value.length, ns - 10);
-  test.false(s.value.some(function(t) { return map[t._id]; }));
+  test.equal(s.value.some(function(t) { return map[t._id]; }), false);
+
+  test.end();
+});
+
+tape('Sample samples tuples with backing source', function(test) {
+  var n = 100,
+    ns = 20,
+    data = Array(n),
+    map = {},
+    i, t;
+
+  for (i=0; i<n; ++i) data[i] = {v:Math.random()};
+
+  var df = new dataflow.Dataflow(),
+      c = df.add(dataflow.Collect),
+      s = df.add(dataflow.Sample, {num:ns, pulse:c});
+
+  // -- initial sample
+  df.pulse(c, changeset().insert(data)).run();
+  test.equal(s.value.length, ns);
+  test.notDeepEqual(s.value.length, data.slice(0, ns));
+
+  // -- modify tuple in and out sample, check propagation
+  s.value.forEach(function(t) { map[t._id] = 1; });
+  var inTuple = s.value[0];
+  var outTuple = null;
+
+  for (i=0; i<n; ++i) {
+    t = data[i];
+    if (!map[t._id]) { outTuple = t; break; }
+  }
+
+  df.pulse(c, changeset()
+    .modify(inTuple, 'v', -1)
+    .modify(outTuple, 'v', -1)).run();
+  test.equal(s.value.length, ns);
+  test.deepEqual(s.pulse.mod, [inTuple]);
 
   // -- remove half of sample, with backing source
-  df.nextPulse.rem = s.value;
-  df.nextPulse.source = data;
-  df.touch(s).run();
+  df.pulse(c, changeset().remove(s.value.slice())).run();
   test.equal(s.value.length, ns);
 
   test.end();

@@ -72,9 +72,8 @@ var key = dataflow.field('key'),
     e1 = df.add(dataflow.Encode, {encoders:arcs, sc:sc, xc:xc, yc:yc, ir:ir, or:or, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
-df.nextPulse.add = data.map(ingest);
-
-df.on(df.events(ri, 'input'), ir, value)
+df.pulse(c0, dataflow.changeset().insert(data))
+  .on(df.events(ri, 'input'), ir, value)
   .on(df.events(ro, 'input'), or, value)
   .on(df.events(rs, 'input'), sa, value)
   .on(df.events(re, 'input'), ea, value)

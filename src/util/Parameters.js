@@ -32,6 +32,11 @@ prototype.modified = function(name, index) {
   if (!arguments.length) {
     for (k in mod) { if (mod[k]) return 1; }
     return 0;
+  } else if (Array.isArray(name)) {
+    for (k=0; k<name.length; ++k) {
+      if (mod[name[k]]) return 1;
+    }
+    return 0;
   }
   return mod[key(name, index)];
 };

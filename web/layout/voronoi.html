@@ -18,7 +18,6 @@
     Click or hold command to add points. Hold shift to remove them.
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
 var data = [];
@@ -78,23 +77,21 @@ var u = dataflow.field('u'),
     e2 = df.add(dataflow.Encode, {encoders:cells, sx:sx, sy:sy, pulse:j2}),
     s2 = df.add(dataflow.Sieve, {pulse: e2});
 
-df.nextPulse.add = data.map(ingest);
-df.run();
+df.pulse(c0, dataflow.changeset().insert(data)).run();
 
 function addPoint(evt) {
   var x = sx.value.invert(evt.pageX - 11);
   var y = sy.value.invert(evt.pageY - 11);
-  df.nextPulse.add = [ingest({u:x, v:y})];
-  df.touch(c0).run();
+  df.pulse(c0, dataflow.changeset().insert({u:x, v:y})).run();
 }
 
 svg.addEventListener('click', addPoint);
 svg.addEventListener('mousemove', function(evt) {
   if (evt.target !== svg && evt.shiftKey) {
-    var t = evt.target.datum;
-    df.nextPulse.rem = [t];
-    df.touch(c0).run();
-  } else if (evt.buttons || evt.metaKey) addPoint(evt);
+    df.pulse(c0, dataflow.changeset().remove(evt.target.datum)).run();
+  } else if (evt.buttons || evt.metaKey) {
+    addPoint(evt);
+  }
 });
     </script>
   </body>

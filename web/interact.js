@@ -16,6 +16,13 @@ function pageY(_, e) { return e.pageY; }
 
 // UTILITY METHODS
 
+function changes(_, e) {
+  var cs = dataflow.changeset();
+  if (_.add && _.add[0]) cs.insert(_.add);
+  if (_.rem && _.rem[0]) cs.remove(_.rem);
+  return cs;
+}
+
 function clamp(v, min, max) {
   return Math.min(max, Math.max(v, min));
 }

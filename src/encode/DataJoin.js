@@ -59,6 +59,5 @@ prototype.transform = function(_, pulse) {
       out.mod.push(x);
     }
   });
-
   return out;
 };

@@ -14,6 +14,7 @@ export default function Sieve(params) {
 var prototype = inherits(Sieve, Transform);
 
 prototype.transform = function(_, pulse) {
+  this.value = pulse.source;
   return pulse.changed()
     ? pulse.fork()
     : pulse.StopPropagation;

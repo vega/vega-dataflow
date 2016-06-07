@@ -1,19 +1,20 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    dataflow = require('../../'),
+    changeset = dataflow.changeset;
 
 tape('Lookup looks up matching tuples', function(test) {
   var lut = [
     {'id': 1, 'value': 'foo'},
     {'id': 3, 'value': 'bar'},
     {'id': 5, 'value': 'baz'}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var data = [
     {'id': 0, 'x': 5, 'y': 1},
     {'id': 1, 'x': 3, 'y': 5},
     {'id': 2, 'x': 1, 'y': 5},
     {'id': 3, 'x': 3, 'y': 3}
-  ].map(dataflow.Tuple.ingest);
+  ];
 
   var uv = function(t) { return t.u.value; }, // field('u.value')
       vv = function(t) { return t.v.value; }, // field('v.value')
@@ -30,13 +31,11 @@ tape('Lookup looks up matching tuples', function(test) {
   df.run(); // initialize
 
   // add lookup table
-  df.nextPulse.add = lut;
-  df.touch(c0).run();
+  df.pulse(c0, changeset().insert(lut)).run();
   test.equal(Object.keys(hi.value).length, 3);
 
   // add primary data
-  df.nextPulse.add = data;
-  df.touch(c1).run();
+  df.pulse(c1, changeset().insert(data)).run();
   var p = lu.pulse.add;
   test.equal(p.length, 4);
   test.deepEqual(p.map(uv), ['baz', 'bar', 'foo', 'bar']);

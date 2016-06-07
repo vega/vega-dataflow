@@ -28,7 +28,7 @@ var data = [
 ].map(function(d) {
   d.x = Math.random();
   d.y = Math.random();
-  return ingest(d);
+  return d;
 });
 
 var groups = {
@@ -90,7 +90,7 @@ var df = new dataflow.Dataflow(),
     color = df.add(dataflow.Scale, {type: cpal}),
     sx    = df.add(dataflow.Scale, {domain:domx, range:rngx}),
     sy    = df.add(dataflow.Scale, {domain:domy, range:rngy}),
-    init  = df.add(dataflow.Collector),
+    init  = df.add(dataflow.Collect),
     aggr  = df.add(dataflow.Aggregate, {groupby:[cat], pulse:init}),
     group = df.add(dataflow.Collect, {pulse:aggr}),
     apply = df.add(dataflow.Apply, {field:'color', apply:setc, c:color, pulse:group}),
@@ -112,15 +112,11 @@ document.querySelector('#palette').addEventListener('click', function(evt) {
 
 document.querySelector('#parent').addEventListener('click', function(evt) {
   var t = group.value[0];
-  dataflow.Tuple.prev_init(t);
-  t.cat = (t.cat === 'a' ? 'c' : 'a');
-  df.nextPulse.mod = [t];
-  df.nextPulse.modifies('cat');
-  df.touch(group).run();
+  df.pulse(group, dataflow.changeset()
+    .modify(t, 'cat', t.cat === 'a' ? 'c' : 'a')).run();
 });
 
-df.nextPulse.add = data;
-df.run(); // kick things off
+df.pulse(init, dataflow.changeset().insert(data)).run();
     </script>
   </body>
 </html>

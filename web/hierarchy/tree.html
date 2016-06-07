@@ -108,8 +108,7 @@ var p = dataflow.field('parent'),
     e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
-df.nextPulse.add = data.map(ingest);
-df.run();
+df.pulse(c0, dataflow.changeset().insert(data)).run();
 
 var md = df.events('svg circle', 'mousedown'),
     mm = df.events(window, 'mousemove'),
@@ -121,18 +120,12 @@ df.on(df.events(svg, 'dblclick'), c0) // re-run all on double-click
   .on(df.events('#path', 'change'), sh, option)
   .on(df.events('#method', 'change'), lm, option)
   .on(md, ac, datum)
-  .on(mu, ac, null);
-
-mm.between(md, mu).apply(function(evt) {
-  var t = ac.value,
-      x = evt.pageX - 60,
-      y = evt.pageY - 60;
-
-  dataflow.Tuple.prev_init(t, df.clock+1);
-  df.nextPulse.modifies(['x', 'y']);
-  df.nextPulse.mod.push((t.x = x, t.y = y, t));
-  df.touch(ln).touch(j1).run();
-});
+  .on(mu, ac, null)
+  .on(mm.between(md, mu), tl, function(_, e) {
+    return dataflow.changeset()
+      .modify(ac.value, 'x', e.pageX - 60)
+      .modify(ac.value, 'y', e.pageY - 60);
+  }, null, {skip: true});
     </script>
   </body>
 </html>

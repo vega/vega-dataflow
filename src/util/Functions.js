@@ -4,6 +4,10 @@ export function isFunction(_) {
   return typeof _ === 'function';
 }
 
+export function functor(_) {
+  return isFunction(_) ? _ : function() { return _; };
+}
+
 export function inherits(child, parent) {
   var proto = (child.prototype = Object.create(parent.prototype));
   proto.constructor = child;

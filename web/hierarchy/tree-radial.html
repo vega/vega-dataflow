@@ -108,8 +108,7 @@ var p = dataflow.field('parent'),
     e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
-df.nextPulse.add = data.map(ingest);
-df.run();
+df.pulse(c0, dataflow.changeset().insert(data)).run();
 
 var md = df.events('svg circle', 'mousedown'),
     mm = df.events(window, 'mousemove'),
@@ -121,20 +120,16 @@ df.on(df.events(svg, 'dblclick'), c0) // re-run all on double-click
   .on(df.events('#path', 'change'), sh, option)
   .on(df.events('#method', 'change'), lm, option)
   .on(md, ac, datum)
-  .on(mu, ac, null);
-
-mm.between(md, mu).apply(function(evt) {
-  var t = ac.value,
-      x = evt.pageX - 260,
-      y = evt.pageY - 260,
-      a = Math.atan2(y, x),
-      r = Math.sqrt(x*x + y*y);
-
-  dataflow.Tuple.prev_init(t, df.clock+1);
-  df.nextPulse.modifies(['x', 'y']);
-  df.nextPulse.mod.push((t.x = a, t.y = r, t));
-  df.touch(ln).touch(j1).run();
-});
+  .on(mu, ac, null)
+  .on(md, ac, datum)
+  .on(mu, ac, null)
+  .on(mm.between(md, mu), tl, function(_, e) {
+    var x = e.pageX - 260,
+        y = e.pageY - 260;
+    return dataflow.changeset()
+      .modify(ac.value, 'x', Math.atan2(y, x))
+      .modify(ac.value, 'y', Math.sqrt(x*x + y*y));
+  }, null, {skip: true});
     </script>
   </body>
 </html>

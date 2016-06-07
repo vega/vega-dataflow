@@ -69,12 +69,11 @@ var p = dataflow.field('parent'),
     e1 = df.add(dataflow.Encode, {encoders:encoders, sc:sc, pulse:c1}),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
-df.nextPulse.add = data.map(ingest);
-df.run();
-
-df.on(df.events('#w', 'input'), w, value)
+df.pulse(c0, dataflow.changeset().insert(data))
+  .on(df.events('#w', 'input'), w, value)
   .on(df.events('#h', 'input'), h, value)
-  .on(df.events('#pad', 'input'), pd, value);
+  .on(df.events('#pad', 'input'), pd, value)
+  .run();
     </script>
   </body>
 </html>
