@@ -1,5 +1,5 @@
+import Parameters from './Parameters';
 import UniqueList from './util/UniqueList';
-import Parameters from './util/Parameters';
 import {array} from './util/Arrays';
 import {error} from './util/Errors';
 import {Id} from './util/Functions';

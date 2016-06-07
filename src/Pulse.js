@@ -156,13 +156,13 @@ prototype.reflow = function() {
 prototype.modifies = function(_) {
   var fields = array(_),
       hash = this.fields || (this.fields = {});
-  fields.forEach(function(f) { hash[f] = 1; });
+  fields.forEach(function(f) { hash[f] = true; });
   return this;
 };
 
 prototype.modified = function(_) {
   var fields = this.fields;
-  return !(this.mod.length && fields) ? 0
+  return !(this.mod.length && fields) ? false
     : Array.isArray(_) ? _.some(function(f) { return fields[f]; })
     : fields[_];
 };

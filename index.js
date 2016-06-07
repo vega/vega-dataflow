@@ -11,6 +11,7 @@ import * as Tuple from './src/Tuple'; export {Tuple};
 export {default as changeset} from './src/ChangeSet';
 export {default as Dataflow} from './src/Dataflow';
 export {default as EventStream} from './src/EventStream';
+export {default as Parameters} from './src/Parameters';
 export {default as Pulse} from './src/Pulse';
 export {default as MultiPulse} from './src/MultiPulse';
 export {default as Operator} from './src/Operator';
