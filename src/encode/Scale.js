@@ -3,7 +3,7 @@ import {inherits} from '../util/Functions';
 import {isFunction} from '../util/Objects';
 import {error} from '../util/Errors';
 
-import * as d3_scale from 'd3-scale';
+import {default as scales} from './scales';
 
 var TYPE = 'type',
     NICE = 'nice';
@@ -42,14 +42,12 @@ prototype.transform = function(_) {
 };
 
 function createScale(scaleType) {
-  var type = (scaleType || 'linear').toLowerCase(),
-      method = 'scale' + type[0].toUpperCase() + type.slice(1);
+  var type = (scaleType || 'linear').toLowerCase();
 
-  if (!method) {
-    error('Unrecognized scale type: ' + type);
+  if (!type || !scales.hasOwnProperty(type)) {
+    error('Unrecognized scale type: ' + scaleType);
   }
 
-  var scale = d3_scale[method]();
-  scale[TYPE] = type;
-  return scale;
+  var scale = scales[type]();
+  return scale[TYPE] = type, scale;
 }
