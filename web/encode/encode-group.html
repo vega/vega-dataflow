@@ -80,7 +80,7 @@ var palettes = ['category10', 'category20', 'category20b', 'category20c'],
 
 var df = new dataflow.Dataflow(),
     cat   = dataflow.field('cat'),
-    setc  = dataflow.accessor(function(t, _) { return _.c(t.cat); }, null, ['cat']),
+    setc  = dataflow.accessor(function(t, _) { return _.c(t.cat); }, ['cat']),
     fill  = df.add('hotpink'),
     cpal  = df.add(palettes[palette]),
     rngx  = df.add([0, 500]),

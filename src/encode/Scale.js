@@ -1,5 +1,6 @@
 import Transform from '../Transform';
-import {inherits, isFunction} from '../util/Functions';
+import {inherits} from '../util/Functions';
+import {isFunction} from '../util/Objects';
 import {error} from '../util/Errors';
 
 import * as d3_scale from 'd3-scale';

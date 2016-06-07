@@ -1,5 +1,6 @@
 import {ingest, prev_init} from './Tuple';
-import {isFunction, functor} from './util/Functions';
+import {isFunction} from './util/Objects';
+import {functor} from './util/Functions';
 import {array} from './util/Arrays';
 
 export function isChangeSet(v) {

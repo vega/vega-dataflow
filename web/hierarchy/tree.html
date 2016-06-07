@@ -60,7 +60,7 @@ var nodes = {
     item.setAttribute('cx', t.x);
     item.setAttribute('cy', t.y);
     return true;
-  }, null, ['x', 'y']),
+  }, ['x', 'y']),
   exit: function(item, _) {
     item.remove();
   }

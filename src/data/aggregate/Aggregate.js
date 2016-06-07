@@ -2,7 +2,7 @@ import Transform from '../../Transform';
 import TupleStore from './TupleStore';
 import {createMeasure, compileMeasures} from './Measures';
 import {ingest, prev, prev_init} from '../../Tuple';
-import {inherits, name} from '../../util/Functions';
+import {inherits, fname} from '../../util/Functions';
 import {array} from '../../util/Arrays';
 import {error} from '../../util/Errors';
 
@@ -100,7 +100,7 @@ prototype.init = function(_) {
   // initialize group-by dimensions
   this._dims = array(_.groupby);
   this._dnames = this._dims.map(function(d) {
-    var dname = name(d)
+    var dname = fname(d)
     return (inputVisit(d), outputs.push(dname), dname);
   });
   this.cellkey = _.key ? _.key
@@ -127,7 +127,7 @@ prototype.init = function(_) {
     field = fields[i];
     op = ops[i];
 
-    mname = name(field);
+    mname = fname(field);
     outname = measureName(op, mname, as[i]);
     outputs.push(outname);
     if (!field) continue;

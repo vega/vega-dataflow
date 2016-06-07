@@ -1,8 +1,5 @@
+import {isObject, isString, isFunction} from './Objects';
 import {array, Empty} from './Arrays';
-
-export function isFunction(_) {
-  return typeof _ === 'function';
-}
 
 export function functor(_) {
   return isFunction(_) ? _ : function() { return _; };
@@ -14,17 +11,38 @@ export function inherits(child, parent) {
   return proto;
 }
 
-export function accessor(fn, name, fields) {
+export function accessor(fn, fields, name) {
   return (fn.fields = fields || Empty, fn.fname = name, fn);
 }
 
-// TODO: nested fields
 export function field(field, name) {
-  var fn = Function('_', 'return _.'+field+';');
-  return accessor(fn, name || field, [field]);
+  var path = splitPath(field).map(stringValue),
+      fn = Function('_', 'return _[' + path.join('][') + '];');
+  return accessor(fn, [field], name || field);
 }
 
-export function name(fn) {
+function stringValue(x) {
+  return Array.isArray(x) ? '[' + x.map(stringValue) + ']'
+    : isObject(x) || isString(x) ?
+      // Output valid JSON and JS source strings.
+      // See http://timelessrepo.com/json-isnt-a-javascript-subset
+      JSON.stringify(x).replace('\u2028','\\u2028').replace('\u2029', '\\u2029')
+    : x;
+}
+
+function splitPath(p) {
+  return String(p)
+    .match(/\[(.*?)\]|[^.\[]+/g)
+    .map(path_trim);
+}
+
+function path_trim(d) {
+  return d[0] !== '[' ? d
+    : d[1] !== "'" && d[1] !== '"' ? d.slice(1, -1)
+    : d.slice(2, -2).replace(/\\(["'])/g, '$1');
+}
+
+export function fname(fn) {
   return fn==null ? null : fn.fname;
 }
 
@@ -45,17 +63,17 @@ export function compare(_) {
     fields[i] = f;
   }
   var fn = Function('a', 'b', 'var u,v;return ' + code + ';');
-  return accessor(fn, null, fields);
+  return accessor(fn, fields);
 }
 
 export var Id = field('id');
 
-export var Zero = accessor(function() { return 0; }, 'zero');
+export var Zero = accessor(function() { return 0; }, Empty, 'zero');
 
-export var One = accessor(function() { return 1; }, 'one');
+export var One = accessor(function() { return 1; }, Empty, 'one');
 
-export var True = accessor(function() { return true; }, 'true');
+export var True = accessor(function() { return true; }, Empty, 'true');
 
-export var False = accessor(function() { return false; }, 'false');
+export var False = accessor(function() { return false; }, Empty, 'false');
 
-export var Identity = accessor(function(_) { return _; }, 'identity');
+export var Identity = accessor(function(_) { return _; }, Empty, 'identity');

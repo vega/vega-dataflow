@@ -1,10 +1,10 @@
 export {version} from './build/package';
 
 // Utilities
-export {accessor, field, name, compare} from './src/util/Functions';
-export {normal} from './src/util/Random'; // TODO remove
-export {isString, stringValue} from './src/util/Strings'; // TODO remove
+export {accessor, field, compare} from './src/util/Functions';
 export {error, info, warn, logLevel} from './src/util/Errors';
+export {default as UniqueList} from './src/util/UniqueList';
+export {normal} from './src/util/Random';
 
 // Core Runtime
 import * as Tuple from './src/Tuple'; export {Tuple};

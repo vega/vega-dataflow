@@ -92,7 +92,7 @@ function data() {
 
   var bin = dataflow.accessor(function(t) {
     return 5 * ~~(t.data / 5);
-  }, 'bin', ['data']);
+  }, ['data'], 'bin');
 
   var count = dataflow.field('count');
 

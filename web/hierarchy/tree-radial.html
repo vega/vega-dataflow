@@ -60,7 +60,7 @@ var nodes = {
     item.setAttribute('cx', r*Math.cos(a));
     item.setAttribute('cy', r*Math.sin(a));
     return true;
-  }, null, ['x', 'y']),
+  }, ['x', 'y']),
   exit: function(item, _) {
     item.remove();
   }

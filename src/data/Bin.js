@@ -1,5 +1,5 @@
 import Operator from '../Operator';
-import {inherits, accessor, name} from '../util/Functions';
+import {inherits, accessor, fname} from '../util/Functions';
 import bin from '../util/Bin';
 
 /**
@@ -30,5 +30,5 @@ function update(_) {
     return v == null ? null
       : start + step * Math.floor((+v - start) / step);
   };
-  return accessor(f, _.name || 'bin_' + name(field), field.fields);
+  return accessor(f, field.fields, _.name || 'bin_' + fname(field));
 }

@@ -100,7 +100,7 @@ function setFields(fields) {
   for (var i=0, n=fields.length; i<n; ++i) {
     code += 't["' + fields[i] + '"]=node["' + fields[i] + '"];';
   }
-  return accessor(Function('node', code), null, fields);
+  return accessor(Function('node', code), fields);
 }
 
 /**

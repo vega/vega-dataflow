@@ -66,10 +66,25 @@ function arc(sa, ea, i, o, x, y) {
     + 'Z';
 }
 
+function isObject(_) {
+  return _ === Object(_);
+}
+
+function isString(_) {
+  return typeof _ === 'string';
+}
+
+function stringValue(x) {
+  return Array.isArray(x) ? '[' + x.map(stringValue) + ']'
+    : isObject(x) || isString(x) ?
+      // Output valid JSON and JS source strings.
+      // See http://timelessrepo.com/json-isnt-a-javascript-subset
+      JSON.stringify(x).replace('\u2028','\\u2028').replace('\u2029', '\\u2029')
+    : x;
+}
+
 var parseEncoder = (function() {
-  var UniqueList = dataflow.UniqueList,
-      isString = dataflow.isString,
-      stringValue = dataflow.stringValue;
+  var UniqueList = dataflow.UniqueList;
 
   function parseEncoder(encodings, setter, footer) {
     var deps = new Dependencies(),

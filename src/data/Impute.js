@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits, name} from '../util/Functions';
+import {inherits, fname} from '../util/Functions';
 import {ingest} from '../Tuple';
 import {Empty} from '../util/Arrays';
 import {error} from '../util/Errors';
@@ -56,9 +56,9 @@ prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ALL),
       impute = getValue(_),
       field = getField(_),
-      fName = name(_.field),
-      gNames = _.groupby.map(name),
-      oNames = _.orderby.map(name),
+      fName = fname(_.field),
+      gNames = _.groupby.map(fname),
+      oNames = _.orderby.map(fname),
       groups = partition(pulse.source, _.groupby, _.orderby),
       curr = [],
       prev = this.value,

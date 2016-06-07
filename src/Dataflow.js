@@ -5,8 +5,8 @@ import {isChangeSet} from './ChangeSet';
 import {events} from './EventStream';
 
 import UniqueList from './util/UniqueList';
-import {Id, isFunction} from './util/Functions';
-import {extend} from './util/Objects';
+import {Id} from './util/Functions';
+import {extend, isFunction} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
 import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
