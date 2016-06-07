@@ -39,14 +39,13 @@ prototype.transform = function(_, pulse) {
   var sim = this.value,
       change = pulse.changed(pulse.ADD | pulse.REM),
       params = _.modified(PARAMS),
-      manual = _.static,
       iters = _.iterations || 300;
 
   // configure simulation
   if (!sim) {
     this.value = sim = simulation(pulse.source, _);
     sim.on('tick', rerun(pulse.dataflow, this));
-    if (!iters) change = true, sim.tick(); // ensure we run on init
+    if (!_.static) change = true, sim.tick(); // ensure we run on init
     pulse.modifies('index');
   } else {
     if (change) pulse.modifies('index'), sim.nodes(pulse.source);
@@ -64,7 +63,7 @@ prototype.transform = function(_, pulse) {
     sim.alpha(Math.max(sim.alpha(), _.alpha || 1))
        .alphaDecay(1 - Math.pow(sim.alphaMin(), 1 / iters));
 
-    if (manual) {
+    if (_.static) {
       for (sim.stop(); --iters >= 0;) sim.tick();
     } else {
       if (sim.stopped()) sim.restart();
