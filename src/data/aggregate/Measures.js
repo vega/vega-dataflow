@@ -1,5 +1,7 @@
-import {extend, values} from '../../util/Objects';
+import {extend} from '../../util/Objects';
 import {Identity} from '../../util/Functions';
+
+import {values} from 'd3-collection';
 
 export var Aggregates = {
   'values': measure({

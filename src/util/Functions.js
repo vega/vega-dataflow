@@ -1,4 +1,4 @@
-import {isObject, isString, isFunction} from './Objects';
+import {isFunction, stringValue, splitPath} from './Objects';
 import {array, Empty} from './Arrays';
 
 export function functor(_) {
@@ -19,27 +19,6 @@ export function field(field, name) {
   var path = splitPath(field).map(stringValue),
       fn = Function('_', 'return _[' + path.join('][') + '];');
   return accessor(fn, [field], name || field);
-}
-
-function stringValue(x) {
-  return Array.isArray(x) ? '[' + x.map(stringValue) + ']'
-    : isObject(x) || isString(x) ?
-      // Output valid JSON and JS source strings.
-      // See http://timelessrepo.com/json-isnt-a-javascript-subset
-      JSON.stringify(x).replace('\u2028','\\u2028').replace('\u2029', '\\u2029')
-    : x;
-}
-
-function splitPath(p) {
-  return String(p)
-    .match(/\[(.*?)\]|[^.\[]+/g)
-    .map(path_trim);
-}
-
-function path_trim(d) {
-  return d[0] !== '[' ? d
-    : d[1] !== "'" && d[1] !== '"' ? d.slice(1, -1)
-    : d.slice(2, -2).replace(/\\(["'])/g, '$1');
 }
 
 export function fname(fn) {
