@@ -13,13 +13,14 @@
   </head>
   <body>
     <svg class="vis" width="500" height="500"></svg><br/>
+    <input id="sl" type="checkbox" /> <label for="sl">Static</label><br/>
     <input id="cx" type="range" min="0" max="500" value="250" step="1" /> Center X<br/>
     <input id="cy" type="range" min="0" max="500" value="250" step="1" /> Center Y<br/>
     <input id="sx" type="range" min="0" max="1" value="0.1" step="0.001" /> X Strength<br/>
     <input id="sy" type="range" min="0" max="1" value="0.02" step="0.001" /> Y Strength<br/>
     <input id="st" type="range" min="-100" max="100" value="0" step="1" /> N-Body Force<br/>
     <input id="ki" type="range" min="1" max="10" value="1" step="1" /> Collision Iterations<br/>
-    <input id="si" type="range" min="0" max="500" value="0" step="1" /> Simulation Iterations<br/>
+    <input id="si" type="range" min="1" max="500" value="300" step="1" /> Simulation Iterations<br/>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
 var ingest = dataflow.Tuple.ingest;
@@ -59,6 +60,7 @@ var df = new dataflow.Dataflow(),
     sc = df.add(dataflow.Scale, {type:'category20c'}),
     c0 = df.add(dataflow.Collect),
 
+    sl = df.add(document.querySelector('#sl').checked),
     cx = df.add(+document.querySelector('#cx').value),
     cy = df.add(+document.querySelector('#cy').value),
     sx = df.add(+document.querySelector('#sx').value),
@@ -71,7 +73,7 @@ var df = new dataflow.Dataflow(),
     nf = df.add(dataflow.Params, {type:'nbody', strength:st}),
     xf = df.add(dataflow.Params, {type:'x', x:v, strength:sx}),
     yf = df.add(dataflow.Params, {type:'y', y:cy, strength:sy}),
-    fo = df.add(dataflow.Force, {iterations:si, forces:[cf, kf, nf, xf, yf], pulse:c0}),
+    fo = df.add(dataflow.Force, {static:sl, iterations:si, forces:[cf, kf, nf, xf, yf], pulse:c0}),
 
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:fo}),
     c1 = df.add(dataflow.Collect, {pulse:j1}),
@@ -79,6 +81,7 @@ var df = new dataflow.Dataflow(),
     s1 = df.add(dataflow.Sieve, {pulse: e1});
 
 df.pulse(c0, dataflow.changeset().insert(data))
+  .on(df.events('#sl', 'change'), sl, check)
   .on(df.events('#cx', 'input'), cx, value)
   .on(df.events('#cy', 'input'), cy, value)
   .on(df.events('#sx', 'input'), sx, value)

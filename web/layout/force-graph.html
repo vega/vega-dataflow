@@ -22,11 +22,12 @@
       <option value="curve">curve</option>
       <option value="diagonal">diagonal</option>
       <option value="orthogonal">orthogonal</option>
-    </select> Link Shape<br/>
+    </select> Link Shape &nbsp;
+    <input id="sl" type="checkbox" /> <label for="sl">Static</label><br/>
     <input id="ld" type="range" min="1" max="200" value="30" step="1" /> Link Distance<br/>
     <input id="nr" type="range" min="1" max="50" value="6" step="1" /> Node Radius<br/>
     <input id="st" type="range" min="-100" max="100" value="-30" step="1" /> N-Body Force<br/>
-    <input id="si" type="range" min="0" max="500" value="0" step="1" /> Iterations<br/>
+    <input id="si" type="range" min="1" max="500" value="300" step="1" /> Iterations<br/>
     <script type="text/javascript">
 console.log('DATAFLOW version', dataflow.version);
 var ingest = dataflow.Tuple.ingest;
@@ -75,6 +76,7 @@ var df = new dataflow.Dataflow(),
     cx = df.add(400),
     cy = df.add(250),
     sh = df.add('line'),
+    sl = df.add(document.querySelector('#sl').check),
     ld = df.add(+document.querySelector('#ld').value),
     nr = df.add(+document.querySelector('#nr').value),
     st = df.add(+document.querySelector('#st').value),
@@ -85,13 +87,14 @@ var df = new dataflow.Dataflow(),
     lc = df.add(dataflow.Collect), // links
 
     fs = df.add(dataflow.Force, {
-      iterations: si,
       forces: [
         df.add(dataflow.Params, {type:'center', x:cx, y:cy}),
         df.add(dataflow.Params, {type:'collide', radius:nr}),
         df.add(dataflow.Params, {type:'nbody', strength:st}),
         df.add(dataflow.Params, {type:'link', links:lc, distance:ld})
       ],
+      iterations: si,
+      static: sl,
       fixed: ac,
       pulse: nc
     }),
@@ -130,6 +133,7 @@ df.on(df.events('#ld', 'input'), ld, value)
   .on(df.events('#nr', 'input'), nr, value)
   .on(df.events('#st', 'input'), st, value)
   .on(df.events('#si', 'input'), si, value)
+  .on(df.events('#sl', 'change'), sl, check)
   .on(df.events('#path', 'change'), sh, option)
   .on(mi, ac, datum) // set active node on non-drag mouseover
   .on(mo, ac, null)  // clear active node on non-drag mouseout
