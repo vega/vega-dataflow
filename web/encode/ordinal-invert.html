@@ -20,8 +20,8 @@
   </head>
   <body>
     <div>
-      Requires experimental ordinal invert support.
-      See <a href="https://github.com/d3/d3-scale/pull/60">d3-scale#60</a>.
+      Requires band scale invertExtent support.
+      See <a href="https://github.com/d3/d3-scale/pull/64">d3-scale#64</a>.
     </div><br/>
     <svg class="vis" width="501" height="100">
       <rect class="brush" x="0" y="0" width="0" height="100"></rect>
@@ -77,10 +77,10 @@ function updateBrush(_) {
   brush.setAttribute('x', Math.min(_.x[0], _.x[1]));
   brush.setAttribute('width', Math.abs(_.x[1] - _.x[0]));
 
-  if (os.value && os.value.invert) {
+  if (os.value && os.value.invertExtent) {
     output.innerText = 'INVERT: '
       + _.x[0].toFixed(0) + ',' + _.x[1].toFixed(0) + ' -> '
-      + (os.value.invert(_.x[0], _.x[1]) || '\u2205');
+      + (os.value.invertExtent(_.x[0], _.x[1]) || '\u2205');
   }
 }
 
