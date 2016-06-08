@@ -54,7 +54,7 @@ prototype.transform = function(_, pulse) {
 
   // fix / unfix nodes as needed
   if (_.modified('fixed')) {
-    sim.unfix();
+    sim.unfixAll();
     array(_.fixed).forEach(function(t) { sim.fix(t); });
   }
 
@@ -82,29 +82,10 @@ function simulation(nodes, _) {
   var sim = forceSimulation(nodes),
       stopped = false,
       stop = sim.stop,
-      restart = sim.restart,
-      fixed = {},
-      unfix = sim.unfix,
-      fix = sim.fix;
-
-  sim.fix = function(node, x, y) {
-    fix(node, x, y);
-    fixed[node.index] = node;
-  };
-
-  sim.unfix = function(node) {
-    if (!arguments.length) {
-      for (var index in fixed) unfix(fixed[index]);
-      return fixed = {}, sim;
-    } else {
-      return unfix(node);
-    }
-  };
+      restart = sim.restart;
 
   sim.stopped = function() { return stopped; };
-
   sim.restart = function() { return stopped = false, restart(); };
-
   sim.stop = function() { return stopped = true, stop(); };
 
   return setup(sim, _, true).on('end', function() { stopped = true; });
