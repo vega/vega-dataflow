@@ -9,6 +9,8 @@ export var StopPropagation = {};
 var ADD       = (1 << 0),
     REM       = (1 << 1),
     MOD       = (1 << 2),
+    ADD_REM   = ADD | REM,
+    ADD_MOD   = ADD | MOD,
     ALL       = ADD | REM | MOD,
     REFLOW    = (1 << 3),
     SOURCE    = (1 << 4),
@@ -63,6 +65,16 @@ prototype.REM = REM;
  * Boolean flag indicating MOD (modified) tuples.
  */
 prototype.MOD = MOD;
+
+/**
+ * Boolean flag indicating ADD (added) and REM (removed) tuples.
+ */
+prototype.ADD_REM = ADD_REM;
+
+/**
+ * Boolean flag indicating ADD (added) and MOD (modified) tuples.
+ */
+prototype.ADD_MOD = ADD_MOD;
 
 /**
  * Boolean flag indicating ADD, REM and MOD tuples.
