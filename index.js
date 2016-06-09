@@ -21,6 +21,7 @@ export {default as Transform} from './src/Transform';
 export {default as Apply} from './src/data/Apply';
 export {default as Bin} from './src/data/Bin';
 export {default as Collect} from './src/data/Collect';
+export {default as CountIndex} from './src/data/CountIndex';
 export {default as CountPattern} from './src/data/CountPattern';
 export {default as Extent} from './src/data/Extent';
 export {default as Facet} from './src/data/Facet';
