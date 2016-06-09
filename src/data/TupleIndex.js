@@ -4,17 +4,17 @@ import {inherits} from '../util/Functions';
 import {map} from 'd3-collection';
 
 /**
- * Creates a hash index that maps from a field value to tuple. Assumes that
- * the field is a unique key, without duplicate values.
+ * An index that maps from unique, string-coerced, field values to tuples.
+ * Assumes that the field serves as a unique key with no duplicate values.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): *} params.field - An accessor for the field to index.
+ * @param {function(object): *} params.field - The field accessor to index.
  */
-export default function HashIndex(params) {
+export default function TupleIndex(params) {
   Transform.call(this, map(), params);
 }
 
-var prototype = inherits(HashIndex, Transform);
+var prototype = inherits(TupleIndex, Transform);
 
 prototype.transform = function(_, pulse) {
   var field = _.field,
