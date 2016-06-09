@@ -64,7 +64,7 @@ prototype.set = function(value) {
 function flag(bit) {
   return function(state) {
     var f = this.flags;
-    if (arguments.length === 0) return f & bit;
+    if (arguments.length === 0) return !!(f & bit);
     this.flags = state ? (f | bit) : (f & ~bit);
     return this;
   };
