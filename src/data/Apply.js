@@ -27,7 +27,7 @@ prototype.transform = function(_, pulse) {
     // parameters updated, need to reflow
     pulse
       .materialize()
-      .visit(pulse.ADD | pulse.MOD, set)
+      .visit(pulse.ADD_MOD, set)
       .visit(pulse.REFLOW, function(t) { set(t); pulse.mod.push(t); });
   } else {
     flags = pulse.ADD | (pulse.modified(func.fields) ? pulse.MOD : 0);

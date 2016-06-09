@@ -25,7 +25,7 @@ prototype.transform = function(_, pulse) {
 
   var run = !this.value
          || _.modified()
-         || pulse.changed(pulse.ADD | pulse.REM)
+         || pulse.changed(pulse.ADD_REM)
          || pulse.modified(_.key.fields)
          || pulse.modified(_.parentKey.fields);
 

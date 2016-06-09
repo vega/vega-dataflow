@@ -18,7 +18,7 @@ export default function Encode(params) {
 var prototype = inherits(Encode, Transform);
 
 prototype.transform = function(_, pulse) {
-  var out = pulse.fork(pulse.ADD | pulse.REM),
+  var out = pulse.fork(pulse.ADD_REM),
       update = _.encoders.update || False,
       enter = _.encoders.enter || False,
       exit = _.encoders.exit || False,

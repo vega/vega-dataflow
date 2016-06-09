@@ -37,7 +37,7 @@ var prototype = inherits(Force, Transform);
 
 prototype.transform = function(_, pulse) {
   var sim = this.value,
-      change = pulse.changed(pulse.ADD | pulse.REM),
+      change = pulse.changed(pulse.ADD_REM),
       params = _.modified(PARAMS),
       iters = _.iterations || 300;
 
