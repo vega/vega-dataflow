@@ -4,7 +4,8 @@ var tape = require('tape'),
 tape('Field generates field accessors', function(test) {
   var df = new dataflow.Dataflow(),
       n = df.add('foo'),
-      f = df.add(dataflow.Field, {name:n});
+      a = df.add(null),
+      f = df.add(dataflow.Field, {name:n, as:a});
 
   df.run();
   test.equal(typeof f.value, 'function');
@@ -14,6 +15,11 @@ tape('Field generates field accessors', function(test) {
   df.update(n, 'bar').run();
   test.equal(typeof f.value, 'function');
   test.equal(f.value.fname, 'bar');
+  test.deepEqual(f.value.fields, ['bar']);
+
+  df.update(a, 'baz').run();
+  test.equal(typeof f.value, 'function');
+  test.equal(f.value.fname, 'baz');
   test.deepEqual(f.value.fields, ['bar']);
 
   test.end();
