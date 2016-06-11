@@ -88,10 +88,10 @@ var df = new dataflow.Dataflow(),
 
     fs = df.add(dataflow.Force, {
       forces: [
-        df.add(dataflow.Params, {type:'center', x:cx, y:cy}),
-        df.add(dataflow.Params, {type:'collide', radius:nr}),
-        df.add(dataflow.Params, {type:'nbody', strength:st}),
-        df.add(dataflow.Params, {type:'link', links:lc, distance:ld})
+        df.add(dataflow.Params, {force:'center', x:cx, y:cy}),
+        df.add(dataflow.Params, {force:'collide', radius:nr}),
+        df.add(dataflow.Params, {force:'nbody', strength:st}),
+        df.add(dataflow.Params, {force:'link', links:lc, distance:ld})
       ],
       iterations: si,
       static: sl,

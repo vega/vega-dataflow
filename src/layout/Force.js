@@ -113,8 +113,8 @@ function setup(sim, _, init) {
 
 function getForce(_) {
   var f, p;
-  if (!FORCE_MAP.has(_.type)) error('Unrecognized Force type: ' + _.type);
-  f = FORCE_MAP.get(_.type)();
+  if (!FORCE_MAP.has(_.force)) error('Unrecognized force: ' + _.force);
+  f = FORCE_MAP.get(_.force)();
   for (p in _) if (isFunction(f[p])) f[p](_[p]);
   return f;
 }
