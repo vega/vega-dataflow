@@ -2,7 +2,7 @@ var tape = require('tape'),
     dataflow = require('../../'),
     changeset = dataflow.changeset;
 
-tape("Rank ranks tuples", function(test) {
+tape('Rank ranks tuples', function(test) {
   var data = [
     {"x": 0, "y": 28}, {"x": 1, "y": 43},
     {"x": 0, "y": 55}, {"x": 1, "y": 72}

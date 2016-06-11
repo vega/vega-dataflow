@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Dataflow propagates values", function(test) {
+tape('Dataflow propagates values', function(test) {
   var df = new dataflow.Dataflow(),
       s1 = df.add(10),
       s2 = df.add(3),

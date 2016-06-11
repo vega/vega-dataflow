@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape("Parameters handles parameter values", function(test) {
+tape('Parameters handles parameter values', function(test) {
   var p = new dataflow.Parameters;
 
   // test initial state
