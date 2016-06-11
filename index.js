@@ -25,6 +25,7 @@ export {default as CountIndex} from './src/data/CountIndex';
 export {default as CountPattern} from './src/data/CountPattern';
 export {default as Extent} from './src/data/Extent';
 export {default as Facet} from './src/data/Facet';
+export {default as Field} from './src/data/Field';
 export {default as Filter} from './src/data/Filter';
 export {default as Fold} from './src/data/Fold';
 export {default as Generate} from './src/data/Generate';
