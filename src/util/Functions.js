@@ -25,24 +25,28 @@ export function fname(fn) {
   return fn==null ? null : fn.fname;
 }
 
-export function compare(_) {
+export function compare(fields, orders) {
   var code = '',
-      cmp = array(_),
+      cmp = array(fields),
+      ord = array(orders),
       n = cmp.length,
-      fields = Array(n--),
+//      fields = Array(n--),
       i, f, asc;
 
   for (i=0; i<=n; ++i) {
     f = cmp[i];
+    /*
     asc = f[0] === '+' ? (f=f.slice(1), 1)
         : f[0] === '-' ? (f=f.slice(1), 0) : 1;
+    */
+    asc = ord[i] !== 'descending';
     code += '(u=a["'+f+'"])' + (asc?'<':'>') + '(v=b["'+f+'"])'
           + '?-1:u' + (asc?'>':'<') + 'v?1:'
           + (i < n ? '' : '0');
-    fields[i] = f;
+    // fields[i] = f;
   }
   var fn = Function('a', 'b', 'var u,v;return ' + code + ';');
-  return accessor(fn, fields);
+  return accessor(fn, cmp);
 }
 
 export var Id = field('id');

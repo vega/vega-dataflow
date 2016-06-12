@@ -21,14 +21,14 @@ tape('Values extracts values', function(test) {
   df.touch(val).run(); // no-op pulse
   test.equal(val.value, values); // no change!
 
-  df.update(srt, dataflow.compare('-v')).run();
+  df.update(srt, dataflow.compare('v', 'descending')).run();
   test.deepEqual(val.value, ['d', 'b', 'c', 'a']);
 
   test.end();
 });
 
 tape('Values extracts sorted domain values', function(test) {
-  var byCount = dataflow.compare('-count'),
+  var byCount = dataflow.compare('count', 'descending'),
       key = dataflow.field('k'),
       df = new dataflow.Dataflow(),
       col = df.add(dataflow.Collect),
@@ -52,7 +52,7 @@ tape('Values extracts sorted domain values', function(test) {
 });
 
 tape('Values extracts multi-domain values', function(test) {
-  var byCount = dataflow.compare('-count'),
+  var byCount = dataflow.compare('count', 'descending'),
       count = dataflow.field('count'),
       key = dataflow.field('key'),
       k1 = dataflow.field('k1', 'key'),
