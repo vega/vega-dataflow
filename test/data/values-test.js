@@ -10,8 +10,9 @@ tape('Values extracts values', function(test) {
 
   var key = dataflow.field('k'),
       df = new dataflow.Dataflow(),
+      srt = df.add(null),
       col = df.add(dataflow.Collect),
-      val = df.add(dataflow.Values, {field:key, pulse:col});
+      val = df.add(dataflow.Values, {field:key, sort:srt, pulse:col});
 
   df.pulse(col, changeset().insert(data)).run();
   var values = val.value;
@@ -19,6 +20,9 @@ tape('Values extracts values', function(test) {
 
   df.touch(val).run(); // no-op pulse
   test.equal(val.value, values); // no change!
+
+  df.update(srt, dataflow.compare('-v')).run();
+  test.deepEqual(val.value, ['d', 'b', 'c', 'a']);
 
   test.end();
 });
@@ -29,8 +33,8 @@ tape('Values extracts sorted domain values', function(test) {
       df = new dataflow.Dataflow(),
       col = df.add(dataflow.Collect),
       agg = df.add(dataflow.Aggregate, {groupby:key, pulse:col}),
-      out = df.add(dataflow.Collect, {sort:byCount, pulse:agg}),
-      val = df.add(dataflow.Values, {field:key, pulse:out});
+      out = df.add(dataflow.Collect, {pulse:agg}),
+      val = df.add(dataflow.Values, {field:key, sort:byCount, pulse:out});
 
   // -- initial
   df.pulse(col, changeset().insert([

@@ -6,7 +6,7 @@ import {merge} from '../util/Arrays';
  * Collects all data tuples that pass through this operator.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object,object): number} [params.sort] - An optional
+ * @param {function(*,*): number} [params.sort] - An optional
  *   comparator function for additionally sorting the collected tuples.
  */
 export default function Collect(params) {
