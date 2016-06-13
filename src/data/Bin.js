@@ -16,9 +16,7 @@ export default function Bin(params) {
 inherits(Bin, Operator);
 
 function update(_) {
-  if (this.value != null && !_.modified()) {
-    return this.value;
-  }
+  if (this.value && !_.modified()) return this.value;
 
   var field = _.field,
       bins  = bin(_),

@@ -15,8 +15,7 @@ export default function Field(params) {
 inherits(Field, Operator);
 
 function update(_) {
-  if (this.value != null && !_.modified()) {
-    return this.value;
-  }
-  return field(_.name, _.as);
+  return (this.value && !_.modified())
+    ? this.value
+    : field(_.name, _.as);
 }

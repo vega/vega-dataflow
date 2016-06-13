@@ -193,7 +193,6 @@ prototype.evaluate = function(pulse) {
  */
 prototype.run = function(pulse) {
   if (pulse.stamp <= this.stamp) return pulse.StopPropagation;
-  var rv = (!this.skip() && this.evaluate(pulse)) || pulse;
-  this.stamp = pulse.stamp;
-  return (this.skip(false), this.pulse = rv);
+  var rv = this.skip() ? (this.skip(false), 0) : this.evaluate(pulse);
+  return this.stamp = pulse.stamp, this.pulse = rv || pulse;
 };

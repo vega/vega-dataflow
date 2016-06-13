@@ -16,8 +16,7 @@ export default function Compare(params) {
 inherits(Compare, Operator);
 
 function update(_) {
-  if (this.value != null && !_.modified()) {
-    return this.value;
-  }
-  return compare(_.fields, _.orders);
+  return (this.value && !_.modified())
+    ? this.value
+    : compare(_.fields, _.orders);
 }
