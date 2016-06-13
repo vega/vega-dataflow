@@ -49,6 +49,7 @@ var encoders = {
         y2 = _.sy(item.datum.layout_end);
     item.setAttribute('y', Math.min(y1, y2));
     item.setAttribute('height', Math.abs(y2-y1));
+    return true;
   },
   exit: function(item, _) {
     item.remove();
@@ -58,14 +59,14 @@ var encoders = {
 var key = dataflow.field('key'),
     val = dataflow.field('value'),
     end = dataflow.field('layout_end'),
-    cmp = dataflow.compare('-value'),
+    cmp = dataflow.compare('value', 'descending'),
 
     df = new dataflow.Dataflow(),
     xr = df.add([0, 500]),
     yr = df.add([300, 0]),
     so = df.add(null),
     of = df.add(soff),
-    sc = df.add(dataflow.Scale, {type:'category10'}),
+    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category10'}),
     c0 = df.add(dataflow.Collect),
     st = df.add(dataflow.Stack, {field:val, offset:of, groupby:[key], sort:so, pulse:c0}),
 
@@ -74,8 +75,8 @@ var key = dataflow.field('key'),
     dv = df.add(dataflow.Values, {field:key, pulse:ca}),
     sx = df.add(dataflow.Scale, {type:'band', domain:dv, range:xr}),
 
-    ye = df.add(dataflow.Extent, {field:end, zero:true, pulse:st}),
-    sy = df.add(dataflow.Scale, {domain:ye, range:yr}),
+    ye = df.add(dataflow.Extent, {field:end, pulse:st}),
+    sy = df.add(dataflow.Scale, {domain:ye, zero:true, range:yr}),
 
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:st}),
     c1 = df.add(dataflow.Collect, {pulse:j1}),
@@ -84,7 +85,7 @@ var key = dataflow.field('key'),
 
 svg.addEventListener('click', function(evt) {
   if (evt.target === svg) {
-    var k = sx.value.invert(evt.pageX-10)[0],
+    var k = sx.value.invertExtent(evt.pageX-10)[0],
         v = 2 + ~~(18 * Math.random());
     df.pulse(c0, dataflow.changeset().insert({key:k, value:v})).run();
   } else {

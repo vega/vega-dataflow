@@ -81,7 +81,7 @@ var df = new dataflow.Dataflow(),
     nr = df.add(+document.querySelector('#nr').value),
     st = df.add(+document.querySelector('#st').value),
     si = df.add(+document.querySelector('#si').value),
-    sc = df.add(dataflow.Scale, {type:'category20c'}),
+    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category20c'}),
 
     nc = df.add(dataflow.Collect), // nodes
     lc = df.add(dataflow.Collect), // links

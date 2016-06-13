@@ -67,9 +67,9 @@ var v = dataflow.field('v'),
     a1 = df.add(dataflow.Aggregate, {groupby:bn, drop:false, pulse:g1}),
     c1 = df.add(dataflow.Collect, {pulse:a1}),
 
-    x1 = df.add(dataflow.Extent, {field:count, zero:true, pulse:c1}),
+    x1 = df.add(dataflow.Extent, {field:count, pulse:c1}),
     sx = df.add(dataflow.Scale, {domain:[0,100], range:[0,500]}),
-    sy = df.add(dataflow.Scale, {domain:x1, range:[0,100]}),
+    sy = df.add(dataflow.Scale, {domain:x1, zero:true, range:[0,100]}),
 
     j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:c1}),
     e1 = df.add(Encoder(encoders, {signals: {bw:bw}, scales: {sx:sx, sy:sy}}, j1)),

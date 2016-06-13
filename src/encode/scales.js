@@ -1,15 +1,7 @@
 import * as $ from 'd3-scale';
 import * as _ from 'd3-scale-chromatic';
 
-function categorical(scheme) {
-  return function() { return $.scaleOrdinal(scheme); };
-}
-
-function interpolate(interp) {
-  return function() { return $.scaleSequential(interp); };
-}
-
-export default {
+export var scales = {
   // base scale types
   band:        $.scaleBand,
   point:       $.scalePoint,
@@ -24,63 +16,66 @@ export default {
   threshold:   $.scaleThreshold,
   time:        $.scaleTime,
   utc:         $.scaleUtc,
+  sequential:  $.scaleSequential
+};
 
-  // d3 categorical
-  category10:  categorical($.schemeCategory10),
-  category20:  categorical($.schemeCategory20),
-  category20b: categorical($.schemeCategory20b),
-  category20c: categorical($.schemeCategory20c),
+export var schemes = {
+  // d3 built-in categorical palettes
+  category10:  $.schemeCategory10,
+  category20:  $.schemeCategory20,
+  category20b: $.schemeCategory20b,
+  category20c: $.schemeCategory20c,
 
-  // d3 sequential
-  cubehelix:   interpolate($.interpolateCubehelixDefault),
-  rainbow:     interpolate($.interpolateRainbow),
-  warm:        interpolate($.interpolateWarm),
-  cool:        interpolate($.interpolateCool),
-  viridis:     interpolate($.interpolateViridis),
-  magma:       interpolate($.interpolateMagma),
-  inferno:     interpolate($.interpolateInferno),
-  plasma:      interpolate($.interpolatePlasma),
+  // extended categorical palettes
+  accent:      _.schemeAccent,
+  dark2:       _.schemeDark2,
+  paired:      _.schemePaired,
+  pastel1:     _.schemePastel1,
+  pastel2:     _.schemePastel2,
+  set1:        _.schemeSet1,
+  set2:        _.schemeSet2,
+  set3:        _.schemeSet3,
 
-  // categorical
-  accent:      categorical(_.schemeAccent),
-  dark2:       categorical(_.schemeDark2),
-  paired:      categorical(_.schemePaired),
-  pastel1:     categorical(_.schemePastel1),
-  pastel2:     categorical(_.schemePastel2),
-  set1:        categorical(_.schemeSet1),
-  set2:        categorical(_.schemeSet2),
-  set3:        categorical(_.schemeSet3),
+  // d3 built-in interpolators
+  cubehelix:   $.interpolateCubehelixDefault,
+  rainbow:     $.interpolateRainbow,
+  warm:        $.interpolateWarm,
+  cool:        $.interpolateCool,
+  viridis:     $.interpolateViridis,
+  magma:       $.interpolateMagma,
+  inferno:     $.interpolateInferno,
+  plasma:      $.interpolatePlasma,
 
   // diverging
-  brbg:        interpolate(_.interpolateBrBG),
-  prgn:        interpolate(_.interpolatePRGn),
-  piyg:        interpolate(_.interpolatePiYG),
-  puor:        interpolate(_.interpolatePuOr),
-  rdbu:        interpolate(_.interpolateRdBu),
-  rdgy:        interpolate(_.interpolateRdGy),
-  rdylbu:      interpolate(_.interpolateRdYlBu),
-  rdylgn:      interpolate(_.interpolateRdYlGn),
-  spectral:    interpolate(_.interpolateSpectral),
+  brbg:        _.interpolateBrBG,
+  prgn:        _.interpolatePRGn,
+  piyg:        _.interpolatePiYG,
+  puor:        _.interpolatePuOr,
+  rdbu:        _.interpolateRdBu,
+  rdgy:        _.interpolateRdGy,
+  rdylbu:      _.interpolateRdYlBu,
+  rdylgn:      _.interpolateRdYlGn,
+  spectral:    _.interpolateSpectral,
 
   // sequential multi-hue
-  bugn:        interpolate(_.interpolateBuGn),
-  bupu:        interpolate(_.interpolateBuPu),
-  gnbu:        interpolate(_.interpolateGnBu),
-  orrd:        interpolate(_.interpolateOrRd),
-  pubugn:      interpolate(_.interpolatePuBuGn),
-  pubu:        interpolate(_.interpolatePuBu),
-  purd:        interpolate(_.interpolatePuRd),
-  rdpu:        interpolate(_.interpolateRdPu),
-  ylgnbu:      interpolate(_.interpolateYlGnBu),
-  ylgn:        interpolate(_.interpolateYlGn),
-  ylorbr:      interpolate(_.interpolateYlOrBr),
-  ylorrd:      interpolate(_.interpolateYlOrRd),
+  bugn:        _.interpolateBuGn,
+  bupu:        _.interpolateBuPu,
+  gnbu:        _.interpolateGnBu,
+  orrd:        _.interpolateOrRd,
+  pubugn:      _.interpolatePuBuGn,
+  pubu:        _.interpolatePuBu,
+  purd:        _.interpolatePuRd,
+  rdpu:        _.interpolateRdPu,
+  ylgnbu:      _.interpolateYlGnBu,
+  ylgn:        _.interpolateYlGn,
+  ylorbr:      _.interpolateYlOrBr,
+  ylorrd:      _.interpolateYlOrRd,
 
   // sequential single-hue
-  blues:       interpolate(_.interpolateBlues),
-  greens:      interpolate(_.interpolateGreens),
-  greys:       interpolate(_.interpolateGreys),
-  purples:     interpolate(_.interpolatePurples),
-  reds:        interpolate(_.interpolateReds),
-  oranges:     interpolate(_.interpolateOranges)
+  blues:       _.interpolateBlues,
+  greens:      _.interpolateGreens,
+  greys:       _.interpolateGreys,
+  purples:     _.interpolatePurples,
+  reds:        _.interpolateReds,
+  oranges:     _.interpolateOranges
 };

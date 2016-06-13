@@ -57,7 +57,7 @@ var r = dataflow.field('r'),
 var df = new dataflow.Dataflow(),
     xr = df.add([0, 500]),
     yr = df.add([0, 500]),
-    sc = df.add(dataflow.Scale, {type:'category20c'}),
+    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category20c'}),
     c0 = df.add(dataflow.Collect),
 
     sl = df.add(document.querySelector('#sl').checked),
