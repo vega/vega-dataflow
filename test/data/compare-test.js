@@ -25,5 +25,8 @@ tape('Compare generates comparator functions', function(test) {
   test.equal(typeof f.value, 'function');
   test.deepEqual(f.value.fields, ['foo', 'bar']);
 
+  df.update(c, null).update(o, null).run();
+  test.equal(f.value, null);
+
   test.end();
 });

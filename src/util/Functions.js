@@ -26,24 +26,20 @@ export function fname(fn) {
 }
 
 export function compare(fields, orders) {
+  if (!fields) return null;
+
   var code = '',
       cmp = array(fields),
       ord = array(orders),
       n = cmp.length,
-//      fields = Array(n--),
       i, f, asc;
 
   for (i=0; i<=n; ++i) {
     f = cmp[i];
-    /*
-    asc = f[0] === '+' ? (f=f.slice(1), 1)
-        : f[0] === '-' ? (f=f.slice(1), 0) : 1;
-    */
     asc = ord[i] !== 'descending';
     code += '(u=a["'+f+'"])' + (asc?'<':'>') + '(v=b["'+f+'"])'
           + '?-1:u' + (asc?'>':'<') + 'v?1:'
           + (i < n ? '' : '0');
-    // fields[i] = f;
   }
   var fn = Function('a', 'b', 'var u,v;return ' + code + ';');
   return accessor(fn, cmp);
