@@ -21,7 +21,7 @@ export var VALID_AGGREGATES = [
  * @param {Array<function(object): *>} params.fields - An array of accessors to aggregate.
  * @param {Array<string>} params.ops - An array of strings indicating aggregation operations.
  * @param {Array<string>} [params.as] - An array of output field names for aggregated values.
- * @param {boolean} [params.keep=false] - A flag indicating if empty cells should be kept.
+ * @param {boolean} [params.drop=true] - A flag indicating if empty cells should be removed.
  */
 export default function Aggregate(params) {
   Transform.call(this, null, params);

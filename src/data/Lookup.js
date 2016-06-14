@@ -2,13 +2,12 @@ import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 
 /**
- * Compute rank order scores for tuples. The tuples are assumed to have been
- * sorted in the desired rank orderby an upstream data source.
+ * Extend tuples by joining them with values from a lookup table.
  * @constructor
  * @param {object} params - The parameters for this operator.
  * @param {Map} params.index - The lookup table map.
- * @param {Array<function(object): *} params.keys - The lookup keys.
- * @param {Array<string>} params.as - The per-key output field names.
+ * @param {Array<function(object): *} params.fields - The fields to lookup.
+ * @param {Array<string>} params.as - Output field names for each lookup value.
  * @param {*} [params.default] - A default value to use if lookup fails.
  */
 export default function Lookup(params) {
@@ -20,8 +19,8 @@ var prototype = inherits(Lookup, Transform);
 prototype.transform = function(_, pulse) {
   var out = pulse,
       as = _.as,
+      keys = _.fields,
       index = _.index,
-      keys = _.keys,
       defaultValue = _.default==null ? null : _.default,
       reset = _.modified(),
       flag = pulse.ADD,

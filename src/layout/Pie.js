@@ -39,11 +39,10 @@ prototype.transform = function(_, pulse) {
   for (i=0; i<n; ++i) {
     v = values[index[i]];
     t = data[index[i]];
-    t.layout_start = a;
-    t.layout_mid = a + 0.5 * v * k;
-    t.layout_end = (a += v * k);
+    t.startAngle = a;
+    t.endAngle = (a += v * k);
   }
 
   this.value = values;
-  return pulse.reflow().modifies(['layout_start', 'layout_end', 'layout_mid']);
+  return pulse.reflow().modifies(['startAngle', 'endAngle']);
 };

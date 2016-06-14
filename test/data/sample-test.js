@@ -12,7 +12,7 @@ tape('Sample samples tuples without backing source', function(test) {
   for (i=0; i<n; ++i) data[i] = {v:Math.random()};
 
   var df = new dataflow.Dataflow(),
-      s = df.add(dataflow.Sample, {num:ns});
+      s = df.add(dataflow.Sample, {size:ns});
 
   // -- initial sample
   df.pulse(s, changeset().insert(data)).run();
@@ -57,7 +57,7 @@ tape('Sample samples tuples with backing source', function(test) {
 
   var df = new dataflow.Dataflow(),
       c = df.add(dataflow.Collect),
-      s = df.add(dataflow.Sample, {num:ns, pulse:c});
+      s = df.add(dataflow.Sample, {size:ns, pulse:c});
 
   // -- initial sample
   df.pulse(c, changeset().insert(data)).run();

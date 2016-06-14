@@ -41,8 +41,8 @@ var arcs = {
   },
   update: function(item, _) {
     item.setAttribute('d', arc(
-      item.datum.layout_start,
-      item.datum.layout_end,
+      item.datum.startAngle,
+      item.datum.endAngle,
       _.ir, _.or, _.xc, _.yc
     ));
     return true;

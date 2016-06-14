@@ -118,7 +118,7 @@ function data() {
       fv = df.add(filter, {ft:ft}),
 
       // generate data
-      dg = df.add(dataflow.Generate, {num:dn, gen:gen}),
+      dg = df.add(dataflow.Generate, {size:dn, generator:gen}),
 
       // histogram of full data set
       h1 = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:dg}),

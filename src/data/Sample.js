@@ -6,8 +6,7 @@ import {inherits} from '../util/Functions';
  * Uses reservoir sampling to maintain a representative sample.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {number} [params.num=1000] - The maximum number of samples per strata.
- * @param {function(object): *} [params.key] - A key field for stratified sampling.
+ * @param {number} [params.size=1000] - The maximum number of samples.
  */
 export default function Sample(params) {
   Transform.call(this, [], params);
@@ -18,7 +17,7 @@ var prototype = inherits(Sample, Transform);
 
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(),
-      num = _.num,
+      num = _.size,
       res = this.value,
       cnt = this.count,
       cap = 0,

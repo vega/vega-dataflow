@@ -63,7 +63,7 @@ var v = dataflow.field('v'),
     bx = df.add([0,100], binDomain, {offset:bo}),
     bn = df.add(dataflow.Bin, {field:v, name:'bin', extent:bx, step:bs, nice:0}),
 
-    g1 = df.add(dataflow.Generate, {num:1e5, gen:gen}),
+    g1 = df.add(dataflow.Generate, {size:1e5, generator:gen}),
     a1 = df.add(dataflow.Aggregate, {groupby:bn, drop:false, pulse:g1}),
     c1 = df.add(dataflow.Collect, {pulse:a1}),
 

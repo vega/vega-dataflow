@@ -22,7 +22,7 @@ var METHODS = {
  * @param {Array<function(object): *>} [params.groupby] - An array of
  *   accessors to determine series within which to perform imputation.
  * @param {Array<function(object): *>} [params.orderby] - An array of
- *   accessors to determine the ordering within a series..
+ *   accessors to determine the ordering within a series.
  * @param {string} [method='value'] - The imputation method to use. One of
  *   'value', 'mean', 'median', 'max', 'min'.
  * @param {*} [value=0] - The constant value to use for imputation

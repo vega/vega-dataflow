@@ -40,13 +40,12 @@ prototype.transform = function(_, pulse) {
       a = b; // use previous value for start point
       v += field(t);
       b = scale * v + off; // compute end point
-      t.layout_start = a;
-      t.layout_end = b;
-      t.layout_mid = 0.5 * (a+b);
+      t.y0 = a;
+      t.y1 = b;
     }
   }
 
-  return pulse.reflow().modifies(['layout_start', 'layout_end', 'layout_mid']);
+  return pulse.reflow().modifies(['y0', 'y1']);
 };
 
 function partition(data, groupby, sort, field) {

@@ -230,7 +230,7 @@ var df = new dataflow.Dataflow(),
       df.add(dataflow.Bin, {name:'bin', field:x, extent:[0,100], step:5})
     ],
 
-    dg  = df.add(dataflow.Generate, {num:dn, gen:gen}),
+    dg  = df.add(dataflow.Generate, {size:dn, generator:gen}),
     c0  = df.add(dataflow.Collect, {pulse:dg}),
     cf  = df.add(dataflow.CrossFilter, {fields:[u,v,x], query:[r1,r2,r3], pulse:c0});
 

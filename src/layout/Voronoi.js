@@ -26,10 +26,10 @@ prototype.transform = function(_, pulse) {
   // map polygons to paths
   polygons = diagram.polygons();
   for (i=0, n=data.length; i<n; ++i) {
-    data[i].layout_path = polygons[i]
+    data[i].path = polygons[i]
       ? 'M' + polygons[i].join('L') + 'Z'
       : null;
   }
 
-  return pulse.reflow().modifies('layout_path');
+  return pulse.reflow().modifies('path');
 };

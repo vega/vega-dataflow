@@ -47,7 +47,7 @@ var cells = {
     item.setAttribute('fill', 'transparent');
   },
   update: function(item, _) {
-    item.setAttribute('d', item.datum.layout_path || 'M0,0');
+    item.setAttribute('d', item.datum.path || 'M0,0');
   },
   exit: function(item, _) {
     item.remove();

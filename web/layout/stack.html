@@ -45,8 +45,8 @@ var encoders = {
     item.setAttribute('x', _.sx(item.datum.key));
     item.setAttribute('width', _.sx.bandwidth());
 
-    var y1 = _.sy(item.datum.layout_start),
-        y2 = _.sy(item.datum.layout_end);
+    var y1 = _.sy(item.datum.y0),
+        y2 = _.sy(item.datum.y1);
     item.setAttribute('y', Math.min(y1, y2));
     item.setAttribute('height', Math.abs(y2-y1));
     return true;
@@ -58,7 +58,7 @@ var encoders = {
 
 var key = dataflow.field('key'),
     val = dataflow.field('value'),
-    end = dataflow.field('layout_end'),
+    end = dataflow.field('y1'),
     cmp = dataflow.compare('value', 'descending'),
 
     df = new dataflow.Dataflow(),
