@@ -7,7 +7,7 @@ import {map} from 'd3-collection';
 /**
  * Facets a dataflow into a set of subflows based on a key.
  * @constructor
- * @param {function(Dataflow, string): Operator} flowgen - A function that
+ * @param {function(Dataflow, string): Operator} subflow - A function that
  *   generates a subflow of operators and returns its root operator.
  * @param {object} params - The parameters for this operator.
  * @param {function(object): *} params.key - The key field to facet by.

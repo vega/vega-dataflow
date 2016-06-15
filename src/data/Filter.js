@@ -28,12 +28,12 @@ prototype.transform = function(_, pulse) {
   });
 
   pulse.visit(pulse.ADD, function(x) {
-    if (test(x)) add.push(x);
+    if (test(x, _)) add.push(x);
     else cache[x._id] = 1;
   });
 
   function revisit(x) {
-    var b = test(x),
+    var b = test(x, _),
         s = cache[x._id];
     if (b && s) {
       cache[x._id] = 0;
