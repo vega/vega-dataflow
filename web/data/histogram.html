@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Histogram</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <style>
       body { margin: 10px; font: 14px Helvetica Neue; }
@@ -17,13 +17,12 @@
     <input id="offset" type="range" min="0" max="100" value="50" step="0.2" /> Bin Offset<br/>
     <input id="size" type="range" min="0.2" max="20" value="5" step="0.2" /> Bin Size<br/>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis g');
 var roffs = document.querySelector('#offset');
 var rsize = document.querySelector('#size');
 
-var g = dataflow.normal(50, 20);
+var g = vega.normal(50, 20);
 function gen() {
   var v = -1;
   while (v < 0 || v >= 100) { v = g(); }
@@ -53,27 +52,27 @@ function binWidth(_) {
   return s < i ? (s-(s-1)/i) : s-1;
 }
 
-var v = dataflow.field('v'),
-    bin = dataflow.field('bin'),
-    count = dataflow.field('count'),
-    df = new dataflow.Dataflow(),
+var v = vega.field('v'),
+    bin = vega.field('bin'),
+    count = vega.field('count'),
+    df = new vega.Dataflow(),
     bo = df.add(+roffs.value),
     bs = df.add(+rsize.value),
     bw = df.add(binWidth, {size:bs}),
     bx = df.add([0,100], binDomain, {offset:bo}),
-    bn = df.add(dataflow.Bin, {field:v, name:'bin', extent:bx, step:bs, nice:0}),
+    bn = df.add(vega.Bin, {field:v, name:'bin', extent:bx, step:bs, nice:0}),
 
-    g1 = df.add(dataflow.Generate, {size:1e5, generator:gen}),
-    a1 = df.add(dataflow.Aggregate, {groupby:bn, drop:false, pulse:g1}),
-    c1 = df.add(dataflow.Collect, {pulse:a1}),
+    g1 = df.add(vega.Generate, {size:1e5, generator:gen}),
+    a1 = df.add(vega.Aggregate, {groupby:bn, drop:false, pulse:g1}),
+    c1 = df.add(vega.Collect, {pulse:a1}),
 
-    x1 = df.add(dataflow.Extent, {field:count, pulse:c1}),
-    sx = df.add(dataflow.Scale, {domain:[0,100], range:[0,500]}),
-    sy = df.add(dataflow.Scale, {domain:x1, zero:true, range:[0,100]}),
+    x1 = df.add(vega.Extent, {field:count, pulse:c1}),
+    sx = df.add(vega.Scale, {domain:[0,100], range:[0,500]}),
+    sy = df.add(vega.Scale, {domain:x1, zero:true, range:[0,100]}),
 
-    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:c1}),
+    j1 = df.add(vega.DataJoin, {item:items(svg, 'rect'), pulse:c1}),
     e1 = df.add(Encoder(encoders, {signals: {bw:bw}, scales: {sx:sx, sy:sy}}, j1)),
-    s1 = df.add(dataflow.Sieve, {pulse: e1});
+    s1 = df.add(vega.Sieve, {pulse: e1});
 
 function value(_, e) { return +e.target.value; }
 df.on(df.events(roffs, 'input'), bo, value)

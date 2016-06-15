@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Force-Directed Graph</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <script src="../interact.js"></script>
     <script src="./miserables.js"></script>
@@ -29,8 +29,7 @@
     <input id="st" type="range" min="-100" max="100" value="-30" step="1" /> N-Body Force<br/>
     <input id="si" type="range" min="1" max="500" value="300" step="1" /> Iterations<br/>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 var gn = svg.querySelector('.nodes');
 var gl = svg.querySelector('.links');
@@ -67,11 +66,11 @@ var links = {
 };
 
 
-var index = dataflow.field('index'),
-    source = dataflow.field('source'),
-    target = dataflow.field('target');
+var index = vega.field('index'),
+    source = vega.field('source'),
+    target = vega.field('target');
 
-var df = new dataflow.Dataflow(),
+var df = new vega.Dataflow(),
     ac = df.add(null).modified(true),
     cx = df.add(400),
     cy = df.add(250),
@@ -81,42 +80,42 @@ var df = new dataflow.Dataflow(),
     nr = df.add(+document.querySelector('#nr').value),
     st = df.add(+document.querySelector('#st').value),
     si = df.add(+document.querySelector('#si').value),
-    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category20c'}),
+    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category20c'}),
 
-    nc = df.add(dataflow.Collect), // nodes
-    lc = df.add(dataflow.Collect), // links
+    nc = df.add(vega.Collect), // nodes
+    lc = df.add(vega.Collect), // links
 
-    fs = df.add(dataflow.Force, {
+    fs = df.add(vega.Force, {
       forces: [
-        df.add(dataflow.Params, {force:'center', x:cx, y:cy}),
-        df.add(dataflow.Params, {force:'collide', radius:nr}),
-        df.add(dataflow.Params, {force:'nbody', strength:st}),
-        df.add(dataflow.Params, {force:'link', links:lc, distance:ld})
+        df.add(vega.Params, {force:'center', x:cx, y:cy}),
+        df.add(vega.Params, {force:'collide', radius:nr}),
+        df.add(vega.Params, {force:'nbody', strength:st}),
+        df.add(vega.Params, {force:'link', links:lc, distance:ld})
       ],
       iterations: si,
       static: sl,
       fixed: ac,
       pulse: nc
     }),
-    j1 = df.add(dataflow.DataJoin, {item:items(gn, 'circle'), pulse:fs}),
-    c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
-    s1 = df.add(dataflow.Sieve, {pulse: e1})
+    j1 = df.add(vega.DataJoin, {item:items(gn, 'circle'), pulse:fs}),
+    c1 = df.add(vega.Collect, {pulse:j1}),
+    e1 = df.add(vega.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(vega.Sieve, {pulse: e1})
 
-    rf = df.add(dataflow.Reflow, {force:s1, pulse:lc}),
-    lp = df.add(dataflow.LinkPath, {shape:sh, pulse:rf}),
-    j2 = df.add(dataflow.DataJoin, {item:items(gl, 'path'), pulse:lp}),
-    c2 = df.add(dataflow.Collect, {pulse:j2}),
-    e2 = df.add(dataflow.Encode, {encoders:links, sc:sc, pulse:c2}),
-    s2 = df.add(dataflow.Sieve, {pulse: e2});
+    rf = df.add(vega.Reflow, {force:s1, pulse:lc}),
+    lp = df.add(vega.LinkPath, {shape:sh, pulse:rf}),
+    j2 = df.add(vega.DataJoin, {item:items(gl, 'path'), pulse:lp}),
+    c2 = df.add(vega.Collect, {pulse:j2}),
+    e2 = df.add(vega.Encode, {encoders:links, sc:sc, pulse:c2}),
+    s2 = df.add(vega.Sieve, {pulse: e2});
 
-df.pulse(nc, dataflow.changeset().insert(miserables.nodes))
-  .pulse(lc, dataflow.changeset().insert(miserables.links))
+df.pulse(nc, vega.changeset().insert(miserables.nodes))
+  .pulse(lc, vega.changeset().insert(miserables.links))
   .run();
 
 function xy(_, e) {
   df.touch(ac);
-  return dataflow.changeset()
+  return vega.changeset()
     .modify(ac.value, 'x', e.pageX - 10)
     .modify(ac.value, 'y', e.pageY - 10);
 }

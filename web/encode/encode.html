@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Encode</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <style>
       body { margin: 10px; font: 14px Helvetica Neue; }
@@ -17,8 +17,7 @@
     </svg><br/>
     Drag to draw bubbles. Hold shift to pop them!
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
 function loader(_, pulse) {
@@ -84,7 +83,7 @@ var encoders = {
   }, 'setTimeout(function() { item.remove(); }, 200);')
 };
 
-var df = new dataflow.Dataflow(),
+var df = new vega.Dataflow(),
     fill = df.add('hotpink'),
     move = df.add(null),
     over = df.add(null),
@@ -93,10 +92,10 @@ var df = new dataflow.Dataflow(),
     rngy = df.add([500, 0]),
     domx = df.add([0, 1]),
     domy = df.add([0, 1]),
-    sx   = df.add(dataflow.Scale, {domain:domx, range:rngx}),
-    sy   = df.add(dataflow.Scale, {domain:domy, range:rngy}),
+    sx   = df.add(vega.Scale, {domain:domx, range:rngx}),
+    sy   = df.add(vega.Scale, {domain:domy, range:rngy}),
     load = df.add(0, loader, {points:[move, out, over], sx:sx, sy:sy}),
-    join = df.add(dataflow.DataJoin, {item:items(svg, 'circle'), pulse:load}),
+    join = df.add(vega.DataJoin, {item:items(svg, 'circle'), pulse:load}),
     encd = df.add(Encoder(encoders, {signals:{fill:fill}, scales:{sx:sx, sy:sy}}, join));
 
 function XYT(_, e) {

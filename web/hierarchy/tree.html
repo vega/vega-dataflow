@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Tree</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <script src="../interact.js"></script>
     <style>
@@ -28,8 +28,7 @@
     <input id="w" type="range" min="100" max="400" value="400"/> Width<br/>
     <input id="h" type="range" min="100" max="400" value="400"/> Height<br/>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg');
 var g = document.querySelector('g.vis');
 
@@ -55,7 +54,7 @@ var nodes = {
     item.setAttribute('fill', _.sc(t._id));
     item.setAttribute('r', 10);
   },
-  update: dataflow.accessor(function(item, _) {
+  update: vega.accessor(function(item, _) {
     var t = item.datum;
     item.setAttribute('cx', t.x);
     item.setAttribute('cy', t.y);
@@ -81,34 +80,34 @@ var links = {
   }
 };
 
-var p = dataflow.field('parent'),
-    key = dataflow.field('key');
+var p = vega.field('parent'),
+    key = vega.field('key');
 
-    df = new dataflow.Dataflow(),
+    df = new vega.Dataflow(),
     ac = df.add(null),
     w  = df.add(+document.querySelector('#w').value),
     h  = df.add(+document.querySelector('#h').value),
     lm = df.add('tidy'),
     sh = df.add('line'),
-    sc = df.add(dataflow.Scale, {type:'sequential', scheme:'magma', domain:[0,13]}),
-    c0 = df.add(dataflow.Collect),
-    s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
-    tl = df.add(dataflow.Tree, {method:lm, size:[w,h], pulse:s0}),
+    sc = df.add(vega.Scale, {type:'sequential', scheme:'magma', domain:[0,13]}),
+    c0 = df.add(vega.Collect),
+    s0 = df.add(vega.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tl = df.add(vega.Tree, {method:lm, size:[w,h], pulse:s0}),
 
-    ln = df.add(dataflow.TreeLinks, {pulse:tl}),
-    lc = df.add(dataflow.Collect, {pulse:ln}),
-    lp = df.add(dataflow.LinkPath, {shape:sh, pulse:lc}),
-    j2 = df.add(dataflow.DataJoin, {item:items(g, 'path'), pulse:lp}),
-    c2 = df.add(dataflow.Collect, {pulse:j2}),
-    e2 = df.add(dataflow.Encode, {encoders:links, sc:sc, pulse:c2}),
-    s2 = df.add(dataflow.Sieve, {pulse: e2}),
+    ln = df.add(vega.TreeLinks, {pulse:tl}),
+    lc = df.add(vega.Collect, {pulse:ln}),
+    lp = df.add(vega.LinkPath, {shape:sh, pulse:lc}),
+    j2 = df.add(vega.DataJoin, {item:items(g, 'path'), pulse:lp}),
+    c2 = df.add(vega.Collect, {pulse:j2}),
+    e2 = df.add(vega.Encode, {encoders:links, sc:sc, pulse:c2}),
+    s2 = df.add(vega.Sieve, {pulse: e2}),
 
-    j1 = df.add(dataflow.DataJoin, {item:items(g, 'circle'), pulse:tl}),
-    c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, {encoders:nodes, sc:sc, pulse:c1}),
-    s1 = df.add(dataflow.Sieve, {pulse: e1});
+    j1 = df.add(vega.DataJoin, {item:items(g, 'circle'), pulse:tl}),
+    c1 = df.add(vega.Collect, {pulse:j1}),
+    e1 = df.add(vega.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(vega.Sieve, {pulse: e1});
 
-df.pulse(c0, dataflow.changeset().insert(data)).run();
+df.pulse(c0, vega.changeset().insert(data)).run();
 
 var md = df.events('svg circle', 'mousedown'),
     mm = df.events(window, 'mousemove'),
@@ -122,7 +121,7 @@ df.on(df.events(svg, 'dblclick'), c0) // re-run all on double-click
   .on(md, ac, datum)
   .on(mu, ac, null)
   .on(mm.between(md, mu), tl, function(_, e) {
-    return dataflow.changeset()
+    return vega.changeset()
       .modify(ac.value, 'x', e.pageX - 60)
       .modify(ac.value, 'y', e.pageY - 60);
   }, null, {skip: true});

@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Treemap</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <script src="../interact.js"></script>
     <style>
@@ -27,8 +27,7 @@
     <input id="h" type="range" min="100" max="500" value="500"/> Height<br/>
     <input id="pad" type="range" min="0" max="20" value="5"/> Padding<br/>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
 var data = [
@@ -63,26 +62,26 @@ var encoders = {
   }
 };
 
-var p = dataflow.field('parent'),
-    key = dataflow.field('key'),
-    val = dataflow.field('value'),
-    df = new dataflow.Dataflow(),
+var p = vega.field('parent'),
+    key = vega.field('key'),
+    val = vega.field('value'),
+    df = new vega.Dataflow(),
     m  = df.add('squarify'),
     w  = df.add(+document.querySelector('#w').value),
     h  = df.add(+document.querySelector('#h').value),
     r  = df.add(+document.querySelector('#r').value),
     pd = df.add(+document.querySelector('#pad').value),
     rd = df.add(document.querySelector('#rnd').checked),
-    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category20'}),
-    c0 = df.add(dataflow.Collect),
-    s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
-    tm = df.add(dataflow.Treemap, {field:val, size:[w,h], method:m, ratio:r, padding:pd, round:rd, pulse:s0}),
-    j1 = df.add(dataflow.DataJoin, {item:items(svg, 'rect'), pulse:tm}),
-    c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, {encoders:encoders, sc:sc, pulse:c1}),
-    s1 = df.add(dataflow.Sieve, {pulse: e1});
+    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category20'}),
+    c0 = df.add(vega.Collect),
+    s0 = df.add(vega.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tm = df.add(vega.Treemap, {field:val, size:[w,h], method:m, ratio:r, padding:pd, round:rd, pulse:s0}),
+    j1 = df.add(vega.DataJoin, {item:items(svg, 'rect'), pulse:tm}),
+    c1 = df.add(vega.Collect, {pulse:j1}),
+    e1 = df.add(vega.Encode, {encoders:encoders, sc:sc, pulse:c1}),
+    s1 = df.add(vega.Sieve, {pulse: e1});
 
-df.pulse(c0, dataflow.changeset().insert(data))
+df.pulse(c0, vega.changeset().insert(data))
   .on(df.events('#w', 'input'), w, value)
   .on(df.events('#h', 'input'), h, value)
   .on(df.events('#r', 'input'), r, value)

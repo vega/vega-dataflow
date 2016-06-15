@@ -23,7 +23,7 @@ function Encoder(encoders, scope, pulse) {
     params.parent = scope.parent;
   }
 
-  return new dataflow.Encode(params);
+  return new vega.Encode(params);
 }
 
 function items(el, tag) {
@@ -84,7 +84,7 @@ function stringValue(x) {
 }
 
 var parseEncoder = (function() {
-  var UniqueList = dataflow.UniqueList;
+  var UniqueList = vega.UniqueList;
 
   function parseEncoder(encodings, setter, footer) {
     var deps = new Dependencies(),

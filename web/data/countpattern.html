@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow CountPattern</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <style>
       body { margin: 10px; font-family: Helvetica Neue, Arial; font-size: 14px; }
       textarea { width: 800px; height: 200px; }
@@ -15,8 +15,6 @@
     Frequency Threshold<br/>
     <pre id="output"></pre>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-
 var out = document.querySelector('#output');
 var area = document.querySelector('#text');
 
@@ -30,11 +28,11 @@ area.value = [
 
 var stopwords = "(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall)";
 
-var get = dataflow.field('data');
+var get = vega.field('data');
 
 function readText(_, pulse) {
   if (this.value) pulse.rem = this.value;
-  return pulse.source = pulse.add = [dataflow.Tuple.ingest(area.value)];
+  return pulse.source = pulse.add = [vega.Tuple.ingest(area.value)];
 }
 
 function threshold(_) {
@@ -50,22 +48,22 @@ function updatePage() {
         || (b.text > a.text ? -1 : a.text > b.text ? 1 : 0);
     })
     .map(function(t) {
-      var p = dataflow.Tuple.prev(t, df.stamp());
+      var p = vega.Tuple.prev(t, df.stamp());
       return t.text + ': ' + t.count +
         (p.count !== t.count ? ' ('+p.count+')' : '');
     })
     .join('\n');
 }
 
-var df = new dataflow.Dataflow(),
+var df = new vega.Dataflow(),
     ft = df.add(4), // word frequency threshold
     ff = df.add(threshold, {freq:ft})
     rt = df.add(readText),
-    cp = df.add(dataflow.CountPattern, {field:get, case:'lower',
+    cp = df.add(vega.CountPattern, {field:get, case:'lower',
       pattern:'[\\w\']{2,}', stopwords:stopwords, pulse:rt}),
-    cc = df.add(dataflow.Collect, {pulse:cp}),
-    fc = df.add(dataflow.Filter, {test:ff, pulse:cc}),
-    c1 = df.add(dataflow.Collect, {pulse:fc}),
+    cc = df.add(vega.Collect, {pulse:cp}),
+    fc = df.add(vega.Filter, {test:ff, pulse:cc}),
+    c1 = df.add(vega.Collect, {pulse:fc}),
     up = df.add(updatePage, {pulse: c1});
 
 df.on(df.events(area, 'keyup').debounce(250), rt)

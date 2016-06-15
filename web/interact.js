@@ -17,7 +17,7 @@ function pageY(_, e) { return e.pageY; }
 // UTILITY METHODS
 
 function changes(_, e) {
-  var cs = dataflow.changeset();
+  var cs = vega.changeset();
   if (_.add && _.add[0]) cs.insert(_.add);
   if (_.rem && _.rem[0]) cs.remove(_.rem);
   return cs;

@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Filter</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../interact.js"></script>
     <style>
       body { margin: 10px; }
@@ -169,9 +169,7 @@
       </g>
     </svg><br/>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-
-var g = dataflow.normal(50, 20);
+var g = vega.normal(50, 20);
 function gen() {
   var u = -1, v = -1, x = -1;
   while (u < 0 || u >= 100) { u = g(); }
@@ -214,12 +212,12 @@ function updateChart(_, pulse) {
   }
 }
 
-var u = dataflow.field('u'),
-    v = dataflow.field('v'),
-    x = dataflow.field('x'),
-    count = dataflow.field('count');
+var u = vega.field('u'),
+    v = vega.field('v'),
+    x = vega.field('x'),
+    count = vega.field('count');
 
-var df = new dataflow.Dataflow(),
+var df = new vega.Dataflow(),
     dn  = df.add(5e5), // Number of tuples
     xd  = df.add(  0), // x-down coordinate
 
@@ -238,26 +236,26 @@ var df = new dataflow.Dataflow(),
     b2  = df.add(updateBrush, {el:'#view2', x:x2}),
     b3  = df.add(updateBrush, {el:'#view3', x:x3}),
     bin = [
-      df.add(dataflow.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
-      df.add(dataflow.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
-      df.add(dataflow.Bin, {name:'bin', field:x, extent:[0,100], step:5})
+      df.add(vega.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
+      df.add(vega.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
+      df.add(vega.Bin, {name:'bin', field:x, extent:[0,100], step:5})
     ],
 
-    dg  = df.add(dataflow.Generate, {size:dn, generator:gen}),
+    dg  = df.add(vega.Generate, {size:dn, generator:gen}),
     ff  = [
-      df.add(dataflow.Filter, {test:rf1, pulse:dg}),
-      df.add(dataflow.Filter, {test:rf2, pulse:dg}),
-      df.add(dataflow.Filter, {test:rf3, pulse:dg})
+      df.add(vega.Filter, {test:rf1, pulse:dg}),
+      df.add(vega.Filter, {test:rf2, pulse:dg}),
+      df.add(vega.Filter, {test:rf3, pulse:dg})
     ];
 
 // add histograms
 bin.forEach(function(bin, i) {
-  var a  = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:dg}),
-      c  = df.add(dataflow.Collect, {pulse: a}),
-      x  = df.add(dataflow.Extent, {field:count, pulse:c}),
+  var a  = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c  = df.add(vega.Collect, {pulse: a}),
+      x  = df.add(vega.Extent, {field:count, pulse:c}),
 
-      fa = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:ff[i]}),
-      fc = df.add(dataflow.Collect, {pulse: fa}),
+      fa = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:ff[i]}),
+      fc = df.add(vega.Collect, {pulse: fa}),
 
       dom = '#view' + (i+1) + ' ',
       v  = df.add(updateChart, {el:dom+'.base', extent:x, pulse:c}),

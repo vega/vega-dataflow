@@ -1,2 +1,3 @@
 # dataflow
-Experimental reactive dataflow processing.
+
+Reactive dataflow processing.

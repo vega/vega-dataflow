@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Test</title>
-    <script src="../build/dataflow.js"></script>
+    <script src="../build/vega-dataflow.js"></script>
     <style>
       body { margin: 10px; }
       rect { fill: none; stroke-width: 1; shape-rendering: crispEdges; }
@@ -64,13 +64,11 @@
       <rect id="inner" x="10" y="10" width="80" height="80"></rect>
     </svg>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-
 data();
 layout();
 
 function data() {
-  var g = dataflow.normal(50, 20);
+  var g = vega.normal(50, 20);
   function gen() {
     var v = -1;
     while (v < 0 || v >= 100) { v = g(); }
@@ -90,11 +88,11 @@ function data() {
     return (fn.fields = ['data'], fn);
   }
 
-  var bin = dataflow.accessor(function(t) {
+  var bin = vega.accessor(function(t) {
     return 5 * ~~(t.data / 5);
   }, ['data'], 'bin');
 
-  var count = dataflow.field('count');
+  var count = vega.field('count');
 
   function updateChart(_, pulse) {
     var rect = document.querySelectorAll(_.el),
@@ -110,7 +108,7 @@ function data() {
     }
   }
 
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       mx = df.add(1000),
       my = df.add(10),
       dn = df.add(samples, {my:my}),
@@ -118,18 +116,18 @@ function data() {
       fv = df.add(filter, {ft:ft}),
 
       // generate data
-      dg = df.add(dataflow.Generate, {size:dn, generator:gen}),
+      dg = df.add(vega.Generate, {size:dn, generator:gen}),
 
       // histogram of full data set
-      h1 = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:dg}),
-      c1 = df.add(dataflow.Collect, {pulse:h1}),
-      x1 = df.add(dataflow.Extent, {field:count, pulse:c1}),
+      h1 = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c1 = df.add(vega.Collect, {pulse:h1}),
+      x1 = df.add(vega.Extent, {field:count, pulse:c1}),
       v1 = df.add(updateChart, {el:'.hist .base > rect', extent:x1, pulse:c1}),
 
       // histogram of filtered data set
-      fl = df.add(dataflow.Filter, {test:fv, pulse:dg}),
-      h2 = df.add(dataflow.Aggregate, {groupby:bin, drop:false, pulse:fl}),
-      c2 = df.add(dataflow.Collect, {pulse:h2}),
+      fl = df.add(vega.Filter, {test:fv, pulse:dg}),
+      h2 = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:fl}),
+      c2 = df.add(vega.Collect, {pulse:h2}),
       v2 = df.add(updateChart, {el:'.hist .filt > rect', extent:x1, pulse:c2});
 
   var stream = df.events(window, 'mousemove');
@@ -168,7 +166,7 @@ function layout() {
     inner.setAttribute('height', _.h);
   }
 
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       wMin = df.add(100),
       wMax = df.add(500),
       hMin = df.add( 50),

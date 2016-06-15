@@ -9,11 +9,11 @@ rollup.rollup({
 }).then(function(bundle) {
   return bundle.write({
     format: 'umd',
-    moduleName: 'dataflow',
-    dest: 'build/dataflow.js'
+    moduleName: 'vega',
+    dest: 'build/vega-dataflow.js'
   });
 }).then(function() {
-  console.warn('↳ build/dataflow.js');
+  console.warn('↳ build/vega-dataflow.js');
 }).catch(abort);
 
 function abort(error) {

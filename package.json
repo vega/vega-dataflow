@@ -1,8 +1,9 @@
 {
-  "name": "dataflow",
-  "version": "0.2.0",
-  "description": "Reactive dataflow.",
+  "name": "vega-dataflow",
+  "version": "0.3.0",
+  "description": "Reactive dataflow processing.",
   "keywords": [
+    "vega",
     "dataflow",
     "reactive"
   ],
@@ -11,14 +12,14 @@
     "name": "Jeffrey Heer",
     "url": "http://idl.cs.washington.edu"
   },
-  "main": "build/dataflow.js",
+  "main": "build/vega-dataflow.js",
   "jsnext:main": "index",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uwdata/dataflow.git"
+    "url": "https://github.com/uwdata/vega-dataflow.git"
   },
   "scripts": {
-    "build": "npm run test && uglifyjs build/dataflow.js -c -m -o build/dataflow.min.js",
+    "build": "npm run test && uglifyjs build/vega-dataflow.js -c -m -o build/vega-dataflow.min.js",
     "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
     "test": "tape 'test/**/*-test.js' && eslint index.js src test"
   },

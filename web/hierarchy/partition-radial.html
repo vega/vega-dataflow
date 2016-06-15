@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dataflow Partition Radial</title>
-    <script src="../../build/dataflow.js"></script>
+    <script src="../../build/vega-dataflow.js"></script>
     <script src="../svg-encode.js"></script>
     <script src="../interact.js"></script>
     <style>
@@ -20,8 +20,7 @@
     <input id="pad" type="range" min="0" max="1" value="0" step="0.01"/> Padding<br/>
     <input id="rnd" type="checkbox"/> <label for="rnd">Round</label>
     <script type="text/javascript">
-console.log('DATAFLOW version', dataflow.version);
-var ingest = dataflow.Tuple.ingest;
+var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg');
 var g = document.querySelector('g.vis');
 
@@ -54,24 +53,24 @@ var encoders = {
   }
 };
 
-var p = dataflow.field('parent'),
-    key = dataflow.field('key'),
-    val = dataflow.field('value'),
-    df = new dataflow.Dataflow(),
+var p = vega.field('parent'),
+    key = vega.field('key'),
+    val = vega.field('value'),
+    df = new vega.Dataflow(),
     a  = df.add(+document.querySelector('#a').value),
     r  = df.add(+document.querySelector('#r').value),
     pd = df.add(+document.querySelector('#pad').value),
     rd = df.add(false),
-    sc = df.add(dataflow.Scale, {type:'ordinal', scheme:'category20'}),
-    c0 = df.add(dataflow.Collect),
-    s0 = df.add(dataflow.Stratify, {key:key, parentKey:p, pulse:c0}),
-    tm = df.add(dataflow.Partition, {field:val, size:[a,r], padding:pd, round:rd, pulse:s0}),
-    j1 = df.add(dataflow.DataJoin, {item:items(g, 'path'), pulse:tm}),
-    c1 = df.add(dataflow.Collect, {pulse:j1}),
-    e1 = df.add(dataflow.Encode, {encoders:encoders, sc:sc, pulse:c1}),
-    s1 = df.add(dataflow.Sieve, {pulse: e1});
+    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category20'}),
+    c0 = df.add(vega.Collect),
+    s0 = df.add(vega.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tm = df.add(vega.Partition, {field:val, size:[a,r], padding:pd, round:rd, pulse:s0}),
+    j1 = df.add(vega.DataJoin, {item:items(g, 'path'), pulse:tm}),
+    c1 = df.add(vega.Collect, {pulse:j1}),
+    e1 = df.add(vega.Encode, {encoders:encoders, sc:sc, pulse:c1}),
+    s1 = df.add(vega.Sieve, {pulse: e1});
 
-df.pulse(c0, dataflow.changeset().insert(data))
+df.pulse(c0, vega.changeset().insert(data))
   .on(df.events('#a', 'input'), a, value)
   .on(df.events('#r', 'input'), r, value)
   .on(df.events('#pad', 'input'), pd, value)
