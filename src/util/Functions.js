@@ -1,5 +1,6 @@
 import {isFunction, stringValue, splitPath} from './Objects';
 import {array, Empty} from './Arrays';
+import {error} from './Errors';
 
 export function functor(_) {
   return isFunction(_) ? _ : function() { return _; };
@@ -16,6 +17,7 @@ export function accessor(fn, fields, name) {
 }
 
 export function field(field, name) {
+  if (field == null) error('Missing field argument.');
   var path = splitPath(field).map(stringValue),
       fn = Function('_', 'return _[' + path.join('][') + '];');
   return accessor(fn, [field], name || field);

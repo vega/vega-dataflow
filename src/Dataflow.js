@@ -6,7 +6,7 @@ import {events} from './EventStream';
 
 import UniqueList from './util/UniqueList';
 import {Id} from './util/Functions';
-import {extend, isFunction} from './util/Objects';
+import {extend, isFunction, isArray} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
 import {Empty} from './util/Arrays';
 import Heap from './util/Heap';
@@ -275,7 +275,7 @@ prototype.runAfter = function(pulse, callback) {
 function getPulse(df, stamp, op, pulses) {
   // if the operator has an explicit source, try to pull the pulse from it
   var s = op.source, p, q;
-  if (s && Array.isArray(s)) {
+  if (s && isArray(s)) {
     // if source array, consolidate pulses into a multi-pulse
     return new MultiPulse(df, stamp, s.map(function(_) { return _.pulse; }));
   } else {

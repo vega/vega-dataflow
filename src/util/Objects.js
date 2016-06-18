@@ -10,6 +10,8 @@ export function isFunction(_) {
   return typeof _ === 'function';
 }
 
+export var isArray = Array.isArray;
+
 export function extend(_) {
   for (var x, k, i=1, len=arguments.length; i<len; ++i) {
     x = arguments[i];
@@ -19,7 +21,7 @@ export function extend(_) {
 }
 
 export function stringValue(x) {
-  return Array.isArray(x) ? '[' + x.map(stringValue) + ']'
+  return isArray(x) ? '[' + x.map(stringValue) + ']'
     : isObject(x) || isString(x) ?
       // Output valid JSON and JS source strings.
       // See http://timelessrepo.com/json-isnt-a-javascript-subset

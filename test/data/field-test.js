@@ -22,5 +22,12 @@ tape('Field generates field accessors', function(test) {
   test.equal(f.value.fname, 'baz');
   test.deepEqual(f.value.fields, ['bar']);
 
+  df.update(n, ['foo', 'bar']).run();
+  test.equal(Array.isArray(f.value), true);
+  test.deepEqual(f.value.map(dataflow.fname), ['foo', 'bar']);
+  test.deepEqual(
+    f.value.map(function(f) { return f.fields; }),
+    [['foo'], ['bar']]);
+
   test.end();
 });

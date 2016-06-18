@@ -1,5 +1,6 @@
 import Parameters from './Parameters';
 import UniqueList from './util/UniqueList';
+import {isArray} from './util/Objects';
 import {array} from './util/Arrays';
 import {error} from './util/Errors';
 import {Id} from './util/Functions';
@@ -125,7 +126,7 @@ prototype.parameters = function(params, nosub) {
         }
       });
       self.source = value;
-    } else if (Array.isArray(value)) {
+    } else if (isArray(value)) {
       argval.set(name, -1, Array(n = value.length));
       for (i=0; i<n; ++i) add(name, i, value[i]);
     } else {

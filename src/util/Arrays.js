@@ -1,9 +1,10 @@
+import {isArray} from './Objects';
 import {quantile, ascending} from 'd3-array';
 
 export var Empty = [];
 
 export function array(_) {
-  return _ != null ? (Array.isArray(_) ? _ : [_]) : Empty;
+  return _ != null ? (isArray(_) ? _ : [_]) : Empty;
 }
 
 export function array8(n) { return new Uint8Array(n); }

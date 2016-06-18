@@ -69,6 +69,7 @@ tape('compare supports descending order', function(test) {
   test.equal(c({x:1}, {x:0}), -1);
   test.equal(c({x:0}, {x:1}), 1);
   test.equal(c({x:1}, {x:1}), 0);
+  test.deepEqual(c.fields, ['x']);
   test.end();
 });
 
@@ -79,5 +80,6 @@ tape('compare supports nested comparison', function(test) {
   test.equal(c({x:0,y:0}, {x:0,y:1}), -1);
   test.equal(c({x:0,y:1}, {x:0,y:0}), 1);
   test.equal(c({x:0,y:0}, {x:0,y:0}), 0);
+  test.deepEqual(c.fields, ['x', 'y']);
   test.end();
 });

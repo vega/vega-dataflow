@@ -1,4 +1,5 @@
 import {array, visit} from './util/Arrays';
+import {isArray} from './util/Objects';
 
 /**
  * Sentinel value indicating pulse propagation should stop.
@@ -175,7 +176,7 @@ prototype.modifies = function(_) {
 prototype.modified = function(_) {
   var fields = this.fields;
   return !(this.mod.length && fields) ? false
-    : Array.isArray(_) ? _.some(function(f) { return fields[f]; })
+    : isArray(_) ? _.some(function(f) { return fields[f]; })
     : fields[_];
 };
 

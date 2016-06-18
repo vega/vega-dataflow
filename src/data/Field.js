@@ -1,11 +1,15 @@
 import Operator from '../Operator';
 import {inherits, field} from '../util/Functions';
+import {isArray} from '../util/Objects';
+import {array} from '../util/Arrays';
 
 /**
- * Generates a field accessor function.
+ * Generates one or more field accessor functions.
+ * If the 'name' parameter is an array, an array of field accessors
+ * will be created and the 'as' parameter will be ignored.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {string} params.name - The field name to access.
+ * @param {string} params.name - The field name(s) to access.
  * @param {string} params.as - The accessor function name.
  */
 export default function Field(params) {
@@ -15,7 +19,7 @@ export default function Field(params) {
 inherits(Field, Operator);
 
 function update(_) {
-  return (this.value && !_.modified())
-    ? this.value
+  return (this.value && !_.modified()) ? this.value
+    : isArray(_.name) ? array(_.name).map(function(f) { return field(f); })
     : field(_.name, _.as);
 }

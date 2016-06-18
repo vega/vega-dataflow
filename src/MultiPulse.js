@@ -1,5 +1,6 @@
 import Pulse from './Pulse';
 import {inherits} from './util/Functions';
+import {isArray} from './util/Objects';
 import {error} from './util/Errors';
 
 /**
@@ -63,7 +64,7 @@ prototype.changed = function(flags) {
 prototype.modified = function(_) {
   var p = this, fields = p.fields;
   return !(fields && (p.changes & p.MOD)) ? 0
-    : Array.isArray(_) ? _.some(function(f) { return fields[f]; })
+    : isArray(_) ? _.some(function(f) { return fields[f]; })
     : fields[_];
 };
 

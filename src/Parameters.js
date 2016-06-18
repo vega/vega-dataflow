@@ -1,3 +1,5 @@
+import {isArray} from './util/Objects';
+
 var CACHE = '_:mod:_';
 
 /**
@@ -39,7 +41,7 @@ prototype.set = function(name, index, value, force) {
   } else if (v !== value || force) {
     o[name] = value;
     mod[name] = 1;
-    if (Array.isArray(value)) value.forEach(function(v, i) {
+    if (isArray(value)) value.forEach(function(v, i) {
       mod[key(name, i)] = 1;
     });
   }
@@ -62,7 +64,7 @@ prototype.modified = function(name, index) {
   if (!arguments.length) {
     for (k in mod) { if (mod[k]) return true; }
     return false;
-  } else if (Array.isArray(name)) {
+  } else if (isArray(name)) {
     for (k=0; k<name.length; ++k) {
       if (mod[name[k]]) return true;
     }
