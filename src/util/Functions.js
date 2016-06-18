@@ -26,23 +26,31 @@ export function fname(fn) {
 }
 
 export function compare(fields, orders) {
-  if (!fields) return null;
+  if (fields == null) return null;
+  fields = array(fields);
 
-  var code = '',
-      cmp = array(fields),
+  var cmp = fields.map(function(f) {
+        return splitPath(f).map(stringValue).join('][');
+      }),
       ord = array(orders),
-      n = cmp.length,
-      i, f, asc;
+      n = cmp.length - 1,
+      code = 'var u,v;return ', i, f, u, v, x, y, lt, gt;
 
   for (i=0; i<=n; ++i) {
     f = cmp[i];
-    asc = ord[i] !== 'descending';
-    code += '(u=a["'+f+'"])' + (asc?'<':'>') + '(v=b["'+f+'"])'
-          + '?-1:u' + (asc?'>':'<') + 'v?1:'
-          + (i < n ? '' : '0');
+    u = '(u=a['+f+'])';
+    v = '(v=b['+f+'])';
+    x = '(u=u instanceof Date?+u:u)';
+    y = '(v=v instanceof Date?+v:v)';
+
+    lt = ord[i] !== 'descending' ? (gt=1, -1) : (gt=-1, 1);
+    code += u+'<'+v+'&&v!==null?' + lt
+      + ':u>v&&u!==null?' + gt
+      + ':'+x+'!=='+y+'&&v!=null&&v===v?' + lt
+      + ':u!==v&&u!=null&&u===u?' + gt
+      + (i < n ? ':' : ':0');
   }
-  var fn = Function('a', 'b', 'var u,v;return ' + code + ';');
-  return accessor(fn, cmp);
+  return accessor(Function('a', 'b', code + ';'), fields);
 }
 
 export var Id = field('id');
