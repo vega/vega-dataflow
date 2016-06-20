@@ -1,4 +1,4 @@
-import {indexExtent, quartiles} from '../../util/Arrays';
+import {indexExtent, quartiles, bootstrapCI} from '../../util/Arrays';
 
 export default function TupleStore(key) {
   this._key = key || '_id';
@@ -91,4 +91,20 @@ prototype.q2 = function(get) {
 
 prototype.q3 = function(get) {
   return this.quartile(get)[2];
+};
+
+prototype.ci = function(get) {
+  if (this._get !== get || !this._ci) {
+    this._ci = bootstrapCI(this.values(), 1000, 0.05, get);
+    this._get = get;
+  }
+  return this._ci;
+};
+
+prototype.ci0 = function(get) {
+  return this.ci(get)[0];
+};
+
+prototype.ci1 = function(get) {
+  return this.ci(get)[1];
 };

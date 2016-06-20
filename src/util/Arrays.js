@@ -41,22 +41,45 @@ function number(x) {
   return x === null ? NaN : +x;
 }
 
-export function quartiles(array, f) {
+function numbers(array, f) {
   var numbers = [],
       n = array.length,
-      i = -1,
-      a;
+      i = -1, a;
 
   if (f == null) {
     while (++i < n) if (!isNaN(a = number(array[i]))) numbers.push(a);
   } else {
     while (++i < n) if (!isNaN(a = number(f(array[i], i, array)))) numbers.push(a);
   }
+  return numbers;
+}
+
+export function bootstrapCI(array, samples, alpha, f) {
+  var values = numbers(array, f),
+      n = values.length,
+      m = samples,
+      a, i, j, mu;
+
+  for (j=0, mu=Array(m); j<m; ++j) {
+    for (a=0, i=0; i<n; ++i) {
+      a += values[~~(Math.random() * n)];
+    }
+    mu[i] = a / n;
+  }
 
   return [
-    quantile(numbers.sort(ascending), 0.25),
-    quantile(numbers, 0.50),
-    quantile(numbers, 0.75)
+    quantile(mu.sort(ascending), alpha/2),
+    quantile(mu, 1-(alpha/2))
+  ];
+}
+
+export function quartiles(array, f) {
+  var values = numbers(array, f);
+
+  return [
+    quantile(values.sort(ascending), 0.25),
+    quantile(values, 0.50),
+    quantile(values, 0.75)
   ];
 }
 

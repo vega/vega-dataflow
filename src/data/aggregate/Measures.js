@@ -70,6 +70,21 @@ export var Aggregates = {
     set:  'this.valid > 1 ? Math.sqrt(this.dev / this.valid) : 0',
     req:  ['variance'], idx: 2
   }),
+  'stderr': measure({
+    name: 'stderr',
+    set:  'this.valid > 1 ? Math.sqrt(this.dev / (this.valid * (this.valid-1))) : 0',
+    req:  ['variance'], idx: 2
+  }),
+  'ci0': measure({
+    name: 'ci0',
+    set:  'cell.data.ci0(this.get)',
+    req:  ['values'], idx: 3
+  }),
+  'ci1': measure({
+    name: 'ci1',
+    set:  'cell.data.ci1(this.get)',
+    req:  ['values'], idx: 3
+  }),
   'median': measure({
     name: 'median',
     set:  'cell.data.q2(this.get)',
@@ -114,11 +129,6 @@ export var Aggregates = {
     rem:  'if (v >= this.max) this.max = NaN;',
     set:  'this.max = (isNaN(this.max) ? cell.data.max(this.get) : this.max)',
     str:  ['values'], idx: 4
-  }),
-  'modeskew': measure({
-    name: 'modeskew',
-    set:  'this.dev===0 ? 0 : (this.mean - cell.data.q2(this.get)) / Math.sqrt(this.dev/(this.valid-1))',
-    req:  ['mean', 'stdev', 'median'], idx: 5
   })
 };
 

@@ -6,11 +6,11 @@ import {inherits, fname} from '../../util/Functions';
 import {array} from '../../util/Arrays';
 import {error} from '../../util/Errors';
 
-export var VALID_AGGREGATES = [
+export var ValidAggregates = [
   'values', 'count', 'valid', 'missing', 'distinct',
-  'sum', 'mean', 'average', 'variance', 'variancep', 'stdev',
-  'stdevp', 'median', 'q1', 'q3', 'modeskew', 'min', 'max',
-  'argmin', 'argmax'
+  'min', 'max', 'argmin', 'argmax', 'sum', 'mean', 'average',
+  'variance', 'variancep', 'stdev', 'stdevp', 'stderr',
+  'median', 'q1', 'q3', 'ci0', 'ci1'
 ];
 
 /**
