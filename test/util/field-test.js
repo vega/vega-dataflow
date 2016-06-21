@@ -1,7 +1,7 @@
 var tape = require('tape'),
     dataflow = require('../../');
 
-tape('field create a field accessor', function(test) {
+tape('field creates a field accessor', function(test) {
   var f = dataflow.field('x');
   test.equal(typeof f, 'function');
   test.equal(f.fname, 'x');
