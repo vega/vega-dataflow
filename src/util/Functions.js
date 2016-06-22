@@ -36,20 +36,18 @@ export function compare(fields, orders) {
       }),
       ord = array(orders),
       n = cmp.length - 1,
-      code = 'var u,v;return ', i, f, u, v, x, y, lt, gt;
+      code = 'var u,v;return ', i, f, u, v, d, lt, gt;
 
   for (i=0; i<=n; ++i) {
     f = cmp[i];
     u = '(u=a['+f+'])';
     v = '(v=b['+f+'])';
-    x = '(u=u instanceof Date?+u:u)';
-    y = '(v=v instanceof Date?+v:v)';
-
+    d = '((v=v instanceof Date?+v:v),(u=u instanceof Date?+u:u))';
     lt = ord[i] !== 'descending' ? (gt=1, -1) : (gt=-1, 1);
-    code += u+'<'+v+'&&v!==null?' + lt
-      + ':u>v&&u!==null?' + gt
-      + ':'+x+'!=='+y+'&&v!=null&&v===v?' + lt
-      + ':u!==v&&u!=null&&u===u?' + gt
+    code += '(' + u+'<'+v+'||u==null)&&v!=null?' + lt
+      + ':(u>v||v==null)&&u!=null?' + gt
+      + ':'+d+'!==u&&v===v?' + lt
+      + ':v!==v&&u===u?' + gt
       + (i < n ? ':' : ':0');
   }
   return accessor(Function('a', 'b', code + ';'), fields);

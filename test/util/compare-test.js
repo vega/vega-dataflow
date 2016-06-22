@@ -50,14 +50,17 @@ tape('compare compares dates', function(test) {
   test.end();
 });
 
-tape('compare treats null, undefined and NaN as equivalent', function(test) {
+tape('compare compares null, undefined and NaN', function(test) {
   var c = dataflow.compare('x');
+  // null and undefined are treated as equivalent
   test.equal(c({x:null}, {x:undefined}), 0);
   test.equal(c({x:undefined}, {x:null}), 0);
-  test.equal(c({x:null}, {x:NaN}), 0);
-  test.equal(c({x:NaN}, {x:null}), 0);
-  test.equal(c({x:undefined}, {x:NaN}), 0);
-  test.equal(c({x:NaN}, {x:undefined}), 0);
+  // NaN is greater than null or undefined
+  test.equal(c({x:null}, {x:NaN}), -1);
+  test.equal(c({x:NaN}, {x:null}), 1);
+  test.equal(c({x:undefined}, {x:NaN}), -1);
+  test.equal(c({x:NaN}, {x:undefined}), 1);
+  // values are equivalent to themselves
   test.equal(c({x:null}, {x:null}), 0);
   test.equal(c({x:undefined}, {x:undefined}), 0);
   test.equal(c({x:NaN}, {x:NaN}), 0);
