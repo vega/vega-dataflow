@@ -126,6 +126,12 @@ var lon = vega.field('lon'),
     c1 = df.add(vega.Collect, {pulse:j1}),
     e1 = df.add(vega.Encode, {encoders:points, pulse:c1});
 
+var ix = interactors(df, svg),
+    cm = ix.mousemove.filter(function(e) { return e.buttons; }),
+    rx = ix.mousemove.filter(function(e) { return e.shiftKey; }),
+    ry = ix.mousemove.filter(function(e) { return e.metaKey; }),
+    rz = ix.mousemove.filter(function(e) { return e.ctrlKey; });
+
 df.pulse(d0, vega.changeset().insert(topojson.feature(world, world.objects.countries)))
   .pulse(d1, vega.changeset().insert(capitals))
   .on(df.events('#pt', 'change'), pt, option)
@@ -138,6 +144,30 @@ df.pulse(d0, vega.changeset().insert(topojson.feature(world, world.objects.count
   .on(df.events('#cl', 'input'), cl, value)
   .on(df.events('#cp', 'input'), cp, value)
   .on(df.events('#pr', 'input'), pr, value)
+  .on(ix.wheel, sc, function(_, e) {
+      var s = sc.value * Math.pow(1.0005, -e.deltaY * Math.pow(16, e.deltaMode));
+      return document.querySelector('#sc').value = s, s;
+    })
+  .on(rx, rl, function(_, e) {
+      var l = Math.floor(360 * (e.pageX - 10) / 960) - 180;
+      return document.querySelector('#rl').value = l, l;
+    })
+  .on(ry, rp, function(_, e) {
+      var p = Math.floor(-180 * (e.pageY - 10) / 500) + 90;
+      return document.querySelector('#rp').value = p, p;
+    })
+  .on(rz, rg, function(_, e) {
+      var g = Math.floor(360 * (e.pageX - 10) / 960) - 180;
+      return document.querySelector('#rg').value = g, g;
+    })
+  .on(cm, cl, function(_, e) {
+    var l = Math.floor(-360 * (e.pageX - 10) / 960) + 180;
+    return document.querySelector('#cl').value = l, l;
+  })
+  .on(cm, cp, function(_, e) {
+    var p = Math.floor(180 * (e.pageY - 10) / 500) - 90;
+    return document.querySelector('#cp').value = p, p;
+  })
   .run();
     </script>
   </body>

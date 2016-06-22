@@ -58,13 +58,28 @@ function derive(t) {
  * Rederive a derived tuple by copying values from the source tuple.
  * @param {object} t - The source tuple.
  * @param {object} d - The derived tuple.
- * @param {object} stamp - The current pulse timestamp.
+ * @param {number} stamp - The current pulse timestamp.
  * @return {object} The derived tuple.
  */
 function rederive(t, d, stamp) {
   copy(t, d);
   var p = t._prev;
   if (p && p._stamp >= stamp) prev_init(d, stamp);
+  return d;
+}
+
+/**
+ * Replace an existing tuple with a new tuple.
+ * The existing tuple will become the previous value of the new.
+ * @param {object} t - The existing data tuple.
+ * @param {object} d - The new tuple that replaces the old.
+ * @param {number} stamp - The current pulse timestamp.
+ * @return {object} The new tuple.
+ */
+function replace(t, d, stamp) {
+  d._id = t._id;
+  d._prev = t;
+  t._stamp = stamp;
   return d;
 }
 
@@ -83,7 +98,7 @@ function set(t, k, v) {
  * Returns the previous value of a tuple. If no previous value exists for
  * the provided timestamp, the input tuple is returned directly.
  * @param {object} t - The tuple.
- * @param {object} stamp - The minimum timestamp of the previous value.
+ * @param {number} stamp - The minimum timestamp of the previous value.
  * @return {object} The previous value of the tuple.
  */
 function prev(t, stamp) {
@@ -96,7 +111,7 @@ function prev(t, stamp) {
  * The current values of the input tuple are copied to a previous tuple
  * instance, which can be accessed using the {@link prev} method.
  * @param {object} t - The tuple.
- * @param {object} stamp - The current pulse timestamp.
+ * @param {number} stamp - The current pulse timestamp.
  */
 function prev_init(t, stamp) {
   var p = t._prev, k, v;
@@ -145,7 +160,8 @@ function idFilter(data) {
 
 export {
   reset, id,
-  ingest, derive, rederive, set,
-  prev, prev_init,
+  ingest, replace,
+  derive, rederive,
+  set, prev, prev_init,
   idMap, idFilter
 };

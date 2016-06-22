@@ -1,4 +1,5 @@
 import Transform from '../Transform';
+import {ingest, replace} from '../Tuple';
 import {inherits} from '../util/Functions';
 import {isFunction} from '../util/Objects';
 
@@ -18,7 +19,7 @@ var prototype = inherits(Graticule, Transform);
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(),
       src = this.value,
-      gen = this.generator;
+      gen = this.generator, t;
 
   if (!src.length || _.modified()) {
     for (var prop in _) {
@@ -26,11 +27,14 @@ prototype.transform = function(_, pulse) {
         gen[prop](_[prop]);
       }
     }
-  } else {
-    out.rem.push(src[0]);
   }
 
-  out.source = this.value = src = [gen()];
-  out.add.push(src[0]);
-  return out;
+  t = gen();
+  if (src.length) {
+    out.mod.push(replace(src[0], t));
+  } else {
+    out.add.push(src[0] = ingest(t));
+  }
+
+  return out.source = src, out;
 };
