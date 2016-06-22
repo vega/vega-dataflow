@@ -60,6 +60,12 @@ export {default as Pie} from './src/layout/Pie';
 export {default as Stack} from './src/layout/Stack';
 export {default as Voronoi} from './src/layout/Voronoi';
 
+// Geo Transforms
+export {default as GeoPath} from './src/geo/GeoPath';
+export {default as GeoPoint} from './src/geo/GeoPoint';
+export {default as Graticule} from './src/geo/Graticule';
+export {default as Projection} from './src/geo/Projection';
+
 // Hierarchy Transforms
 export {default as Nest} from './src/hierarchy/Nest';
 export {default as Stratify} from './src/hierarchy/Stratify';
