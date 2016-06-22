@@ -1,7 +1,7 @@
 import Transform from '../Transform';
 import Subflow from './Subflow';
 import {inherits} from '../util/Functions';
-import {prev} from '../Tuple';
+
 import {map} from 'd3-collection';
 
 /**
@@ -14,6 +14,7 @@ import {map} from 'd3-collection';
  */
 export default function Facet(params) {
   Transform.call(this, map(), params);
+  this._keys = {}; // cache previously calculated key values
 
   // keep track of active subflows, use as targets array for listeners
   // this allows us to limit propagation to only updated subflows
@@ -32,9 +33,9 @@ prototype.activate = function(flow) {
 
 prototype.transform = function(_, pulse) {
   var self = this,
-      pkey = this._key || _.key,
-      key = (this._key = _.key),
       lut = this.value,
+      key = _.key,
+      cache = this._keys,
       rekey = _.modified('key');
 
   // subflow generator
@@ -54,30 +55,40 @@ prototype.transform = function(_, pulse) {
 
   this._targets.active = 0; // reset list of active subflows
 
-  pulse.visit(pulse.ADD, function(t) { subflow(key(t)).add(t); });
-  pulse.visit(pulse.REM, function(t) { subflow(pkey(t)).rem(t); });
+  pulse.visit(pulse.ADD, function(t) {
+    subflow(cache[t._id] = key(t)).add(t);
+  });
+
+  pulse.visit(pulse.REM, function(t) {
+    var k = cache[t._id];
+    delete cache[t._id];
+    subflow(k).rem(t);
+  });
 
   if (rekey || pulse.modified(key.fields)) {
     pulse.visit(pulse.MOD, function(t) {
-      var pt = prev(t, pulse.stamp),
-          k0 = pkey(pt),
+      var k0 = cache[t._id],
           k1 = key(t);
       if (k0 === k1) {
         subflow(k1).mod(t);
       } else {
-        subflow(k0).rem(pt);
+        cache[t._id] = k1;
+        subflow(k0).rem(t);
         subflow(k1).add(t);
       }
     });
   } else if (pulse.changed(pulse.MOD)) {
-    pulse.visit(pulse.MOD, function(t) { subflow(key(t)).mod(t); });
+    pulse.visit(pulse.MOD, function(t) {
+      subflow(cache[t._id]).mod(t);
+    });
   }
 
   if (rekey) {
     pulse.visit(pulse.REFLOW, function(t) {
-      var k0 = pkey(t),
+      var k0 = cache[t._id],
           k1 = key(t);
       if (k0 !== k1) {
+        cache[t._id] = k1;
         subflow(k0).rem(t);
         subflow(k1).add(t);
       }
