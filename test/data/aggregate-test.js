@@ -76,5 +76,4 @@ tape('Aggregate aggregates tuples', function(test) {
   test.equal(d[0].max_v, 4);
 
   test.end();
-
 });

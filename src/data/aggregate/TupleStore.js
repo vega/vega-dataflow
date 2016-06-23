@@ -36,7 +36,11 @@ prototype.values = function() {
     map[r[i][k]] = 1;
   }
   for (i=0, j=0; i<n; ++i) {
-    if (!map[(v = a[i])[k]]) { x[j++] = v; }
+    if (map[(v = a[i])[k]]) {
+      map[v[k]] = 0;
+    } else {
+      x[j++] = v;
+    }
   }
 
   this._rem = [];

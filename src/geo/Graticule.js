@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {ingest, replace} from '../Tuple';
+import {ingest} from '../Tuple';
 import {inherits} from '../util/Functions';
 import {isFunction} from '../util/Objects';
 
@@ -31,10 +31,12 @@ prototype.transform = function(_, pulse) {
 
   t = gen();
   if (src.length) {
-    out.mod.push(replace(src[0], t));
+    t._id = src[0]._id;
+    out.mod.push(t);
   } else {
-    out.add.push(src[0] = ingest(t));
+    out.add.push(ingest(t));
   }
+  src[0] = t;
 
   return out.source = src, out;
 };

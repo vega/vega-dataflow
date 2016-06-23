@@ -1,7 +1,7 @@
 import Transform from '../../Transform';
 import TupleStore from './TupleStore';
 import {createMeasure, compileMeasures} from './Measures';
-import {ingest, prev, prev_init} from '../../Tuple';
+import {ingest, replace} from '../../Tuple';
 import {inherits, fname} from '../../util/Functions';
 import {array} from '../../util/Arrays';
 import {error} from '../../util/Errors';
@@ -36,6 +36,7 @@ export default function Aggregate(params) {
 
   this._measures = []; // collection of aggregation monoids
   this._count = false; // flag indicating only count aggregation
+  this._prev = null;   // previous aggregation cells
 
   this._inputs = null;  // array of dependent input tuple field names
   this._outputs = null; // array of output tuple field names
@@ -46,39 +47,23 @@ var prototype = inherits(Aggregate, Transform);
 prototype.transform = function(_, pulse) {
   var aggr = this,
       out = pulse.fork(),
-      stamp = out.stamp;
+      mod;
 
-  if (this.value && _.modified()) {
-    this.removeAll(out);
+  this.stamp = out.stamp;
 
-    this.init(_);
-
-    pulse.visit(pulse.SOURCE, function(t) {
-      aggr.add(t, out);
-    });
+  if (this.value && ((mod = _.modified()) || pulse.modified(this._inputs))) {
+    this._prev = this.value;
+    this.value = mod ? this.init(_) : {};
+    pulse.visit(pulse.SOURCE, function(t) { aggr.add(t); });
   } else {
-    if (this.value == null) {
-      this.init(_);
-    }
-
-    pulse.visit(pulse.ADD, function(t) {
-      aggr.add(t, out);
-    });
-
-    pulse.visit(pulse.REM, function(t) {
-      aggr.rem(prev(t, stamp), out);
-    });
-
-    if (this._inputs && pulse.modified(this._inputs)) {
-      pulse.visit(pulse.MOD, function(t) {
-        aggr.mod(t, prev(t, stamp), out);
-      });
-    }
+    this.value = this.value || this.init(_);
+    pulse.visit(pulse.REM, function(t) { aggr.rem(t); });
+    pulse.visit(pulse.ADD, function(t) { aggr.add(t); });
   }
 
   // Indicate output fields and return aggregate tuples.
   out.modifies(this._outputs);
-  return aggr.changes(_, out);
+  return aggr.changes(out, _.drop !== false);
 };
 
 prototype.init = function(_) {
@@ -148,7 +133,7 @@ prototype.init = function(_) {
     return compileMeasures(m, m.field);
   });
 
-  this.value = {}; // aggregation cells
+  return {}; // aggregation cells (this.value)
 };
 
 function measureName(op, mname, as) {
@@ -171,27 +156,25 @@ function cellkey(x) {
 
 prototype.cellkey = cellkey;
 
-prototype.cell = function(t, out) {
-  var key = this.cellkey(t),
-      cell = this.value[key],
-      stamp = out.stamp;
-
+prototype.cell = function(key, t) {
+  var cell = this.value[key];
   if (!cell) {
-    cell = this.value[key] = this.newcell(t, stamp);
+    cell = this.value[key] = this.newcell(key, t);
     this._adds[this._alen++] = cell;
-  } else if (cell.stamp < stamp) {
-    cell.stamp = stamp;
+  } else if (cell.stamp < this.stamp) {
+    cell.stamp = this.stamp;
     this._mods[this._mlen++] = cell;
   }
   return cell;
 };
 
-prototype.newcell = function(t, stamp) {
+prototype.newcell = function(key, t) {
   var cell = {
+    key:   key,
     num:   0,
     agg:   null,
-    tuple: this.newtuple(t),
-    stamp: stamp,
+    tuple: this.newtuple(t, this._prev && this._prev[key]),
+    stamp: this.stamp,
     store: false
   };
 
@@ -212,7 +195,7 @@ prototype.newcell = function(t, stamp) {
   return cell;
 };
 
-prototype.newtuple = function(t) {
+prototype.newtuple = function(t, p) {
   var names = this._dnames,
       dims = this._dims,
       x = {}, i, n;
@@ -221,54 +204,40 @@ prototype.newtuple = function(t) {
     x[names[i]] = dims[i](t);
   }
 
-  return ingest(x);
+  return p ? replace(p.tuple, x) : ingest(x);
 };
 
 // -- Process Tuples -----
 
-prototype.add = function(t, out) {
-  var cell = this.cell(t, out);
+prototype.add = function(t) {
+  var key = this.cellkey(t),
+      cell = this.cell(key, t),
+      agg, i, n;
+
   cell.num += 1;
   if (this._count) return;
 
   if (cell.store) cell.data.add(t);
 
-  var agg = cell.agg, i, n;
+  agg = cell.agg;
   for (i=0, n=agg.length; i<n; ++i) {
-    agg[i].add(t);
+    agg[i].add(agg[i].get(t));
   }
 };
 
-prototype.rem = function(t, out) {
-  var cell = this.cell(t, out);
+prototype.rem = function(t) {
+  var key = this.cellkey(t),
+      cell = this.cell(key, t),
+      agg, i, n;
+
   cell.num -= 1;
   if (this._count) return;
 
   if (cell.store) cell.data.rem(t);
 
-  var agg = cell.agg, i, n;
+  agg = cell.agg;
   for (i=0, n=agg.length; i<n; ++i) {
-    agg[i].rem(t);
-  }
-};
-
-prototype.mod = function(t, s, out) {
-  var cell0 = this.cell(s, out),
-      cell1 = this.cell(t, out);
-
-  if (cell0 !== cell1) {
-    cell0.num -= 1;
-    cell1.num += 1;
-    if (cell0.store) cell0.data.rem(s);
-    if (cell1.store) cell1.data.add(t);
-  }
-  if (this._count) return;
-
-  var agg0 = cell0.agg,
-      agg1 = cell1.agg, i, n;
-  for (i=0, n=agg0.length; i<n; ++i) {
-    agg0[i].rem(s);
-    agg1[i].add(t);
+    agg[i].rem(agg[i].get(t));
   }
 };
 
@@ -293,37 +262,31 @@ prototype.celltuple = function(cell) {
   return tuple;
 };
 
-prototype.changes = function(_, out) {
+prototype.changes = function(out, drop) {
   var adds = this._adds,
       mods = this._mods,
-      cell, t, i, n;
+      prev = this._prev,
+      add = out.add,
+      rem = out.rem,
+      mod = out.mod,
+      cell, key, i, n;
+
+  if (prev) for (key in prev) {
+    rem.push(prev[key].tuple);
+  }
 
   for (i=0, n=this._alen; i<n; ++i) {
-    out.add.push(this.celltuple(adds[i]));
+    add.push(this.celltuple(adds[i]));
     adds[i] = null; // for garbage collection
   }
 
   for (i=0, n=this._mlen; i<n; ++i) {
     cell = mods[i];
-    prev_init(cell.tuple, out.stamp);
-    t = this.celltuple(cell);
-
-    if (cell.num == 0 && (_.drop == null || _.drop)) {
-      out.rem.push(t);
-    } else {
-      out.mod.push(t);
-    }
-
+    (cell.num === 0 && drop ? rem : mod).push(this.celltuple(cell));
     mods[i] = null; // for garbage collection
   }
 
   this._alen = this._mlen = 0; // reset list of active cells
+  this._prev = null;
   return out;
-};
-
-prototype.removeAll = function(out) {
-  var cells = this.value, key;
-  for (key in cells) {
-    out.rem.push(cells[key].tuple);
-  }
 };

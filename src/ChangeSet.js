@@ -1,4 +1,4 @@
-import {ingest, prev_init} from './Tuple';
+import {ingest} from './Tuple';
 import {isFunction} from './util/Objects';
 import {functor} from './util/Functions';
 import {array} from './util/Arrays';
@@ -54,7 +54,6 @@ export default function changeset() {
 
       // modify
       function modify(t, f, v) {
-        prev_init(t, pulse.stamp);
         t[f] = v(t);
         out[t._id] = t;
       }

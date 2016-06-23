@@ -11,10 +11,6 @@ tape('Relay relays derived tuples', function(test) {
       r = df.add(dataflow.Relay, {pulse:c}),
       p;
 
-  function prev(t, p) {
-    return dataflow.Tuple.prev(t, p.stamp);
-  }
-
   df.pulse(c, changeset().insert(data)).run();
   p = r.pulse;
   test.equal(p.add.length, 2);
@@ -33,8 +29,6 @@ tape('Relay relays derived tuples', function(test) {
   test.equal(p.mod.length, 2);
   test.notEqual(p.mod[0], data[0]);
   test.notEqual(p.mod[1], data[1]);
-  test.notEqual(prev(p.mod[0], p), prev(data[0], p));
-  test.notEqual(prev(p.mod[1], p), prev(data[1], p));
   test.deepEqual(p.mod.map(id), [2, 3]);
 
   df.pulse(c, changeset().remove(data)).run();

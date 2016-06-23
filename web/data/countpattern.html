@@ -48,9 +48,7 @@ function updatePage() {
         || (b.text > a.text ? -1 : a.text > b.text ? 1 : 0);
     })
     .map(function(t) {
-      var p = vega.Tuple.prev(t, df.stamp());
-      return t.text + ': ' + t.count +
-        (p.count !== t.count ? ' ('+p.count+')' : '');
+      return t.text + ': ' + t.count;
     })
     .join('\n');
 }

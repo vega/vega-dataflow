@@ -1,6 +1,6 @@
 import Transform from '../Transform';
 import {inherits} from '../util/Functions';
-import {ingest, prev_init, set} from '../Tuple';
+import {ingest} from '../Tuple';
 
 /**
  * Count regexp-defined pattern occurrences in a text field.
@@ -77,7 +77,6 @@ prototype._parameterCheck = function(_, pulse) {
 prototype._finish = function(pulse) {
   var counts = this._counts,
       tuples = this._tuples || (this._tuples = {}),
-      stamp = pulse.stamp,
       out = pulse.fork(),
       w, t, c;
 
@@ -92,8 +91,7 @@ prototype._finish = function(pulse) {
       counts[w] = null;
       tuples[w] = null;
     } else if (t.count !== c) {
-      prev_init(t, stamp);
-      set(t, 'count', c);
+      t.count = c;
       out.mod.push(t);
     }
   }

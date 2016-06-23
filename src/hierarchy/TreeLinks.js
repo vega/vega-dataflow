@@ -35,7 +35,6 @@ prototype.transform = function(_, pulse) {
       out = pulse.fork();
 
   function modify(id) {
-    // TODO prev_init?
     var link = links[id];
     if (link) mods[id] = 1, out.mod.push(link);
   }

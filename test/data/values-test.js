@@ -60,9 +60,11 @@ tape('Values extracts multi-domain values', function(test) {
       df = new dataflow.Dataflow(),
       col = df.add(dataflow.Collect),
       ag1 = df.add(dataflow.Aggregate, {groupby:k1, pulse:col}),
+      ca1 = df.add(dataflow.Collect, {pulse:ag1}),
       ag2 = df.add(dataflow.Aggregate, {groupby:k2, pulse:col}),
+      ca2 = df.add(dataflow.Collect, {pulse:ag2}),
       sum = df.add(dataflow.Aggregate, {groupby:key,
-        fields:[count], ops:['sum'], as:['count'], pulse:[ag1, ag2]}),
+        fields:[count], ops:['sum'], as:['count'], pulse:[ca1, ca2]}),
       out = df.add(dataflow.Collect, {sort:byCount, pulse:sum}),
       val = df.add(dataflow.Values, {field:key, pulse:out});
 
