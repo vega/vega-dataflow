@@ -17,12 +17,14 @@ export default function changeset() {
   return {
     constructor: changeset,
     insert: function(t) {
-      add.push.apply(add, array(t));
+      var d = array(t), i = 0, n = d.length;
+      for (; i<n; ++i) add.push(d[i]);
       return this;
     },
     remove: function(t) {
-      var a = isFunction(t) ? remp : rem;
-      a.push.apply(a, array(t));
+      var a = isFunction(t) ? remp : rem,
+          d = array(t), i = 0, n = d.length;
+      for (; i<n; ++i) a.push(d[i]);
       return this;
     },
     modify: function(t, field, value) {
