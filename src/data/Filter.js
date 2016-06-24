@@ -48,7 +48,7 @@ prototype.transform = function(_, pulse) {
 
   pulse.visit(pulse.MOD, revisit);
 
-  if (_.modified('test')) {
+  if (_.modified()) {
     isMod = false;
     pulse.visit(pulse.REFLOW, revisit);
   }
