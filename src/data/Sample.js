@@ -17,6 +17,7 @@ var prototype = inherits(Sample, Transform);
 
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(),
+      mod = _.modified('size'),
       num = _.size,
       res = this.value,
       cnt = this.count,
@@ -52,16 +53,24 @@ prototype.transform = function(_, pulse) {
 
     // filter removed tuples out of the sample reservoir
     res = res.filter(function(t) { return map[t._id] !== -1; });
+  }
 
+  if ((pulse.rem.length || mod) && res.length < num && pulse.source) {
     // replenish sample if backing data source is available
-    if (res.length < num && pulse.source) {
-      cap = cnt = res.length;
-      pulse.visit(pulse.SOURCE, function(t) {
-        // update, but skip previously sampled tuples
-        if (!map[t._id]) update(t);
-      });
-      cap = -1;
+    cap = cnt = res.length;
+    pulse.visit(pulse.SOURCE, function(t) {
+      // update, but skip previously sampled tuples
+      if (!map[t._id]) update(t);
+    });
+    cap = -1;
+  }
+
+  if (mod && res.length > num) {
+    for (var i=0, n=res.length-num; i<n; ++i) {
+      map[res[i]._id] = -1;
+      out.rem.push(res[i]);
     }
+    res = res.slice(n);
   }
 
   if (pulse.mod.length) {
