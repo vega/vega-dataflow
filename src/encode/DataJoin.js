@@ -1,7 +1,7 @@
 import Transform from '../Transform';
 import {inherits} from '../util/Functions';
 import {error} from '../util/Errors';
-import {id} from '../Tuple';
+import {id, ingest} from '../Tuple';
 
 import {map} from 'd3-collection';
 
@@ -9,7 +9,7 @@ import {map} from 'd3-collection';
  * Joins a set of data elements against a set of visual items.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): object} params.item - An item generator function.
+ * @param {function(object): object} [params.item] - An item generator function.
  * @param {function(object): *} [params.key] - The key field associating data and visual items.
  */
 export default function DataJoin(params) {
@@ -18,9 +18,13 @@ export default function DataJoin(params) {
 
 var prototype = inherits(DataJoin, Transform);
 
+function defaultItemCreate() {
+  return ingest({});
+}
+
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.NO_SOURCE),
-      item = _.item,
+      item = _.item || defaultItemCreate,
       key = _.key || id,
       lut = this.value;
 
@@ -60,5 +64,6 @@ prototype.transform = function(_, pulse) {
       out.mod.push(x);
     }
   });
+
   return out;
 };
