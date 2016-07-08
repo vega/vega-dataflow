@@ -223,7 +223,7 @@ prototype.visit = function(flags, visitor) {
     if (sum === src) {
       // do nothing
     } else if (sum) {
-      visit(src, filter(this, ADD|MOD), v);
+      visit(src, filter(this, ADD_MOD), v);
     } else {
       // if no add/rem/mod tuples, iterate directly
       src.forEach(visitor);

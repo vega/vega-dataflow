@@ -33,6 +33,10 @@ export default function changeset() {
       else m.tuple = t, mod.push(m);
       return this;
     },
+    encode: function(t, set) {
+      mod.push({tuple: t, field: set});
+      return this;
+    },
     pulse: function(pulse, tuples) {
       var out, i, n, m, f, t, id;
 
@@ -56,7 +60,7 @@ export default function changeset() {
 
       // modify
       function modify(t, f, v) {
-        t[f] = v(t);
+        if (v) t[f] = v(t); else pulse.encode = f;
         out[t._id] = t;
       }
       for (out={}, i=0, n=mod.length; i<n; ++i) {
