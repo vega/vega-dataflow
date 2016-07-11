@@ -2,16 +2,16 @@ import {default as Pulse, StopPropagation} from './Pulse';
 import MultiPulse from './MultiPulse';
 import Operator from './Operator';
 import {isChangeSet} from './ChangeSet';
-import {events} from './EventStream';
+import {stream} from './EventStream';
 
 import UniqueList from './util/UniqueList';
-import {Id} from './util/Functions';
+import {Id, functor} from './util/Functions';
 import {extend, isFunction, isArray} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
-import {Empty} from './util/Arrays';
+import {Empty, array} from './util/Arrays';
 import Heap from './util/Heap';
 
-var RANK = 0;
+var RANK = 1;
 var NO_OPT = {skip: false, force: false};
 var SKIP = {skip: true};
 
@@ -119,6 +119,8 @@ prototype.pulse = function(op, changeset, options) {
   return this.touch(op, options || NO_OPT);
 };
 
+// EVENT HANDLING
+
 /**
  * Create a new event stream from an event source.
  * @param {object} source - The event source to monitor. The input must
@@ -131,21 +133,45 @@ prototype.pulse = function(op, changeset, options) {
  * @return {EventStream}
  */
 prototype.events = function(source, type, filter, apply) {
-  return events(source, type, filter, apply);
-};
+  var df = this,
+      s = stream(filter, apply),
+      send = function(e) {
+        e.dataflow = df;
+        s.receive(e);
+        df.run();
+      },
+      sources;
+
+  if (typeof source === 'string' && typeof document !== 'undefined') {
+    sources = document.querySelectorAll(source);
+  } else {
+    sources = array(source);
+  }
+
+  for (var i=0, n=sources.length; i<n; ++i) {
+    sources[i].addEventListener(type, send);
+  }
+
+  return s;
+}
 
 /**
- * Perform operator updates in response to an event stream. Applies an
- * update function to compute the new operator value. If the update function
+ * Perform operator updates in response to events. Applies an
+ * update function to compute a new operator value. If the update function
  * returns a {@link ChangeSet}, the operator will be pulsed with those tuple
  * changes. Otherwise, the operator value will be updated to the return value.
- * @param {EventStream} stream - The event stream to monitor.
- * @param {Operator} target - The operator to update.
+ * @param {EventStream|Operator} source - The event source to react to.
+ *   This argument can be either an EventStream or an Operator.
+ * @param {Operator|function(object):Operator} target - The operator to update.
+ *   This argument can either be an Operator instance or (if the source
+ *   argument is an EventStream), a function that accepts an event object as
+ *   input and returns an Operator to target.
  * @param {function(Parameters,Event): *} [update] - Optional update function
  *   to compute the new operator value, or a literal value to set. Update
  *   functions expect to receive a parameter object and event as arguments.
- *   This function can either return a {@link ChangeSet} instance to pulse
- *   the operator with tuple changes, or it can return a new operator value.
+ *   This function can either return a new operator value or (if the source
+ *   argument is an EventStream) a {@link ChangeSet} instance to pulse
+ *   the target operator with tuple changes.
  * @param {object} [params] - The update function parameters.
  * @param {object} [options] - Additional options hash. If not overridden,
  *   updated operators will be skipped by default.
@@ -155,31 +181,54 @@ prototype.events = function(source, type, filter, apply) {
  *   be re-evaluated even if its value has not changed.
  * @return {Dataflow}
  */
-prototype.on = function(stream, target, update, params, options) {
-  var self = this,
-      opt = extend({}, options, SKIP),
-      func;
+prototype.on = function(source, target, update, params, options) {
+  var fn = source instanceof Operator ? onOperator : onStream;
+  return fn(this, source, target, update, params, options), this;
+};
+
+function onStream(df, stream, target, update, params, options) {
+  var opt = extend({}, options, SKIP), func, op;
+
+  if (!isFunction(target)) target = functor(target);
 
   if (update === undefined) {
-    func = function() { self.touch(target).run(); };
+    func = function(e) {
+      df.touch(target(e));
+    };
   } else if (isFunction(update)) {
-    var op = new Operator(null, update);
+    op = new Operator(null, update);
     op.parameters(params, true); // don't subscribe to operators
-    op.target = target;
-    func = function(evt) {
-      op.evaluate(evt);
-      var v = op.value;
-      (isChangeSet(v)
-        ? self.pulse(target, v, options)
-        : self.update(target, v, opt)).run();
+    func = function(e) {
+      var t = target(e),
+          v = (op.evaluate(e), op.value);
+      isChangeSet(v) ? df.pulse(t, v, options) : df.update(t, v, opt);
     };
   } else {
-    func = function() { self.update(target, update, opt).run(); };
+    func = function(e) {
+      df.update(target(e), update, opt);
+    };
   }
-  stream.apply(func);
 
-  return self;
-};
+  stream.apply(func);
+}
+
+function onOperator(df, source, target, update, params) {
+  var func, op;
+
+  if (update === undefined) {
+    op = target;
+  } else {
+    func = isFunction(update) ? update : functor(update);
+    op = new Operator(null, function(_, pulse) {
+      target.skip(true).set(func(_, pulse));
+    });
+    op.parameters(params, true);
+    op.modified(true);
+    op.rank = 0;
+  }
+
+  source.targets().add(op);
+}
 
 // RUN PROPAGATION CYCLE
 
@@ -189,6 +238,8 @@ prototype.on = function(stream, target, update, params, options) {
  * the first time, all registered operators will be processed.
  */
 prototype.run = function() {
+  if (!this._touched.length) return 0;
+
   this._running = true;
 
   var pq = new Heap(function(a, b) { return a.rank - b.rank; }),

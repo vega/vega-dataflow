@@ -1,5 +1,5 @@
 import UniqueList from './util/UniqueList';
-import {array, Empty} from './util/Arrays';
+import {Empty} from './util/Arrays';
 import {True, Id, Identity} from './util/Functions';
 
 var STREAM_ID = 0;
@@ -20,6 +20,19 @@ export default function EventStream(filter, apply, receive) {
   if (receive) this.receive = receive;
   if (filter) this._filter = filter;
   if (apply) this._apply = apply;
+}
+
+/**
+ * Creates a new event stream instance with the provided
+ * (optional) filter, apply and receive functions.
+ * @param {function(Object, number): boolean} [filter] - Filter predicate.
+ *   Events pass through when truthy, events are suppressed when falsy.
+ * @param {function(Object): *} [apply] - Applied to input events to produce
+ *   new event values.
+ * @see EventStream
+ */
+export function stream(filter, apply, receive) {
+  return new EventStream(filter, apply, receive);
 }
 
 var prototype = EventStream.prototype;
@@ -85,7 +98,10 @@ prototype.debounce = function(delay) {
   var s = stream(), evt = null, tid = null;
 
   function callback() {
-    s.receive(evt); evt = null; tid = null;
+    var df = evt.dataflow;
+    s.receive(evt);
+    evt = null; tid = null;
+    if (df && df.run) df.run();
   }
 
   this.targets().add(stream(null, null, function(e) {
@@ -103,46 +119,3 @@ prototype.between = function(a, b) {
   b.targets().add(stream(null, null, function() { active = false; }));
   return this.filter(function() { return active; });
 };
-
-/**
- * Creates a new event stream instance with the provided
- * (optional) filter, apply and receive functions.
- * @param {function(Object, number): boolean} [filter] - Filter predicate.
- *   Events pass through when truthy, events are suppressed when falsy.
- * @param {function(Object): *} [apply] - Applied to input events to produce
- *   new event values.
- * @see EventStream
- */
-export function stream(filter, apply, receive) {
-  return new EventStream(filter, apply, receive);
-}
-
-/**
- * Creates a new event stream that monitors an event source.
- * @param {string|Object|Object[]} source - The event source. Can be a CSS
- *   selector string, an object that supports 'addEventListener', or an array
- *   of such objects. For CSS selectors, document.querySelectorAll is applied.
- * @param {string} type - A string indicating the type of event to listen to.
- * @param {function(Object, number): boolean} [filter] - Filter predicate.
- *   Events pass through when truthy, events are suppressed when falsy.
- * @param {function(Object): *} [apply] - Applied to input events to produce
- *   new event values.
- * @see EventStream
- */
-export function events(source, type, filter, apply) {
-  var s = stream(filter, apply),
-      send = function(e) { s.receive(e); },
-      sources;
-
-  if (typeof source === 'string' && typeof document !== 'undefined') {
-    sources = document.querySelectorAll(source);
-  } else {
-    sources = array(source);
-  }
-
-  for (var i=0, n=sources.length; i<n; ++i) {
-    sources[i].addEventListener(type, send);
-  }
-
-  return s;
-}
