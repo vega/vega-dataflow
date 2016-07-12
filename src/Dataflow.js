@@ -67,16 +67,18 @@ prototype.touch = function(op, options) {
  * as the update function and a null initial value is assumed.
  * @param {*} init - One of: the operator to add, the initial value of
  *   the operator, an operator class to instantiate, or an update function.
- * @param {function} [func] - The operator update function.
+ * @param {function} [update] - The operator update function.
  * @param {object} [params] - The operator parameters.
+ * @param {boolean} [react=true] - Flag indicating if this operator should
+ *   listen for changes to upstream operators included as parameters.
  * @return {Operator} - The added operator.
  */
-prototype.add = function(init, func, params) {
+prototype.add = function(init, update, params, react) {
   var op = (init instanceof Operator) ? init
-    : (init instanceof Function)
-      ? ((init.prototype instanceof Operator) ? new init(func, params)
-      : new Operator(null, init, func))
-    : new Operator(init, func, params);
+    : isFunction(init)
+      ? ((init.prototype instanceof Operator) ? new init(update, params)
+      : new Operator(null, init, update, params))
+    : new Operator(init, update, params, react);
 
   op.rank = ++RANK;
   this.touch(op);
@@ -196,8 +198,7 @@ function onStream(df, stream, target, update, params, options) {
       df.touch(target(e));
     };
   } else if (isFunction(update)) {
-    op = new Operator(null, update);
-    op.parameters(params, true); // don't subscribe to operators
+    op = new Operator(null, update, params, false);
     func = function(e) {
       var t = target(e),
           v = (op.evaluate(e), op.value);
@@ -221,9 +222,9 @@ function onOperator(df, source, target, update, params, options) {
     func = isFunction(update) ? update : functor(update);
     op = new Operator(null, function(_, pulse) {
       return target.skip(true).value = func(_, pulse);
-    });
-    op.parameters(params, true);
+    }, params, false);
     op.modified(options && options.force);
+    op.skip(true); // skip on first invocation
     op.value = target.value;
     op.rank = 0;
     op.targets().add(target);
@@ -340,34 +341,3 @@ function getPulse(df, stamp, op, pulses) {
     return p;
   }
 }
-
-// SAVE / RESTORE DATAFLOW STATE
-
-/**
- * Serialize a snapshot of current operator states.
- * @param {Array<Operator>} ops - The operators whose state should be saved.
- * @return {string} - JSON-encoded state vector.
- */
-prototype.save = function(ops) {
-  return JSON.stringify(ops.map(function(op) { return op.value; }));
-};
-
-/**
- * Restore operator states to a previous snapshot. The input operators
- * must exactly match with the serialized state values, otherwise the
- * behavior of this method is undefined.
- * @param {Array<Operator>} ops - The operators to restore.
- * @param {string} state - JSON-encoded state vector.
- */
-prototype.restore = function(ops, state) {
-  var val = JSON.parse(state.values),
-      i = 0, n = val.length;
-
-  if (ops.length !== n) {
-    error('Dataflow restore state length should match input operators.');
-  }
-  for (; i<n; ++i) {
-    this.update(ops[i], val[i], SKIP);
-  }
-  return this;
-};

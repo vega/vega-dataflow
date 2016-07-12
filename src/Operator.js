@@ -26,9 +26,11 @@ var SKIP     = 1,
  *   evaluation of this operator, the update function will be invoked and the
  *   return value will be used as the new value of this operator.
  * @param {object} [params] - The parameters for this operator.
+ * @param {boolean} [react=true] - Flag indicating if this operator should
+ *   listen for changes to upstream operators included as parameters.
  * @see parameters
  */
-export default function Operator(init, update, params) {
+export default function Operator(init, update, params, react) {
   this.id = ++OP_ID;
   this.value = init;
   this.stamp = -1;
@@ -38,7 +40,7 @@ export default function Operator(init, update, params) {
   if (update) {
     this._update = update;
   }
-  if (params) this.parameters(params);
+  if (params) this.parameters(params, react);
 }
 
 var prototype = Operator.prototype;
@@ -97,9 +99,14 @@ prototype.modified = flag(MODIFIED);
  * an array, the array will also be searched for Operator instances. However,
  * the search does not recurse into sub-arrays or object properties.
  * @param {object} params - A hash of operator parameters.
+ * @param {boolean} [react=true] - A flag indicating if this operator should
+ *   automatically update (react) when parameter values change. In other words,
+ *   this flag determines if the operator registers itself as a listener on
+ *   any upstream operators included in the parameters.
  * @return {Operator} this operator instance.
  */
-prototype.parameters = function(params, nosub) {
+prototype.parameters = function(params, react) {
+  react = react !== false;
   var self = this,
       argval = (self._argval = self._argval || new Parameters()),
       argops = (self._argops = self._argops || []),
@@ -107,7 +114,7 @@ prototype.parameters = function(params, nosub) {
 
   function add(name, index, value) {
     if (value instanceof Operator) {
-      if (value !== self && !nosub) value.targets().add(self);
+      if (value !== self && react) value.targets().add(self);
       argops.push({op:value, name:name, index:index});
     } else {
       argval.set(name, index, value);
