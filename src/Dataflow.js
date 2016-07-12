@@ -212,7 +212,7 @@ function onStream(df, stream, target, update, params, options) {
   stream.apply(func);
 }
 
-function onOperator(df, source, target, update, params) {
+function onOperator(df, source, target, update, params, options) {
   var func, op;
 
   if (update === undefined) {
@@ -220,11 +220,13 @@ function onOperator(df, source, target, update, params) {
   } else {
     func = isFunction(update) ? update : functor(update);
     op = new Operator(null, function(_, pulse) {
-      target.skip(true).set(func(_, pulse));
+      return target.skip(true).value = func(_, pulse);
     });
     op.parameters(params, true);
-    op.modified(true);
+    op.modified(options && options.force);
+    op.value = target.value;
     op.rank = 0;
+    op.targets().add(target);
   }
 
   source.targets().add(op);
