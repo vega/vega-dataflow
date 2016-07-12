@@ -221,10 +221,10 @@ function onOperator(df, source, target, update, params, options) {
   } else {
     func = isFunction(update) ? update : functor(update);
     op = new Operator(null, function(_, pulse) {
-      return target.skip(true).value = func(_, pulse);
+      if (!target.skip()) return target.skip(true).value = func(_, pulse);
     }, params, false);
     op.modified(options && options.force);
-    op.skip(true); // skip on first invocation
+    op.skip(true); // skip first invocation
     op.value = target.value;
     op.rank = 0;
     op.targets().add(target);
