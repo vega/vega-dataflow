@@ -177,7 +177,7 @@ prototype.evaluate = function(pulse) {
     params.clear();
     if (v !== this.value) {
       this.value = v;
-    } else {
+    } else if (!this.modified()) {
       return pulse.StopPropagation;
     }
   }
