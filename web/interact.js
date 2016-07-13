@@ -8,6 +8,8 @@ function check(_, e) { return e.target.checked; }
 
 function value(_, e) { return +e.target.value; }
 
+function text(_, e) { return e.target.value || null; }
+
 function datum(_, e) { return e.target.datum; }
 
 function pageX(_, e) { return e.pageX; }

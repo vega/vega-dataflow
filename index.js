@@ -50,6 +50,7 @@ export {default as CrossFilter} from './src/data/crossfilter/CrossFilter';
 export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 
 // Encoding Transforms
+export {default as AxisTicks} from './src/encode/AxisTicks';
 export {default as DataJoin} from './src/encode/DataJoin';
 export {default as Encode} from './src/encode/Encode';
 export {default as Scale} from './src/encode/Scale';

@@ -26,11 +26,12 @@
   "dependencies": {
     "d3-array": "1.0.0",
     "d3-collection": "1.0.0",
-    "d3-force": "0.7.1",
-    "d3-geo": "0.1.0",
-    "d3-hierarchy": "0.3.0",
-    "d3-scale": "0.9.3",
-    "d3-scale-chromatic": "0.3.0",
+    "d3-force": "1.0.0",
+    "d3-format": "1.0.0",
+    "d3-geo": "1.0.0",
+    "d3-hierarchy": "1.0.0",
+    "d3-scale": "1.0.0",
+    "d3-scale-chromatic": "1.0.0",
     "d3-voronoi": "1.0.0"
   },
   "devDependencies": {
