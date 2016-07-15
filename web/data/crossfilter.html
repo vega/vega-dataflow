@@ -169,11 +169,11 @@
       </g>
     </svg><br/>
     <script type="text/javascript">
-var g = vega.normal(50, 20);
+var g = vega.randomNormal(50, 20);
 function gen() {
   var u = -1, v = -1, x = -1;
-  while (u < 0 || u >= 100) { u = g(); }
-  while (v < 0 || v >= 100) { v = Math.random() < 0.8 ? g() : 100*Math.pow(u/100,2); }
+  while (u < 0 || u >= 100) { u = g.sample(); }
+  while (v < 0 || v >= 100) { v = Math.random() < 0.8 ? g.sample() : 100*Math.pow(u/100,2); }
   x = Math.random() < 0.5 ? 100 * Math.random() : 25 + 50 * Math.random();
   return {u:u, v:v, x:x};
 }

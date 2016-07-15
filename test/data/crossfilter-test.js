@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Crossfilter filters tuples', function(test) {
   var data = [
@@ -8,19 +8,19 @@ tape('Crossfilter filters tuples', function(test) {
     {a: 4, b: 4, c:2}, {a: 3, b: 3, c:3}
   ];
 
-  var a = dataflow.field('a'),
-      b = dataflow.field('b'),
-      df = new dataflow.Dataflow(),
+  var a = vega.field('a'),
+      b = vega.field('b'),
+      df = new vega.Dataflow(),
       r1 = df.add([0, 5]),
       r2 = df.add([0, 5]),
-      c0 = df.add(dataflow.Collect),
-      cf = df.add(dataflow.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0}),
-      f1 = df.add(dataflow.ResolveFilter, {ignore:2, filter:cf, pulse:cf}),
-      o1 = df.add(dataflow.Collect, {pulse: f1}),
-      f2 = df.add(dataflow.ResolveFilter, {ignore:1, filter:cf, pulse:cf}),
-      o2 = df.add(dataflow.Collect, {pulse: f2}),
-      fn = df.add(dataflow.ResolveFilter, {ignore:0, filter:cf, pulse:cf}),
-      on = df.add(dataflow.Collect, {pulse: fn});
+      c0 = df.add(vega.Collect),
+      cf = df.add(vega.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0}),
+      f1 = df.add(vega.ResolveFilter, {ignore:2, filter:cf, pulse:cf}),
+      o1 = df.add(vega.Collect, {pulse: f1}),
+      f2 = df.add(vega.ResolveFilter, {ignore:1, filter:cf, pulse:cf}),
+      o2 = df.add(vega.Collect, {pulse: f2}),
+      fn = df.add(vega.ResolveFilter, {ignore:0, filter:cf, pulse:cf}),
+      on = df.add(vega.Collect, {pulse: fn});
 
   // -- add data
   df.pulse(c0, changeset().insert(data)).run();
@@ -80,13 +80,13 @@ tape('Crossfilter consolidates after remove', function(test) {
     {a: 4, b: 4, c:2}, {a: 3, b: 3, c:3}
   ];
 
-  var a = dataflow.field('a'),
-      b = dataflow.field('b'),
-      df = new dataflow.Dataflow(),
+  var a = vega.field('a'),
+      b = vega.field('b'),
+      df = new vega.Dataflow(),
       r1 = df.add([0, 3]),
       r2 = df.add([0, 3]),
-      c0 = df.add(dataflow.Collect),
-      cf = df.add(dataflow.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0});
+      c0 = df.add(vega.Collect),
+      cf = df.add(vega.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0});
 
   // -- add data
   df.pulse(c0, changeset().insert(data)).run();

@@ -1,4 +1,4 @@
-import {isArray} from './util/Objects';
+import {isArray} from 'vega-util';
 
 var CACHE = '_:mod:_';
 

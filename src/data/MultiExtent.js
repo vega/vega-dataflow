@@ -1,5 +1,5 @@
 import Operator from '../Operator';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Computes global min/max extents over a collection of extents.

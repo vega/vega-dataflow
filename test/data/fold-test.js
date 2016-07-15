@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Fold folds tuples', function(test) {
   var data = [
@@ -8,11 +8,11 @@ tape('Fold folds tuples', function(test) {
     {a:'?', b:2, c:4}
   ];
 
-  var fields = ['b', 'c'].map(dataflow.field),
-      df = new dataflow.Dataflow(),
-      c0 = df.add(dataflow.Collect),
-      fd = df.add(dataflow.Fold, {fields: fields, pulse:c0}),
-      out = df.add(dataflow.Collect, {pulse:fd}), d;
+  var fields = ['b', 'c'].map(vega.field),
+      df = new vega.Dataflow(),
+      c0 = df.add(vega.Collect),
+      fd = df.add(vega.Fold, {fields: fields, pulse:c0}),
+      out = df.add(vega.Collect, {pulse:fd}), d;
 
   // -- process adds
   df.pulse(c0, changeset().insert(data)).run();

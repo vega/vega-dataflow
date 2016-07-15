@@ -1,8 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
-import {isFunction} from '../util/Objects';
 import {error} from '../util/Errors';
-
+import {inherits, isFunction} from 'vega-util';
 import {scales, schemes} from './scales';
 
 var SKIP = {

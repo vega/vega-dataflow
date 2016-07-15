@@ -1,6 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {derive, rederive} from '../Tuple';
+import {inherits} from 'vega-util';
 
 /**
  * Relays a data stream by creating derived copies of observed tuples.

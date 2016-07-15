@@ -1,5 +1,4 @@
-import {array, visit} from './util/Arrays';
-import {isArray} from './util/Objects';
+import {array, isArray, visitArray} from 'vega-util';
 
 /**
  * Sentinel value indicating pulse propagation should stop.
@@ -214,16 +213,16 @@ prototype.visit = function(flags, visitor) {
   }
 
   var v = visitor, src, sum;
-  if (flags & ADD) visit(this.add, this.addF, v);
-  if (flags & REM) visit(this.rem, this.remF, v);
-  if (flags & MOD) visit(this.mod, this.modF, v);
+  if (flags & ADD) visitArray(this.add, this.addF, v);
+  if (flags & REM) visitArray(this.rem, this.remF, v);
+  if (flags & MOD) visitArray(this.mod, this.modF, v);
 
   if ((flags & REFLOW) && (src = this.source)) {
     sum = this.add.length + this.mod.length;
     if (sum === src) {
       // do nothing
     } else if (sum) {
-      visit(src, filter(this, ADD_MOD), v);
+      visitArray(src, filter(this, ADD_MOD), v);
     } else {
       // if no add/rem/mod tuples, iterate directly
       src.forEach(visitor);

@@ -1,6 +1,4 @@
-import {extend} from '../../util/Objects';
-import {Identity} from '../../util/Functions';
-
+import {extend, identity} from 'vega-util';
 import {values} from 'd3-collection';
 
 export var Aggregates = {
@@ -163,7 +161,7 @@ function resolve(agg, stream) {
 }
 
 export function compileMeasures(agg, field) {
-  var get = field || Identity,
+  var get = field || identity,
       all = resolve(agg, true), // assume streaming removes may occur
       ctr = 'this.cell = cell; this.tuple = t; this.valid = 0; this.missing = 0;',
       add = 'if(v==null){this.missing++; return;} if(v!==v) return; ++this.valid;',

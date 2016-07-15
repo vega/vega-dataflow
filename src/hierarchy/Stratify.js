@@ -1,7 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {error} from '../util/Errors';
-
+import {inherits} from 'vega-util';
 import {stratify} from 'd3-hierarchy';
 
  /**

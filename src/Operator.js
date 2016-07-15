@@ -1,9 +1,7 @@
 import Parameters from './Parameters';
 import UniqueList from './util/UniqueList';
-import {isArray} from './util/Objects';
-import {array} from './util/Arrays';
 import {error} from './util/Errors';
-import {Id} from './util/Functions';
+import {array, id, isArray} from 'vega-util';
 
 var OP_ID = 0;
 var PULSE = 'pulse';
@@ -51,7 +49,7 @@ var prototype = Operator.prototype;
  * @return {UniqueList}
  */
 prototype.targets = function() {
-  return this._targets || (this._targets = UniqueList(Id));
+  return this._targets || (this._targets = UniqueList(id));
 };
 
 /**

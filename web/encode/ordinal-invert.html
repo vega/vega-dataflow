@@ -60,10 +60,10 @@ var inner = document.querySelector('input.inner');
 var outer = document.querySelector('input.outer');
 var output = document.querySelector('.output');
 
-var g = vega.normal(50, 20);
+var g = vega.randomNormal(50, 20);
 function gen() {
   var u = -1, v = -1, x = -1;
-  while (u < 0 || u >= 100) { u = g(); }
+  while (u < 0 || u >= 100) { u = g.sample(); }
   return {u:u};
 }
 

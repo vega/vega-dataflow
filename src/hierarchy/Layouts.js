@@ -1,7 +1,6 @@
 import Transform from '../Transform';
-import {inherits, accessor} from '../util/Functions';
 import {error} from '../util/Errors';
-
+import {accessor, inherits} from 'vega-util';
 import {map} from 'd3-collection';
 import {
   tree, cluster, pack, partition,

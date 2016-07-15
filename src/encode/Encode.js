@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits, False} from '../util/Functions';
+import {inherits, falsy} from 'vega-util';
 
 /**
  * Invokes encoding functions for visual items.
@@ -19,26 +19,26 @@ var prototype = inherits(Encode, Transform);
 
 prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ADD_REM),
-      update = _.encoders.update || False,
-      enter = _.encoders.enter || False,
-      exit = _.encoders.exit || False,
-      set = (pulse.encode ? _.encoders[pulse.encode] : update) || False;
+      update = _.encoders.update || falsy,
+      enter = _.encoders.enter || falsy,
+      exit = _.encoders.exit || falsy,
+      set = (pulse.encode ? _.encoders[pulse.encode] : update) || falsy;
 
-  if (enter !== False || update !== False) {
+  if (enter !== falsy || update !== falsy) {
     pulse.visit(pulse.ADD, function(t) {
       enter(t, _);
       update(t, _);
-      if (set !== False && set !== update) set(t, _);
+      if (set !== falsy && set !== update) set(t, _);
     });
   }
 
-  if (exit !== False) {
+  if (exit !== falsy) {
     pulse.visit(pulse.REM, function(t) {
       exit(t, _);
     });
   }
 
-  if (set !== False) {
+  if (set !== falsy) {
     var flag = pulse.MOD | (_.modified() ? pulse.REFLOW : 0);
     pulse.visit(flag, function(t) {
       if (set(t, _)) { out.mod.push(t); }

@@ -1,8 +1,6 @@
 import Transform from '../Transform';
 import {ingest} from '../Tuple';
-import {inherits} from '../util/Functions';
-import {isFunction} from '../util/Objects';
-
+import {inherits, isFunction} from 'vega-util';
 import {geoGraticule} from 'd3-geo';
 
 /**

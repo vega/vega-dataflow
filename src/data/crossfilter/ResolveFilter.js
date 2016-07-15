@@ -1,5 +1,5 @@
 import Transform from '../../Transform';
-import {inherits} from '../../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Selectively filters tuples by resolving against a filter bitmap.

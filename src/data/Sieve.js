@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Propagates a new pulse without any tuples so long as the input

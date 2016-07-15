@@ -1,6 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {error} from '../util/Errors';
+import {inherits} from 'vega-util';
 
 /**
  * Compute rank order scores for tuples. The tuples are assumed to have been

@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {inherits, One} from '../util/Functions';
-
+import {inherits, one} from 'vega-util';
 import {range, sum} from 'd3-array';
 
 /**
@@ -19,7 +18,7 @@ export default function Pie(params) {
 var prototype = inherits(Pie, Transform);
 
 prototype.transform = function(_, pulse) {
-  var field = _.field || One,
+  var field = _.field || one,
       start = _.startAngle || 0,
       stop = _.endAngle != null ? _.endAngle : 2*Math.PI,
       data = pulse.source,

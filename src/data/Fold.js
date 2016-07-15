@@ -1,6 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {derive, rederive} from '../Tuple';
+import {inherits} from 'vega-util';
 
 /**
  * Folds one more tuple fields into multiple tuples in which the field

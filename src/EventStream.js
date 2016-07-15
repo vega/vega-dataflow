@@ -1,6 +1,5 @@
 import UniqueList from './util/UniqueList';
-import {Empty} from './util/Arrays';
-import {True, Id, Identity} from './util/Functions';
+import {id, identity, truthy} from 'vega-util';
 
 var STREAM_ID = 0;
 
@@ -37,12 +36,12 @@ export function stream(filter, apply, receive) {
 
 var prototype = EventStream.prototype;
 
-prototype._filter = True;
+prototype._filter = truthy;
 
-prototype._apply = Identity;
+prototype._apply = identity;
 
 prototype.targets = function() {
-  return this._targets || (this._targets = UniqueList(Id));
+  return this._targets || (this._targets = UniqueList(id));
 };
 
 prototype.consume = function(_) {
@@ -53,8 +52,9 @@ prototype.consume = function(_) {
 prototype.receive = function(evt) {
   if (this._filter(evt)) {
     var val = (this.value = this._apply(evt)),
-        trg = this._targets || Empty,
-        n = trg.length, i = 0;
+        trg = this._targets,
+        n = trg ? trg.length : 0,
+        i = 0;
 
     for (; i<n; ++i) trg[i].receive(val);
 

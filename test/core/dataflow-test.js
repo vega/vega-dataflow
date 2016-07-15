@@ -1,8 +1,8 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    vega = require('../../');
 
 tape('Dataflow propagates values', function(test) {
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       s1 = df.add(10),
       s2 = df.add(3),
       n1 = df.add(function(_) { return _.s1 + 0.25; }, {s1:s1}),

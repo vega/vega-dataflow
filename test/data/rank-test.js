@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Rank ranks tuples', function(test) {
   var data = [
@@ -8,13 +8,13 @@ tape('Rank ranks tuples', function(test) {
     {"x": 0, "y": 55}, {"x": 1, "y": 72}
   ];
 
-  var rank = dataflow.field('rank'),
-      x = dataflow.field('x'),
-      df = new dataflow.Dataflow(),
+  var rank = vega.field('rank'),
+      x = vega.field('x'),
+      df = new vega.Dataflow(),
       f = df.add(null),
       n = df.add(false),
-      c = df.add(dataflow.Collect),
-      r = df.add(dataflow.Rank, {field:f, normalize:n, pulse:c});
+      c = df.add(vega.Collect),
+      r = df.add(vega.Rank, {field:f, normalize:n, pulse:c});
 
   df.pulse(c, changeset().insert(data)).run();
   test.deepEqual(c.value.map(rank), [0, 1, 2, 3]);

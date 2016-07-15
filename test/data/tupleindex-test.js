@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('TupleIndex maintains an index of tuples', function(test) {
   var data = [
@@ -9,12 +9,12 @@ tape('TupleIndex maintains an index of tuples', function(test) {
     {'id': 5, 'value': 'baz'}
   ];
 
-  var id = dataflow.field('id'),
-      va = dataflow.field('value'),
-      df = new dataflow.Dataflow(),
-      c0 = df.add(dataflow.Collect),
+  var id = vega.field('id'),
+      va = vega.field('value'),
+      df = new vega.Dataflow(),
+      c0 = df.add(vega.Collect),
       fi = df.add(null), // populate with field accessor later
-      ti = df.add(dataflow.TupleIndex, {field:fi, pulse:c0}),
+      ti = df.add(vega.TupleIndex, {field:fi, pulse:c0}),
       map;
 
   df.update(fi, id).run(); // initialize

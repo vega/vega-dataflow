@@ -1,9 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
-import {isFunction} from '../util/Objects';
-import {array} from '../util/Arrays';
 import {error} from '../util/Errors';
-
+import {array, inherits, isFunction} from 'vega-util';
 import {map} from 'd3-collection';
 import {
   forceSimulation, forceCenter, forceCollide,

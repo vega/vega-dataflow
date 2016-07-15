@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Geo-code a longitude/latitude point to an x/y coordinate.

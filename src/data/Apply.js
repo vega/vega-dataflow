@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Applies a function to a data tuple and stores the result.

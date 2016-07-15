@@ -1,18 +1,18 @@
 import Transform from '../Transform';
-import {inherits, fname} from '../util/Functions';
 import {ingest} from '../Tuple';
-import {Empty} from '../util/Arrays';
 import {error} from '../util/Errors';
-
+import {accessorName, inherits} from 'vega-util';
 import {mean, min, max, median} from 'd3-array';
 
-var METHODS = {
+var Methods = {
   value: 'value',
   median: median,
   mean: mean,
   min: min,
   max: max
 };
+
+var Empty = [];
 
 /**
  * Impute missing values.
@@ -35,15 +35,15 @@ export default function Impute(params) {
 var prototype = inherits(Impute, Transform);
 
 function getValue(_) {
-  var m = _.method || METHODS.value, v;
+  var m = _.method || Methods.value, v;
 
-  if (METHODS[m] == null) {
+  if (Methods[m] == null) {
     error('Unrecognized imputation method: ' + m);
-  } else if (m === METHODS.value) {
+  } else if (m === Methods.value) {
     v = _.value !== undefined ? _.value : 0;
     return function() { return v; };
   } else {
-    return METHODS[m];
+    return Methods[m];
   }
 }
 
@@ -56,9 +56,9 @@ prototype.transform = function(_, pulse) {
   var out = pulse.fork(pulse.ALL),
       impute = getValue(_),
       field = getField(_),
-      fName = fname(_.field),
-      gNames = _.groupby.map(fname),
-      oNames = _.orderby.map(fname),
+      fName = accessorName(_.field),
+      gNames = _.groupby.map(accessorName),
+      oNames = _.orderby.map(accessorName),
       groups = partition(pulse.source, _.groupby, _.orderby),
       curr = [],
       prev = this.value,

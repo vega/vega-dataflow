@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {inherits, Identity} from '../util/Functions';
-
+import {inherits, identity} from 'vega-util';
 import {geoPath} from 'd3-geo';
 
 /**
@@ -23,7 +22,7 @@ var prototype = inherits(GeoPath, Transform);
 
 prototype.transform = function(_, pulse) {
   var path = this.value,
-      field = _.field || Identity,
+      field = _.field || identity,
       as = _.as || 'path',
       mod;
 
@@ -39,7 +38,7 @@ prototype.transform = function(_, pulse) {
 
     pulse.materialize().reflow().visit(pulse.SOURCE, set);
   } else {
-    mod = field === Identity || pulse.modified(field.fields);
+    mod = field === identity || pulse.modified(field.fields);
     pulse.visit(mod ? pulse.ADD_MOD : pulse.ADD, set);
   }
 

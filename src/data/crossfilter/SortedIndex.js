@@ -1,5 +1,4 @@
-import {array32} from '../../util/Arrays';
-
+import {array32} from './arrays';
 import {bisectLeft, bisectRight, permute} from 'd3-array';
 
 /**

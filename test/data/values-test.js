@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Values extracts values', function(test) {
   var data = [
@@ -8,11 +8,11 @@ tape('Values extracts values', function(test) {
     {k:'c', v:2}, {k:'d', v:4}
   ];
 
-  var key = dataflow.field('k'),
-      df = new dataflow.Dataflow(),
+  var key = vega.field('k'),
+      df = new vega.Dataflow(),
       srt = df.add(null),
-      col = df.add(dataflow.Collect),
-      val = df.add(dataflow.Values, {field:key, sort:srt, pulse:col});
+      col = df.add(vega.Collect),
+      val = df.add(vega.Values, {field:key, sort:srt, pulse:col});
 
   df.pulse(col, changeset().insert(data)).run();
   var values = val.value;
@@ -21,20 +21,20 @@ tape('Values extracts values', function(test) {
   df.touch(val).run(); // no-op pulse
   test.equal(val.value, values); // no change!
 
-  df.update(srt, dataflow.compare('v', 'descending')).run();
+  df.update(srt, vega.compare('v', 'descending')).run();
   test.deepEqual(val.value, ['d', 'b', 'c', 'a']);
 
   test.end();
 });
 
 tape('Values extracts sorted domain values', function(test) {
-  var byCount = dataflow.compare('count', 'descending'),
-      key = dataflow.field('k'),
-      df = new dataflow.Dataflow(),
-      col = df.add(dataflow.Collect),
-      agg = df.add(dataflow.Aggregate, {groupby:key, pulse:col}),
-      out = df.add(dataflow.Collect, {pulse:agg}),
-      val = df.add(dataflow.Values, {field:key, sort:byCount, pulse:out});
+  var byCount = vega.compare('count', 'descending'),
+      key = vega.field('k'),
+      df = new vega.Dataflow(),
+      col = df.add(vega.Collect),
+      agg = df.add(vega.Aggregate, {groupby:key, pulse:col}),
+      out = df.add(vega.Collect, {pulse:agg}),
+      val = df.add(vega.Values, {field:key, sort:byCount, pulse:out});
 
   // -- initial
   df.pulse(col, changeset().insert([
@@ -52,21 +52,21 @@ tape('Values extracts sorted domain values', function(test) {
 });
 
 tape('Values extracts multi-domain values', function(test) {
-  var byCount = dataflow.compare('count', 'descending'),
-      count = dataflow.field('count'),
-      key = dataflow.field('key'),
-      k1 = dataflow.field('k1', 'key'),
-      k2 = dataflow.field('k2', 'key'),
-      df = new dataflow.Dataflow(),
-      col = df.add(dataflow.Collect),
-      ag1 = df.add(dataflow.Aggregate, {groupby:k1, pulse:col}),
-      ca1 = df.add(dataflow.Collect, {pulse:ag1}),
-      ag2 = df.add(dataflow.Aggregate, {groupby:k2, pulse:col}),
-      ca2 = df.add(dataflow.Collect, {pulse:ag2}),
-      sum = df.add(dataflow.Aggregate, {groupby:key,
+  var byCount = vega.compare('count', 'descending'),
+      count = vega.field('count'),
+      key = vega.field('key'),
+      k1 = vega.field('k1', 'key'),
+      k2 = vega.field('k2', 'key'),
+      df = new vega.Dataflow(),
+      col = df.add(vega.Collect),
+      ag1 = df.add(vega.Aggregate, {groupby:k1, pulse:col}),
+      ca1 = df.add(vega.Collect, {pulse:ag1}),
+      ag2 = df.add(vega.Aggregate, {groupby:k2, pulse:col}),
+      ca2 = df.add(vega.Collect, {pulse:ag2}),
+      sum = df.add(vega.Aggregate, {groupby:key,
         fields:[count], ops:['sum'], as:['count'], pulse:[ca1, ca2]}),
-      out = df.add(dataflow.Collect, {sort:byCount, pulse:sum}),
-      val = df.add(dataflow.Values, {field:key, pulse:out});
+      out = df.add(vega.Collect, {sort:byCount, pulse:sum}),
+      val = df.add(vega.Values, {field:key, pulse:out});
 
   // -- initial
   df.pulse(col, changeset().insert([

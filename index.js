@@ -1,10 +1,9 @@
 export {version} from './build/package';
 
 // Utilities
-export * from './src/util/Functions';
-export * from './src/util/Objects';
+export * from 'vega-statistics';
+export * from 'vega-util';
 export * from './src/util/Errors';
-export * from './src/util/Random';
 export {default as UniqueList} from './src/util/UniqueList';
 
 // Core Runtime

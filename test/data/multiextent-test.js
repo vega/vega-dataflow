@@ -1,10 +1,10 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    vega = require('../../');
 
 tape('MultiExtent combines extents', function(test) {
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       e = df.add([10, 50]),
-      m = df.add(dataflow.MultiExtent, {extents: [
+      m = df.add(vega.MultiExtent, {extents: [
         [-5, 0], [0, 20], e
       ]});
 

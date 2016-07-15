@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Facet facets tuples', function(test) {
   var data = [
@@ -11,7 +11,7 @@ tape('Facet facets tuples', function(test) {
   var subs = [];
 
   function subflow(df, key) {
-    var col = df.add(dataflow.Collect);
+    var col = df.add(vega.Collect);
     subs.push({key: key, data: col});
     return col;
   }
@@ -24,10 +24,10 @@ tape('Facet facets tuples', function(test) {
     }
   }
 
-  var key = dataflow.field('k'),
-      df = new dataflow.Dataflow(),
-      source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, {subflow:subflow, key:key, pulse:source});
+  var key = vega.field('k'),
+      df = new vega.Dataflow(),
+      source = df.add(vega.Collect),
+      facet = df.add(vega.Facet, {subflow:subflow, key:key, pulse:source});
 
   // -- test adds
   df.pulse(source, changeset().insert(data)).run();
@@ -85,7 +85,7 @@ tape("Facet handles key parameter change", function(test) {
   var subs = [];
 
   function subflow(df, key) {
-    var col = df.add(dataflow.Collect);
+    var col = df.add(vega.Collect);
     subs.push({key: key, data: col});
     return col;
   }
@@ -98,11 +98,11 @@ tape("Facet handles key parameter change", function(test) {
     }
   }
 
-  var key1 = dataflow.field('k1'),
-      key2 = dataflow.field('k2'),
-      df = new dataflow.Dataflow(),
-      source = df.add(dataflow.Collect),
-      facet = df.add(dataflow.Facet, {subflow:subflow, key:key1, pulse:source});
+  var key1 = vega.field('k1'),
+      key2 = vega.field('k2'),
+      df = new vega.Dataflow(),
+      source = df.add(vega.Collect),
+      facet = df.add(vega.Facet, {subflow:subflow, key:key1, pulse:source});
 
   // -- add data
   df.pulse(source, changeset().insert(data)).run();

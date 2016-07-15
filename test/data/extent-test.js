@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Extent computes extents', function(test) {
   var data = [
@@ -8,13 +8,13 @@ tape('Extent computes extents', function(test) {
     {"x": 0, "y": 55}, {"x": 1, "y": 72}
   ];
 
-  var x = dataflow.field('x'),
-      y = dataflow.field('y'),
-      df = new dataflow.Dataflow(),
+  var x = vega.field('x'),
+      y = vega.field('y'),
+      df = new vega.Dataflow(),
       f = df.add(null),
-      c = df.add(dataflow.Collect),
-      a = df.add(dataflow.Extent, {field:f, pulse:c}),
-      b = df.add(dataflow.Extent, {field:y, pulse:c});
+      c = df.add(vega.Collect),
+      a = df.add(vega.Extent, {field:f, pulse:c}),
+      b = df.add(vega.Extent, {field:y, pulse:c});
 
   df.update(f, x)
     .pulse(c, changeset().insert(data))

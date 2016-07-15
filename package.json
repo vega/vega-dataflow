@@ -1,6 +1,6 @@
 {
   "name": "vega-dataflow",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Reactive dataflow processing.",
   "keywords": [
     "vega",
@@ -24,15 +24,17 @@
     "test": "tape 'test/**/*-test.js' && eslint index.js src test"
   },
   "dependencies": {
-    "d3-array": "1.0.0",
-    "d3-collection": "1.0.0",
-    "d3-force": "1.0.0",
-    "d3-format": "1.0.0",
-    "d3-geo": "1.0.0",
-    "d3-hierarchy": "1.0.0",
-    "d3-scale": "1.0.0",
-    "d3-scale-chromatic": "1.0.0",
-    "d3-voronoi": "1.0.0"
+    "d3-array": "1",
+    "d3-collection": "1",
+    "d3-force": "1",
+    "d3-format": "1",
+    "d3-geo": "1",
+    "d3-hierarchy": "1",
+    "d3-scale": "1",
+    "d3-scale-chromatic": "1",
+    "d3-voronoi": "1",
+    "vega-statistics": "1",
+    "vega-util": "1"
   },
   "devDependencies": {
     "eslint": "2",

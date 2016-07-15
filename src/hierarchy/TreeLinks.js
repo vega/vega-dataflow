@@ -1,7 +1,7 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
 import {error} from '../util/Errors';
+import {inherits} from 'vega-util';
 
  /**
   * Generate tuples representing links between tree nodes.

@@ -1,5 +1,5 @@
 import Operator from './Operator';
-import {inherits} from './util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Abstract class for operators that process data tuples.

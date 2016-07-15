@@ -1,7 +1,7 @@
-import {Identity} from './Functions';
+import {identity} from 'vega-util';
 
 export default function UniqueList(idFunc) {
-  var $ = idFunc || Identity,
+  var $ = idFunc || identity,
       list = [],
       ids = {};
 

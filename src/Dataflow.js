@@ -3,13 +3,10 @@ import MultiPulse from './MultiPulse';
 import Operator from './Operator';
 import {isChangeSet} from './ChangeSet';
 import {stream} from './EventStream';
-
-import UniqueList from './util/UniqueList';
-import {Id, functor} from './util/Functions';
-import {extend, isFunction, isArray} from './util/Objects';
 import {error, debug, info, Levels, logLevel} from './util/Errors';
-import {Empty, array} from './util/Arrays';
 import Heap from './util/Heap';
+import UniqueList from './util/UniqueList';
+import {array, constant, extend, id, isArray, isFunction} from 'vega-util';
 
 var RANK = 1;
 var NO_OPT = {skip: false, force: false};
@@ -22,7 +19,7 @@ var SKIP = {skip: true};
 export default function Dataflow() {
   this._clock = 0;
   this._pulses = {};
-  this._touched = UniqueList(Id);
+  this._touched = UniqueList(id);
   this._postrun = [];
   this._running = false;
 }
@@ -191,7 +188,7 @@ prototype.on = function(source, target, update, params, options) {
 function onStream(df, stream, target, update, params, options) {
   var opt = extend({}, options, SKIP), func, op;
 
-  if (!isFunction(target)) target = functor(target);
+  if (!isFunction(target)) target = constant(target);
 
   if (update === undefined) {
     func = function(e) {
@@ -219,7 +216,7 @@ function onOperator(df, source, target, update, params, options) {
   if (update === undefined) {
     op = target;
   } else {
-    func = isFunction(update) ? update : functor(update);
+    func = isFunction(update) ? update : constant(update);
     op = new Operator(null, function(_, pulse) {
       if (!target.skip()) return target.skip(true).value = func(_, pulse);
     }, params, false);
@@ -263,7 +260,7 @@ prototype.run = function() {
   });
 
   // reset dataflow state
-  this._touched = UniqueList(Id);
+  this._touched = UniqueList(id);
   this._pulses = {};
 
   while (pq.size() > 0) {
@@ -281,7 +278,7 @@ prototype.run = function() {
     // propagate the pulse
     if (next !== StopPropagation) {
       pulse = next;
-      (op._targets || Empty).forEach(function(op) {
+      if (op._targets) op._targets.forEach(function(op) {
         if (!pulses[op.id]) pq.push(op), pulses[op.id] = pulse;
       });
     }

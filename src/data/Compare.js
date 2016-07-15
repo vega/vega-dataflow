@@ -1,5 +1,5 @@
 import Operator from '../Operator';
-import {inherits, compare} from '../util/Functions';
+import {inherits, compare} from 'vega-util';
 
 /**
  * Generates a comparator function.

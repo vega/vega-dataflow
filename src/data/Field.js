@@ -1,7 +1,5 @@
 import Operator from '../Operator';
-import {inherits, field} from '../util/Functions';
-import {isArray} from '../util/Objects';
-import {array} from '../util/Arrays';
+import {array, field, inherits, isArray} from 'vega-util';
 
 /**
  * Generates one or more field accessor functions.

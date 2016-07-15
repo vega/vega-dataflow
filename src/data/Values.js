@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Extracts an array of values. Assumes the source data has already been

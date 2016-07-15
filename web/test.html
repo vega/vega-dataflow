@@ -68,10 +68,10 @@ data();
 layout();
 
 function data() {
-  var g = vega.normal(50, 20);
+  var g = vega.randomNormal(50, 20);
   function gen() {
     var v = -1;
-    while (v < 0 || v >= 100) { v = g(); }
+    while (v < 0 || v >= 100) { v = g.sample(); }
     return v;
   }
 

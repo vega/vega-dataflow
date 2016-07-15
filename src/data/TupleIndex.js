@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
-
+import {inherits} from 'vega-util';
 import {map} from 'd3-collection';
 
 /**

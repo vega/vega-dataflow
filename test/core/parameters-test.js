@@ -1,8 +1,8 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    vega = require('../../');
 
 tape('Parameters handles parameter values', function(test) {
-  var p = new dataflow.Parameters;
+  var p = new vega.Parameters;
 
   // test initial state
   test.equal(p.modified('foo'), false);

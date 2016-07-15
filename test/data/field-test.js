@@ -1,32 +1,32 @@
 var tape = require('tape'),
-    dataflow = require('../../');
+    vega = require('../../');
 
 tape('Field generates field accessors', function(test) {
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       n = df.add('foo'),
       a = df.add(null),
-      f = df.add(dataflow.Field, {name:n, as:a});
+      f = df.add(vega.Field, {name:n, as:a});
 
   df.run();
   test.equal(typeof f.value, 'function');
-  test.equal(f.value.fname, 'foo');
-  test.deepEqual(f.value.fields, ['foo']);
+  test.equal(vega.accessorName(f.value), 'foo');
+  test.deepEqual(vega.accessorFields(f.value), ['foo']);
 
   df.update(n, 'bar').run();
   test.equal(typeof f.value, 'function');
-  test.equal(f.value.fname, 'bar');
-  test.deepEqual(f.value.fields, ['bar']);
+  test.equal(vega.accessorName(f.value), 'bar');
+  test.deepEqual(vega.accessorFields(f.value), ['bar']);
 
   df.update(a, 'baz').run();
   test.equal(typeof f.value, 'function');
-  test.equal(f.value.fname, 'baz');
-  test.deepEqual(f.value.fields, ['bar']);
+  test.equal(vega.accessorName(f.value), 'baz');
+  test.deepEqual(vega.accessorFields(f.value), ['bar']);
 
   df.update(n, ['foo', 'bar']).run();
   test.equal(Array.isArray(f.value), true);
-  test.deepEqual(f.value.map(dataflow.fname), ['foo', 'bar']);
+  test.deepEqual(f.value.map(vega.accessorName), ['foo', 'bar']);
   test.deepEqual(
-    f.value.map(function(f) { return f.fields; }),
+    f.value.map(vega.accessorFields),
     [['foo'], ['bar']]);
 
   test.end();

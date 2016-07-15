@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('CountIndex maintains an index of counts', function(test) {
   var data = [
@@ -11,12 +11,12 @@ tape('CountIndex maintains an index of counts', function(test) {
     {'id': 5, 'value': 'baz'}
   ];
 
-  var id = dataflow.field('id'),
-      va = dataflow.field('value'),
-      df = new dataflow.Dataflow(),
-      c0 = df.add(dataflow.Collect),
+  var id = vega.field('id'),
+      va = vega.field('value'),
+      df = new vega.Dataflow(),
+      c0 = df.add(vega.Collect),
       fi = df.add(null), // populate with field accessor later
-      ci = df.add(dataflow.CountIndex, {field:fi, pulse:c0}),
+      ci = df.add(vega.CountIndex, {field:fi, pulse:c0}),
       map;
 
   df.update(fi, va).run(); // inicialize

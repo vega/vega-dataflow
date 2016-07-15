@@ -1,6 +1,6 @@
 var tape = require('tape'),
-    dataflow = require('../../'),
-    changeset = dataflow.changeset;
+    vega = require('../../'),
+    changeset = vega.changeset;
 
 tape('Collect collects tuples', function(test) {
   var data = [
@@ -9,9 +9,9 @@ tape('Collect collects tuples', function(test) {
     {'id': 5, 'value': 'baz'}
   ];
 
-  var df = new dataflow.Dataflow(),
+  var df = new vega.Dataflow(),
       so = df.add(null),
-      c0 = df.add(dataflow.Collect, {sort:so});
+      c0 = df.add(vega.Collect, {sort:so});
 
   df.run(); // initialize
   test.equal(c0.value.length, 0);
@@ -26,7 +26,7 @@ tape('Collect collects tuples', function(test) {
   test.equal(!!c0.modified(), true);
 
   // sort data
-  df.update(so, dataflow.compare('value')).run();
+  df.update(so, vega.compare('value')).run();
   test.equal(c0.value.length, 3);
   test.equal(c0.value[0], data[1]);
   test.equal(c0.value[1], data[2]);

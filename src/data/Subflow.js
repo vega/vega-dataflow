@@ -1,5 +1,5 @@
 import Operator from '../Operator';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Provides a bridge between a parent transform and a target subflow that

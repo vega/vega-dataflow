@@ -1,5 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
+import {inherits} from 'vega-util';
 
 /**
  * Operator whose value is simply its parameter hash. This operator is

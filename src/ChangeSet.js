@@ -1,7 +1,5 @@
 import {ingest} from './Tuple';
-import {isFunction} from './util/Objects';
-import {functor} from './util/Functions';
-import {array} from './util/Arrays';
+import {array, constant, isFunction} from 'vega-util';
 
 export function isChangeSet(v) {
   return v && v.constructor === changeset;
@@ -28,7 +26,7 @@ export default function changeset() {
       return this;
     },
     modify: function(t, field, value) {
-      var m = {field: field, value: functor(value)};
+      var m = {field: field, value: constant(value)};
       if (isFunction(t)) m.filter = t, modp.push(m);
       else m.tuple = t, mod.push(m);
       return this;

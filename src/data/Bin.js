@@ -1,6 +1,6 @@
 import Operator from '../Operator';
-import {inherits, accessor, fname} from '../util/Functions';
-import bin from '../util/Bin';
+import {inherits, accessor, accessorFields, accessorName} from 'vega-util';
+import {bin} from 'vega-statistics';
 
 /**
  * Generates a binning function for discretizing data.
@@ -28,5 +28,9 @@ function update(_) {
     return v == null ? null
       : start + step * Math.floor((+v - start) / step);
   };
-  return accessor(f, field.fields, _.name || 'bin_' + fname(field));
+  return accessor(
+    f,
+    accessorFields(field.fields),
+    _.name || 'bin_' + accessorName(field)
+  );
 }

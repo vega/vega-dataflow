@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
-import {merge} from '../util/Arrays';
+import {inherits, merge} from 'vega-util';
 
 /**
  * Collects all data tuples that pass through this operator.

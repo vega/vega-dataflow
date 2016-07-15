@@ -1,4 +1,5 @@
-import {indexExtent, quartiles, bootstrapCI} from '../../util/Arrays';
+import {extentIndex} from 'vega-util';
+import {bootstrapCI, quartiles} from 'vega-statistics';
 
 export default function TupleStore(key) {
   this._key = key || '_id';
@@ -52,7 +53,7 @@ prototype.values = function() {
 prototype.extent = function(get) {
   if (this._get !== get || !this._ext) {
     var v = this.values(),
-        i = indexExtent(v, get);
+        i = extentIndex(v, get);
     this._ext = [v[i[0]], v[i[1]]];
     this._get = get;
   }

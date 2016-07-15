@@ -1,6 +1,6 @@
 import Transform from '../Transform';
-import {inherits} from '../util/Functions';
 import {ingest} from '../Tuple';
+import {inherits} from 'vega-util';
 
 /**
  * Count regexp-defined pattern occurrences in a text field.
