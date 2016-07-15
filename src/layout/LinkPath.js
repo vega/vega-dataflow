@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {inherits} from 'vega-util';
+import {error, inherits} from 'vega-util';
 import {map} from 'd3-collection';
 
 var PATHS = map()

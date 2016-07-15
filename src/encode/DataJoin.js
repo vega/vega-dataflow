@@ -1,7 +1,6 @@
 import Transform from '../Transform';
 import {id, ingest} from '../Tuple';
-import {error} from '../util/Errors';
-import {inherits} from 'vega-util';
+import {error, inherits} from 'vega-util';
 import {map} from 'd3-collection';
 
 /**
@@ -29,7 +28,7 @@ prototype.transform = function(_, pulse) {
 
   if (_.modified('key') || pulse.modified(key)) {
     // TODO: support re-keying?
-    error('DataJoin does not support modified key function or key fields.');
+    error('DataJoin does not support modified key function or fields.');
   }
 
   pulse.visit(pulse.REM, function(t) {

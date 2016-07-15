@@ -2,8 +2,7 @@ import Transform from '../../Transform';
 import TupleStore from './TupleStore';
 import {createMeasure, compileMeasures} from './Measures';
 import {ingest, replace} from '../../Tuple';
-import {error} from '../../util/Errors';
-import {array, inherits, accessorName} from 'vega-util';
+import {array, error, inherits, accessorName} from 'vega-util';
 
 export var ValidAggregates = [
   'values', 'count', 'valid', 'missing', 'distinct',
@@ -104,7 +103,7 @@ prototype.init = function(_) {
       field, op, m, mname, outname, i;
 
   if (n !== ops.length) {
-    error('There must be the same number of fields and aggregate ops.');
+    error('Unmatched number of fields and aggregate ops.');
   }
 
   for (i=0; i<n; ++i) {

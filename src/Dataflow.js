@@ -3,10 +3,12 @@ import MultiPulse from './MultiPulse';
 import Operator from './Operator';
 import {isChangeSet} from './ChangeSet';
 import {stream} from './EventStream';
-import {error, debug, info, Levels, logLevel} from './util/Errors';
 import Heap from './util/Heap';
 import UniqueList from './util/UniqueList';
-import {array, constant, extend, id, isArray, isFunction} from 'vega-util';
+import {
+  array, constant, extend, id, isArray, isFunction,
+  log, Info, Debug
+} from 'vega-util';
 
 var RANK = 1;
 var NO_OPT = {skip: false, force: false};
@@ -22,6 +24,7 @@ export default function Dataflow() {
   this._touched = UniqueList(id);
   this._postrun = [];
   this._running = false;
+  this._log = log();
 }
 
 var prototype = Dataflow.prototype;
@@ -240,63 +243,71 @@ function onOperator(df, source, target, update, params, options) {
 prototype.run = function() {
   if (!this._touched.length) return 0;
 
-  this._running = true;
+  var df = this,
+      pq = new Heap(function(a, b) { return a.rank - b.rank; }),
+      pulses = df._pulses,
+      pulse = new Pulse(df, ++df._clock),
+      level = df.logLevel(),
+      count = 0,
+      op, next, dt;
 
-  var pq = new Heap(function(a, b) { return a.rank - b.rank; }),
-      pulses = this._pulses,
-      pulse = new Pulse(this, ++this._clock),
-      level = logLevel(),
-      count = 0, op, next, dt;
+  df._running = true;
 
-  if (level >= Levels.Info) {
+  if (level >= Info) {
     dt = Date.now();
-    debug('-- START PROPAGATION (' + pulse.stamp + ') -----');
+    df.debug('-- START PROPAGATION (' + pulse.stamp + ') -----');
   }
 
   // initialize queue
-  this._touched.forEach(function(op) {
+  df._touched.forEach(function(op) {
     if (!pulses[op.id]) pulses[op.id] = pulse;
     pq.push(op);
   });
 
   // reset dataflow state
-  this._touched = UniqueList(id);
-  this._pulses = {};
+  df._touched = UniqueList(id);
+  df._pulses = {};
 
-  while (pq.size() > 0) {
-    op = pq.pop(); // process next operator in queue
-    next = op.run(getPulse(this, this._clock, op, pulses));
+  try {
+    while (pq.size() > 0) {
+      op = pq.pop(); // process next operator in queue
+      next = op.run(getPulse(df, df._clock, op, pulses));
 
-    if (level >= Levels.Debug) {
-      debug(
-        'Op: ' + op.id + ', rank:' + op.rank + ' ' + op.constructor.name,
-        next === StopPropagation ? 'STOP' : {pulse: next},
-        {value: op.value}
-      );
+      if (level >= Debug) {
+        df.debug(
+          'Op: ' + op.id + ', rank:' + op.rank + ' ' + op.constructor.name,
+          next === StopPropagation ? 'STOP' : {pulse: next},
+          {value: op.value}
+        );
+      }
+
+      // propagate the pulse
+      if (next !== StopPropagation) {
+        pulse = next;
+        if (op._targets) op._targets.forEach(function(op) {
+          if (!pulses[op.id]) pq.push(op), pulses[op.id] = pulse;
+        });
+      }
+
+      // increment visit counter
+      ++count;
     }
-
-    // propagate the pulse
-    if (next !== StopPropagation) {
-      pulse = next;
-      if (op._targets) op._targets.forEach(function(op) {
-        if (!pulses[op.id]) pq.push(op), pulses[op.id] = pulse;
-      });
-    }
-
-    // increment visit counter
-    ++count;
+  } catch (err) {
+    df.error(err);
   }
 
   // invoke callbacks queued via runAfter
-  this._running = false;
-  if (this._postrun.length) {
-    this._postrun.forEach(function(f) { f(); });
-    this._postrun = [];
+  df._running = false;
+  if (df._postrun.length) {
+    df._postrun.forEach(function(f) {
+      try { f(); } catch (err) { df.error(err); }
+    });
+    df._postrun = [];
   }
 
-  if (level >= Levels.Info) {
+  if (level >= Info) {
     dt = Date.now() - dt;
-    info('> Pulse ' + pulse.stamp + ': ' + count + ' operators; ' + dt + 'ms');
+    df.info('> Pulse ' + pulse.stamp + ': ' + count + ' operators; ' + dt + 'ms');
   }
 
   return count;
@@ -312,14 +323,14 @@ prototype.run = function() {
  */
 prototype.runAfter = function(pulse, callback) {
   if (pulse.stamp !== this._clock) {
-    error('Can only schedule runAfter on the current timestamp.');
+    this.error('Can only schedule runAfter on the current timestamp.');
   }
   if (this._running) {
     // pulse propagation is currently running, queue to run after
     this._postrun.push(callback);
   } else {
     // pulse propagation already complete, invoke immediately
-    callback();
+    try { callback(); } catch (err) { this.error(err); }
   }
 };
 
@@ -338,3 +349,48 @@ function getPulse(df, stamp, op, pulses) {
     return p;
   }
 }
+
+// LOGGING AND ERROR HANDLING
+
+/**
+ * Handle an error. By default, this method re-throws the input error.
+ * This method can be overridden for custom error handling.
+ */
+prototype.error = function(err) {
+  throw err;
+};
+
+function logMethod(method) {
+  return function() {
+    return this._log[method].apply(this._log, arguments);
+  };
+}
+
+/**
+ * Logs a warning message. By default, logged messages are written to console
+ * output. The message will only be logged if the current log level is high
+ * enough to permit warning messages.
+ */
+prototype.warn = logMethod('warn');
+
+/**
+ * Logs a information message. By default, logged messages are written to
+ * console output. The message will only be logged if the current log level is
+ * high enough to permit information messages.
+ */
+prototype.info = logMethod('info');
+
+/**
+ * Logs a debug message. By default, logged messages are written to console
+ * output. The message will only be logged if the current log level is high
+ * enough to permit debug messages.
+ */
+prototype.debug = logMethod('debug');
+
+/**
+ * Get or set the current log level. If an argument is provided, it
+ * will be used as the new log level.
+ * @param {number} [level] - Should be one of None, Warn, Info
+ * @return {number} - The current log level.
+ */
+prototype.logLevel = logMethod('level');

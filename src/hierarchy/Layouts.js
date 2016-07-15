@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {accessor, inherits} from 'vega-util';
+import {accessor, error, inherits} from 'vega-util';
 import {map} from 'd3-collection';
 import {
   tree, cluster, pack, partition,
@@ -60,7 +59,8 @@ var prototype = inherits(HierarchyLayout, Transform);
 
 prototype.transform = function(_, pulse) {
   if (!pulse.source || !pulse.source.root) {
-    error(this.constructor.name + ' transform requires a backing tree data source.');
+    error(this.constructor.name
+      + ' transform requires a backing tree data source.');
   }
   var layout = this.layout(_.method),
       root = pulse.source.root;
@@ -72,7 +72,7 @@ prototype.transform = function(_, pulse) {
   try {
     this.value = layout(root);
   } catch (err) {
-    error(err.message);
+    error(err);
   }
   root.each(this.setFields);
 

@@ -3,7 +3,6 @@ export {version} from './build/package';
 // Utilities
 export * from 'vega-statistics';
 export * from 'vega-util';
-export * from './src/util/Errors';
 export {default as UniqueList} from './src/util/UniqueList';
 
 // Core Runtime

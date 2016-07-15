@@ -1,7 +1,6 @@
 import Parameters from './Parameters';
 import UniqueList from './util/UniqueList';
-import {error} from './util/Errors';
-import {array, id, isArray} from 'vega-util';
+import {array, error, id, isArray} from 'vega-util';
 
 var OP_ID = 0;
 var PULSE = 'pulse';

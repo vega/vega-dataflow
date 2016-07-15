@@ -1,6 +1,5 @@
 import Pulse from './Pulse';
-import {error} from './util/Errors';
-import {inherits, isArray} from 'vega-util';
+import {error, inherits, isArray} from 'vega-util';
 
 /**
  * Represents a set of multiple pulses. Used as input for operators

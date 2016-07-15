@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {array, inherits} from 'vega-util';
+import {array, error, inherits} from 'vega-util';
 import {nest} from 'd3-collection';
 import {hierarchy} from 'd3-hierarchy';
 

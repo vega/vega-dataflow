@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {inherits, isFunction} from 'vega-util';
+import {error, inherits, isFunction} from 'vega-util';
 import {projections} from './projections';
 
 /**

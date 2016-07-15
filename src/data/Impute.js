@@ -1,7 +1,6 @@
 import Transform from '../Transform';
 import {ingest} from '../Tuple';
-import {error} from '../util/Errors';
-import {accessorName, inherits} from 'vega-util';
+import {accessorName, error, inherits} from 'vega-util';
 import {mean, min, max, median} from 'd3-array';
 
 var Methods = {

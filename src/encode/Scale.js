@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {inherits, isFunction} from 'vega-util';
+import {error, inherits, isFunction} from 'vega-util';
 import {scales, schemes} from './scales';
 
 var SKIP = {
@@ -25,11 +24,11 @@ export default function Scale(params) {
 
 var prototype = inherits(Scale, Transform);
 
-prototype.transform = function(_) {
+prototype.transform = function(_, pulse) {
   var scale = this.value, prop;
 
   if (!scale || _.modified('type') || _.modified('scheme')) {
-    this.value = (scale = createScale(_.type, _.scheme));
+    this.value = (scale = createScale(_.type, _.scheme, pulse));
   }
 
   for (prop in _) {

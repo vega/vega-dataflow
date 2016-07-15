@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {error} from '../util/Errors';
-import {array, inherits, isFunction} from 'vega-util';
+import {array, error, inherits, isFunction} from 'vega-util';
 import {map} from 'd3-collection';
 import {
   forceSimulation, forceCenter, forceCollide,
