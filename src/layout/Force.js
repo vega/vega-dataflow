@@ -16,9 +16,9 @@ var FORCE_MAP = map()
   .set('y', forceY);
 
 var FORCES = 'forces',
-    PARAMS = ['alpha', 'alphaMin', 'alphaTarget', 'drag', 'forces'],
+    PARAMS = ['alpha', 'alphaMin', 'alphaTarget', 'velocityDecay', 'drag', 'forces'],
     CONFIG = ['static', 'iterations'],
-    FIELDS = ['x', 'y', 'vx', 'vy'];
+    FIELDS = ['x', 'y', 'vx', 'vy', 'fx', 'fy'];
 
 /**
  * Force simulation layout.
@@ -51,8 +51,8 @@ prototype.transform = function(_, pulse) {
 
   // fix / unfix nodes as needed
   if (_.modified('fixed')) {
-    sim.unfixAll();
-    array(_.fixed).forEach(function(t) { sim.fix(t); });
+    sim.nodes().forEach(function(t) { t.fx = null; t.fy = null; });
+    array(_.fixed).forEach(function(t) { t.fx = t.x; t.fy = t.y; });
   }
 
   // run simulation
