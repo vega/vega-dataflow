@@ -7,7 +7,7 @@ import Heap from './util/Heap';
 import UniqueList from './util/UniqueList';
 import {
   array, constant, extend, id, isArray, isFunction,
-  log, Info, Debug
+  logger, Info, Debug
 } from 'vega-util';
 
 var RANK = 1;
@@ -24,7 +24,7 @@ export default function Dataflow() {
   this._touched = UniqueList(id);
   this._postrun = [];
   this._running = false;
-  this._log = log();
+  this._log = logger();
 }
 
 var prototype = Dataflow.prototype;
