@@ -1,16 +1,17 @@
 import Transform from '../Transform';
 import {error, inherits, isFunction} from 'vega-util';
-import {scales, schemes} from './scales';
+import getScale from './scales';
+import getScheme from './schemes';
 
 var SKIP = {
-      'type': 1,
-      'nice': 1,
-      'zero': 1,
-      'domain': 1,
-      'domainMin': 1,
-      'domainMax': 1,
-      'scheme': 1
-    };
+  'type': 1,
+  'nice': 1,
+  'zero': 1,
+  'domain': 1,
+  'domainMin': 1,
+  'domainMax': 1,
+  'scheme': 1
+};
 
 /**
  * Maintains a scale function mapping data values to visual channels.
@@ -41,17 +42,14 @@ prototype.transform = function(_, pulse) {
 
 function createScale(scaleType, scheme) {
   var type = (scaleType || 'linear').toLowerCase(),
-      scale = scales[type];
+      scale;
 
-  if (!type || !scales.hasOwnProperty(type)) {
+  if (!type || !(scale = getScale(type))) {
     error('Unrecognized scale type: ' + scaleType);
   }
 
-  if (scheme) {
-    if (!schemes.hasOwnProperty(scheme)) {
-      error('Unrecognized scale scheme: ' + scheme)
-    }
-    scheme = schemes[scheme];
+  if (scheme && !(scheme = getScheme(scheme))) {
+    error('Unrecognized scale scheme: ' + scheme)
   }
 
   return scale = scale(scheme), scale.type = type, scale;

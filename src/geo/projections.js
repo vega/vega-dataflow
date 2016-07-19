@@ -14,7 +14,7 @@ import {
   geoTransverseMercator
 } from 'd3-geo';
 
-export var projections = {
+var projections = {
   // base d3-geo projection types
   albers:               geoAlbers,
   albersusa:            geoAlbersUsa,
@@ -30,3 +30,8 @@ export var projections = {
   stereographic:        geoStereographic,
   transversemercator:   geoTransverseMercator
 };
+
+export default function projection(name, proj) {
+  return arguments.length > 1 ? (projections[name] = proj, this)
+    : projections.hasOwnProperty(name) ? projections[name] : null;
+}

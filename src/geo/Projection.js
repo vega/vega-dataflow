@@ -1,6 +1,6 @@
 import Transform from '../Transform';
 import {error, inherits, isFunction} from 'vega-util';
-import {projections} from './projections';
+import getProjection from './projections';
 
 /**
  * Maintains a cartographic projection.
@@ -30,9 +30,9 @@ prototype.transform = function(_) {
 
 function createProjection(projType) {
   var type = (projType || 'mercator').toLowerCase(),
-      proj = projections[type];
+      proj;
 
-  if (!type || !projections.hasOwnProperty(type)) {
+  if (!type || !(proj = getProjection(type))) {
     error('Unrecognized projection type: ' + projType);
   }
 

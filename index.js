@@ -52,6 +52,8 @@ export {default as AxisTicks} from './src/encode/AxisTicks';
 export {default as DataJoin} from './src/encode/DataJoin';
 export {default as Encode} from './src/encode/Encode';
 export {default as Scale} from './src/encode/Scale';
+export {default as scale} from './src/encode/scales';
+export {default as scheme} from './src/encode/schemes';
 
 // Layout Transforms
 export {default as Force} from './src/layout/Force';
@@ -65,6 +67,7 @@ export {default as GeoPath} from './src/geo/GeoPath';
 export {default as GeoPoint} from './src/geo/GeoPoint';
 export {default as Graticule} from './src/geo/Graticule';
 export {default as Projection} from './src/geo/Projection';
+export {default as projection} from './src/geo/projections';
 
 // Hierarchy Transforms
 export {default as Nest} from './src/hierarchy/Nest';
