@@ -31,6 +31,17 @@ var projections = {
   transversemercator:   geoTransverseMercator
 };
 
+// TODO check for other properties in d3-geo-projections
+export var properties = [
+  'clipAngle',
+  'clipExtent',
+  'scale',
+  'translate',
+  'center',
+  'rotate',
+  'precision'
+];
+
 export default function projection(name, proj) {
   return arguments.length > 1 ? (projections[name] = proj, this)
     : projections.hasOwnProperty(name) ? projections[name] : null;
