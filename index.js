@@ -65,6 +65,7 @@ export {default as Voronoi} from './src/layout/Voronoi';
 // Geo Transforms
 export {default as GeoPath} from './src/geo/GeoPath';
 export {default as GeoPoint} from './src/geo/GeoPoint';
+export {default as GeoShape} from './src/geo/GeoShape';
 export {default as Graticule} from './src/geo/Graticule';
 export {default as Projection} from './src/geo/Projection';
 export {default as projection} from './src/geo/projections';
