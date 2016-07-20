@@ -158,9 +158,8 @@ prototype.reflow = function() {
   var len = this.add.length,
       src = this.source && this.source.length;
   if (src && src !== len) {
-    len += this.mod.length;
     this.mod = this.source;
-    if (src > len) this.filter(MOD, filter(this, ADD));
+    if (len) this.filter(MOD, filter(this, ADD));
   }
   return this;
 };
@@ -175,6 +174,7 @@ prototype.modifies = function(_) {
 prototype.modified = function(_) {
   var fields = this.fields;
   return !(this.mod.length && fields) ? false
+    : !arguments.length ? !!fields
     : isArray(_) ? _.some(function(f) { return fields[f]; })
     : fields[_];
 };
