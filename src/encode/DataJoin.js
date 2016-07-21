@@ -31,16 +31,6 @@ prototype.transform = function(_, pulse) {
     error('DataJoin does not support modified key function or fields.');
   }
 
-  pulse.visit(pulse.REM, function(t) {
-    var k = key(t),
-        x = lut.get(k);
-
-    if (x) {
-      lut.remove(k);
-      out.rem.push(x);
-    }
-  });
-
   pulse.visit(pulse.ADD, function(t) {
     var k = key(t),
         x = lut.get(k);
@@ -51,6 +41,7 @@ prototype.transform = function(_, pulse) {
       lut.set(k, x = item(t));
       out.add.push(x);
     }
+
     x.datum = t;
   });
 
@@ -60,6 +51,16 @@ prototype.transform = function(_, pulse) {
 
     if (x) {
       out.mod.push(x);
+    }
+  });
+
+  pulse.visit(pulse.REM, function(t) {
+    var k = key(t),
+        x = lut.get(k);
+
+    if (t === x.datum) {
+      lut.remove(k);
+      out.rem.push(x);
     }
   });
 
