@@ -100,18 +100,22 @@ prototype.modified = flag(MODIFIED);
  *   automatically update (react) when parameter values change. In other words,
  *   this flag determines if the operator registers itself as a listener on
  *   any upstream operators included in the parameters.
- * @return {Operator} this operator instance.
+ * @return {Operator[]} - An array of upstream dependencies.
  */
 prototype.parameters = function(params, react) {
   react = react !== false;
   var self = this,
       argval = (self._argval = self._argval || new Parameters()),
       argops = (self._argops = self._argops || []),
+      deps = [],
       name, value, n, i;
 
   function add(name, index, value) {
     if (value instanceof Operator) {
-      if (value !== self && react) value.targets().add(self);
+      if (value !== self) {
+        if (react) value.targets().add(self);
+        deps.push(value);
+      }
       argops.push({op:value, name:name, index:index});
     } else {
       argval.set(name, index, value);
@@ -127,6 +131,7 @@ prototype.parameters = function(params, react) {
           error('Pulse parameters must be operator instances.');
         } else if (op !== self) {
           op.targets().add(self);
+          deps.push(op);
         }
       });
       self.source = value;
@@ -139,7 +144,7 @@ prototype.parameters = function(params, react) {
   }
 
   this.marshall().clear(); // initialize values
-  return self;
+  return deps;
 };
 
 /**

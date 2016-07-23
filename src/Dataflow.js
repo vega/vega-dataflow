@@ -1,7 +1,7 @@
 import {default as Pulse, StopPropagation} from './Pulse';
 import MultiPulse from './MultiPulse';
 import Operator from './Operator';
-import {isChangeSet} from './ChangeSet';
+import {default as changeset, isChangeSet} from './ChangeSet';
 import {stream} from './EventStream';
 import Heap from './util/Heap';
 import UniqueList from './util/UniqueList';
@@ -10,7 +10,6 @@ import {
   logger, Info, Debug
 } from 'vega-util';
 
-var RANK = 1;
 var NO_OPT = {skip: false, force: false};
 var SKIP = {skip: true};
 
@@ -25,6 +24,7 @@ export default function Dataflow() {
   this._postrun = [];
   this._running = false;
   this._log = logger();
+  this._rank = 0;
 }
 
 var prototype = Dataflow.prototype;
@@ -58,6 +58,35 @@ prototype.touch = function(op, options) {
 };
 
 /**
+ * Assigns a rank to an operator. Ranks are assigned in increasing order
+ * by incrementing an internal rank counter.
+ * @param {Operator} op - The operator to assign a rank.
+ */
+prototype.rank = function(op) {
+  op.rank = ++this._rank;
+};
+
+/**
+ * Re-ranks an operator and all downstream target dependencies. This
+ * is necessary when upstream depencies of higher rank are added to
+ * a target operator.
+ * @param {Operator} op - The operator to re-rank.
+ */
+prototype.rerank = function(op) {
+  var queue = [op],
+      cur, list, i;
+
+  while (queue.length) {
+    this.rank(cur = queue.pop());
+    if (list = cur._targets) {
+      for (i=list.length; --i >= 0;) {
+        queue.push(list[i]);
+      }
+    }
+  }
+};
+
+/**
  * Add an operator to the dataflow graph. This function accepts a
  * variety of input argument types. The basic signature support an
  * initial value, update function and parameters. If the first parameter
@@ -74,15 +103,36 @@ prototype.touch = function(op, options) {
  * @return {Operator} - The added operator.
  */
 prototype.add = function(init, update, params, react) {
-  var op = (init instanceof Operator) ? init
-    : isFunction(init)
-      ? ((init.prototype instanceof Operator) ? new init(update, params)
-      : new Operator(null, init, update, params))
-    : new Operator(init, update, params, react);
+  var shift = 1,
+      op = (init instanceof Operator) ? init
+        : init && init.prototype instanceof Operator ? new init()
+        : isFunction(init) ? new Operator(null, init)
+        : (shift = 0, new Operator(init, update));
 
-  op.rank = ++RANK;
-  this.touch(op);
+  this.touch(op).rank(op);
+  if (shift) react = params, params = update;
+  if (params) this.connect(op, op.parameters(params, react));
+
   return op;
+};
+
+/**
+ * Connect a target operator as a dependent of source operators.
+ * If necessary, this method will rerank the target operator and its
+ * dependents to ensure propagation proceeds in a topologically sorted order.
+ * @param {Operator} target - The target operator.
+ * @param {Array<Operator>} - The source operators that should propagate
+ *   to the target operator.
+ */
+prototype.connect = function(target, sources) {
+  var targetRank = target.rank, i, n;
+
+  for (i=0, n=sources.length; i<n; ++i) {
+    if (targetRank < sources[i].rank) {
+      this.rerank(target);
+      return;
+    }
+  }
 };
 
 /**
@@ -120,6 +170,8 @@ prototype.pulse = function(op, changeset, options) {
   this._pulses[op.id] = changeset.pulse(p, op.value);
   return this.touch(op, options || NO_OPT);
 };
+
+prototype.changeset = changeset;
 
 // EVENT HANDLING
 
