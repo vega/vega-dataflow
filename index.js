@@ -51,6 +51,7 @@ export {default as ResolveFilter} from './src/data/crossfilter/ResolveFilter';
 export {default as AxisTicks} from './src/encode/AxisTicks';
 export {default as DataJoin} from './src/encode/DataJoin';
 export {default as Encode} from './src/encode/Encode';
+export {default as LegendEntries} from './src/encode/LegendEntries';
 export {default as Scale} from './src/encode/Scale';
 export {default as scale} from './src/encode/scales';
 export {default as scheme} from './src/encode/schemes';

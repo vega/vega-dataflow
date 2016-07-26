@@ -1,14 +1,14 @@
 import Transform from '../Transform';
 import {ingest} from '../Tuple';
-import {inherits} from 'vega-util';
+import {constant, inherits, isFunction} from 'vega-util';
 import {tickValues, tickFormat} from './ticks';
 
 /**
- * Generates axis ticks for visualizing a spatial scale.
+ * Generates legend entries for visualizing a scale.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {Scale} params.scale - The scale to generate ticks for.
- * @param {*} [params.count=10] - The approximate number of ticks, or
+ * @param {Scale} params.scale - The scale to generate items for.
+ * @param {*} [params.count=10] - The approximate number of items, or
  *   desired tick interval, to use.
  * @param {Array<*>} [params.values] - The exact tick values to use.
  *   These must be legal domain values for the provided scale.
@@ -19,11 +19,11 @@ import {tickValues, tickFormat} from './ticks';
  * @param {function(*):string} [params.format] - The format function to use.
  *   If provided, the formatSpecifier argument is ignored.
  */
-export default function AxisTicks(params) {
+export default function LegendEntries(params) {
   Transform.call(this, [], params);
 }
 
-var prototype = inherits(AxisTicks, Transform);
+var prototype = inherits(LegendEntries, Transform);
 
 prototype.transform = function(_, pulse) {
   if (this.value != null && !_.modified()) {
@@ -31,17 +31,28 @@ prototype.transform = function(_, pulse) {
   }
 
   var out = pulse.fork(),
-      ticks = this.value,
+      items = this.value,
+      size  = _.size,
       scale = _.scale,
-      count = _.count == null ? 10 : _.count,
+      count = _.count == null ? 5 : _.count,
       format = _.format || tickFormat(scale, count, _.formatSpecifier),
-      values = _.values || tickValues(scale, count);
+      values = _.values || tickValues(scale, count),
+      total = 0;
 
-  if (ticks) out.rem = ticks;
+  if (!isFunction(size)) size = constant(size || 8);
+  if (items) out.rem = items;
 
-  ticks = values.map(function(value) {
-    return ingest({value: value, label: format(value)})
+  items = values.map(function(value, index) {
+    var t = ingest({
+      index: index,
+      label: format(value),
+      size:  size(value),
+      total: total,
+      value: value
+    });
+    total += t.size;
+    return t;
   });
 
-  return (out.source = out.add = this.value = ticks), out;
+  return (out.source = out.add = this.value = items), out;
 };
