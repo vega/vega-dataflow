@@ -47,7 +47,7 @@ prototype.transform = function(_, pulse) {
       index: index,
       label: format(value),
       size:  size(value),
-      total: total,
+      total: Math.round(total),
       value: value
     });
     total += t.size;
