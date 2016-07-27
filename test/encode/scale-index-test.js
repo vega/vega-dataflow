@@ -26,11 +26,11 @@ tape('Index scale maps ordinal domain to linear range', function(test) {
   test.deepEqual(scale.invertExtent(100, 0), domain);
   test.deepEqual(scale.invertExtent(50, 120), domain.slice(2));
   test.deepEqual(scale.invertExtent(-50, 49), domain.slice(0, 2));
-  test.deepEqual(scale.invertExtent(30, 50), domain.slice(2,3));
+  test.deepEqual(scale.invertExtent(30, 50), domain.slice(2, 3));
   test.deepEqual(scale.invertExtent(30, 40), []);
   test.deepEqual(scale.invertExtent(-2, -1), []);
   test.deepEqual(scale.invertExtent(101, 102), []);
-  test.deepEqual(scale.invertExtent(0), domain.slice(0,1));
+  test.deepEqual(scale.invertExtent(0), domain.slice(0, 1));
   test.deepEqual(scale.invertExtent(1), []);
 
   var copy = scale.copy();

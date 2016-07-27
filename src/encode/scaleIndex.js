@@ -16,7 +16,7 @@ export default function index(scheme) {
     length = domain.length;
     lookup = {};
     for (var i=0; i<length;) lookup[domain[i]] = i++;
-    interp.domain([0, length-1]);
+    interp.domain([0, length - 1]);
     return scale;
   };
 
@@ -35,7 +35,9 @@ export default function index(scheme) {
       var lo = interp.invert(r0),
           hi = interp.invert(r1),
           t;
+
       if (lo > hi) t = lo, lo = hi, hi = t;
+
       return (hi < 0 || lo >= length) ? [] : domain.slice(
         Math.max(0, Math.ceil(lo)),
         Math.min(length, Math.floor(hi) + 1)
