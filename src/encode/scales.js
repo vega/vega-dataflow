@@ -1,4 +1,5 @@
 import * as $ from 'd3-scale';
+import scaleIndex from './scaleIndex';
 
 var scales = {
   // base scale types
@@ -15,7 +16,8 @@ var scales = {
   threshold:   $.scaleThreshold,
   time:        $.scaleTime,
   utc:         $.scaleUtc,
-  sequential:  $.scaleSequential
+  sequential:  $.scaleSequential,
+  index:       scaleIndex
 };
 
 export default function scale(name, scale) {
