@@ -7,8 +7,7 @@ export default function index(scheme) {
       interp = scheme ? scaleSequential(scheme) : scaleLinear();
 
   function scale(_) {
-    var i = lookup.hasOwnProperty(_) && lookup[_];
-    if (i) return interp(i);
+    if (lookup.hasOwnProperty(_)) return interp(lookup[_]);
   }
 
   scale.domain = function(_) {
@@ -16,8 +15,8 @@ export default function index(scheme) {
     domain = _.slice();
     length = domain.length;
     lookup = {};
-    for (var i=0; i<length;) lookup[domain[i]] = ++i;
-    interp.domain([1, length]);
+    for (var i=0; i<length;) lookup[domain[i]] = i++;
+    interp.domain([0, length-1]);
     return scale;
   };
 
@@ -25,16 +24,16 @@ export default function index(scheme) {
     // sequential scales do not export an invert method
 
     scale.invert = function(_) {
-      return domain[interp.invert(_) - 1];
+      return domain[interp.invert(_)];
     };
 
     scale.invertExtent = function(r0, r1) {
       if (arguments.length < 2) {
-        return (t = scale.invert(r0)) !== undefined ? [t] : t;
+        return (t = scale.invert(r0)) !== undefined ? [t] : [];
       }
 
-      var lo = interp.invert(r0) - 1,
-          hi = interp.invert(r1) - 1,
+      var lo = interp.invert(r0),
+          hi = interp.invert(r1),
           t;
       if (lo > hi) t = lo, lo = hi, hi = t;
       return (hi < 0 || lo >= length) ? [] : domain.slice(
