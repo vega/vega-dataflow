@@ -17,7 +17,6 @@ export default function Subflow(pulse, parent) {
 var prototype = inherits(Subflow, Operator);
 
 prototype.connect = function(target) {
-  // TODO: call dataflow connect to support rerank?
   this.targets().add(target);
   return (target.source = this);
 };

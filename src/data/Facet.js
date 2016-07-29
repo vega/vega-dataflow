@@ -14,6 +14,7 @@ import {map} from 'd3-collection';
 export default function Facet(params) {
   Transform.call(this, map(), params);
   this._keys = {}; // cache previously calculated key values
+  this._count = 0; // count of subflows
 
   // keep track of active subflows, use as targets array for listeners
   // this allows us to limit propagation to only updated subflows
@@ -42,7 +43,8 @@ prototype.transform = function(_, pulse) {
     var sf = lut.get(key), df;
     if (!sf) {
       df = pulse.dataflow;
-      sf = df.add(new Subflow(pulse.fork(), self)).connect(_.subflow(df, key));
+      sf = df.add(new Subflow(pulse.fork(), self))
+        .connect(_.subflow(df, key, self._count++));
       lut.set(key, sf);
       self.activate(sf);
     } else if (sf.value.stamp < pulse.stamp) {
@@ -60,7 +62,7 @@ prototype.transform = function(_, pulse) {
 
   pulse.visit(pulse.REM, function(t) {
     var k = cache[t._id];
-    delete cache[t._id];
+    cache[t._id] = null;
     subflow(k).rem(t);
   });
 
