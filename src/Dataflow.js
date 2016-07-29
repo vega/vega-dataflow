@@ -20,11 +20,12 @@ var SKIP = {skip: true};
 export default function Dataflow() {
   this._clock = 0;
   this._pulses = {};
+  this._pulse = null;
   this._touched = UniqueList(id);
   this._postrun = [];
-  this._running = false;
   this._log = logger();
   this._rank = 0;
+  this._heap = new Heap(function(a, b) { return a.qrank - b.qrank; });
 }
 
 var prototype = Dataflow.prototype;
@@ -42,8 +43,11 @@ prototype.stamp = function() {
 };
 
 /**
- * Touches an operator, ensuring that it will be processed by the
- * scheduler next time the dataflow is run.
+ * Touches an operator, scheduling it to be evaluated. If invoked outside of
+ * a pulse propagation, the operator will be evaluated the next time this
+ * data flow is run. If invoked in the midst of pulse propagation, the operator
+ * will be queued for evaluation if and only if the operator has not yet been
+ * evaluated on the current propagation timestamp.
  * @param {Operator} op - The operator to touch.
  * @param {object} [options] - Additional options hash.
  * @param {boolean} [options.skip] - If true, the operator will
@@ -52,7 +56,11 @@ prototype.stamp = function() {
  */
 prototype.touch = function(op, options) {
   var opt = options || NO_OPT;
-  this._touched.add(op);
+  if (this._pulse) {
+    this._enqueue(op);
+  } else {
+    this._touched.add(op);
+  }
   if (opt.skip) op.skip(true);
   return this;
 };
@@ -109,9 +117,10 @@ prototype.add = function(init, update, params, react) {
         : isFunction(init) ? new Operator(null, init)
         : (shift = 0, new Operator(init, update));
 
-  this.touch(op).rank(op);
+  this.rank(op);
   if (shift) react = params, params = update;
   if (params) this.connect(op, op.parameters(params, react));
+  this.touch(op);
 
   return op;
 };
@@ -155,8 +164,12 @@ prototype.update = function(op, value, options) {
 };
 
 /**
- * Pulses an operator with a changeset of tuples. The pulse will be
- * applied the next time the dataflow is run.
+ * Pulses an operator with a changeset of tuples. If invoked outside of
+ * a pulse propagation, the pulse will be applied the next time this
+ * dataflow is run. If invoked in the midst of pulse propagation, the pulse
+ * will be added to the set of active pulses and will be applied if and
+ * only if the target operator has not yet been evaluated on the current
+ * propagation timestamp.
  * @param {Operator} op - The operator to pulse.
  * @param {ChangeSet} value - The tuple changeset to apply.
  * @param {object} [options] - Additional options hash.
@@ -165,7 +178,7 @@ prototype.update = function(op, value, options) {
  * @return {Dataflow}
  */
 prototype.pulse = function(op, changeset, options) {
-  var p = new Pulse(this, this._clock + 1);
+  var p = new Pulse(this, this._clock + (this._pulse ? 0 : 1));
   p.target = op;
   this._pulses[op.id] = changeset.pulse(p, op.value);
   return this.touch(op, options || NO_OPT);
@@ -293,37 +306,33 @@ function onOperator(df, source, target, update, params, options) {
  * the first time, all registered operators will be processed.
  */
 prototype.run = function() {
-  if (!this._touched.length) return 0;
+  if (!this._touched.length) return 0; // nothing to do!
 
   var df = this,
-      pq = new Heap(function(a, b) { return a.rank - b.rank; }),
-      pulses = df._pulses,
-      pulse = new Pulse(df, ++df._clock),
       level = df.logLevel(),
       count = 0,
       op, next, dt;
 
-  df._running = true;
+  df._pulse = new Pulse(df, ++df._clock);
 
   if (level >= Info) {
     dt = Date.now();
-    df.debug('-- START PROPAGATION (' + pulse.stamp + ') -----');
+    df.debug('-- START PROPAGATION (' + df._clock + ') -----');
   }
 
-  // initialize queue
-  df._touched.forEach(function(op) {
-    if (!pulses[op.id]) pulses[op.id] = pulse;
-    pq.push(op);
-  });
-
-  // reset dataflow state
+  // initialize queue, reset touched operators
+  df._touched.forEach(function(op) { df._enqueue(op, true); });
   df._touched = UniqueList(id);
-  df._pulses = {};
 
   try {
-    while (pq.size() > 0) {
-      op = pq.pop(); // process next operator in queue
-      next = op.run(getPulse(df, df._clock, op, pulses));
+    while (df._heap.size() > 0) {
+      op = df._heap.pop();
+
+      // re-queue if rank changes
+      if (op.rank !== op.qrank) { df._enqueue(op, true); continue; }
+
+      // otherwise, evaluate the operator
+      next = op.run(df._getPulse(op));
 
       if (level >= Debug) {
         df.debug(
@@ -335,10 +344,8 @@ prototype.run = function() {
 
       // propagate the pulse
       if (next !== StopPropagation) {
-        pulse = next;
-        if (op._targets) op._targets.forEach(function(op) {
-          if (!pulses[op.id]) pq.push(op), pulses[op.id] = pulse;
-        });
+        df._pulse = next;
+        if (op._targets) op._targets.forEach(function(op) { df._enqueue(op); });
       }
 
       // increment visit counter
@@ -348,8 +355,11 @@ prototype.run = function() {
     df.error(err);
   }
 
+  // reset pulse map
+  df._pulses = {};
+  df._pulse = null;
+
   // invoke callbacks queued via runAfter
-  df._running = false;
   if (df._postrun.length) {
     df._postrun.forEach(function(f) {
       try { f(); } catch (err) { df.error(err); }
@@ -359,7 +369,7 @@ prototype.run = function() {
 
   if (level >= Info) {
     dt = Date.now() - dt;
-    df.info('> Pulse ' + pulse.stamp + ': ' + count + ' operators; ' + dt + 'ms');
+    df.info('> Pulse ' + df._clock + ': ' + count + ' operators; ' + dt + 'ms');
   }
 
   return count;
@@ -377,7 +387,7 @@ prototype.runAfter = function(pulse, callback) {
   if (pulse.stamp !== this._clock) {
     this.error('Can only schedule runAfter on the current timestamp.');
   }
-  if (this._running) {
+  if (this._pulse) {
     // pulse propagation is currently running, queue to run after
     this._postrun.push(callback);
   } else {
@@ -386,21 +396,44 @@ prototype.runAfter = function(pulse, callback) {
   }
 };
 
-function getPulse(df, stamp, op, pulses) {
-  // if the operator has an explicit source, try to pull the pulse from it
-  var s = op.source, p, q;
+/**
+ * Enqueue an operator into the priority queue for evaluation. The operator
+ * will be enqueued if it has no registered pulse for the current cycle, or if
+ * the force argument is true. Upon enqueue, this method also sets the
+ * operator's qrank to the current rank value.
+ */
+prototype._enqueue = function(op, force) {
+  var p = !this._pulses[op.id];
+  if (p) this._pulses[op.id] = this._pulse;
+  if (p || force) {
+    op.qrank = op.rank;
+    this._heap.push(op);
+  }
+};
+
+/**
+ * Provide a correct pulse for evaluating an operator. If the operator has an
+ * explicit source operator, we will try to pull the pulse(s) from it.
+ * If there is an array of source operators, we build a multi-pulse.
+ * Otherwise, we return a current pulse with correct source data.
+ * If the pulse is the pulse map has an explicit target set, we use that.
+ * Else if the pulse on the upstream source operator is current, we use that.
+ * Else we use the pulse from the pulse map, but copy the source tuple array.
+ */
+prototype._getPulse = function(op) {
+  var s = op.source,
+      stamp = this._clock,
+      p, q;
+
   if (s && isArray(s)) {
-    // if source array, consolidate pulses into a multi-pulse
-    return new MultiPulse(df, stamp, s.map(function(_) { return _.pulse; }));
+    return new MultiPulse(this, stamp, s.map(function(_) { return _.pulse; }));
   } else {
-    // return current pulse with correct source data; copy source as needed
-    // priority: 1. pulse with explicit target, 2. current pulse from source
-    q = pulses[op.id];
+    q = this._pulses[op.id];
     p = (s && (s=s.pulse) && s.stamp === stamp && q.target !== op) ? s : q;
     if (s) p.source = s.source;
     return p;
   }
-}
+};
 
 // LOGGING AND ERROR HANDLING
 
@@ -414,7 +447,7 @@ prototype.error = function(err) {
 
 function logMethod(method) {
   return function() {
-    return this._log[method].apply(this._log, arguments);
+    return this._log[method].apply(this, arguments);
   };
 }
 
