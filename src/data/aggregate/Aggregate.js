@@ -28,6 +28,7 @@ export default function Aggregate(params) {
   this._mods = []; // array of modified output tuples
   this._alen = 0;  // number of active added tuples
   this._mlen = 0;  // number of active modified tuples
+  this._drop = true; // should empty aggregation cells be removed
 
   this._dims = [];   // group-by dimension accessors
   this._dnames = []; // group-by dimension names
@@ -61,7 +62,9 @@ prototype.transform = function(_, pulse) {
 
   // Indicate output fields and return aggregate tuples.
   out.modifies(this._outputs);
-  return aggr.changes(out, _.drop !== false);
+
+  aggr._drop = _.drop !== false;
+  return aggr.changes(out);
 };
 
 prototype.init = function(_) {
@@ -158,6 +161,9 @@ prototype.cell = function(key, t) {
   var cell = this.value[key];
   if (!cell) {
     cell = this.value[key] = this.newcell(key, t);
+    this._adds[this._alen++] = cell;
+  } else if (cell.num === 0 && this._drop) {
+    cell.stamp = this.stamp;
     this._adds[this._alen++] = cell;
   } else if (cell.stamp < this.stamp) {
     cell.stamp = this.stamp;
@@ -260,10 +266,11 @@ prototype.celltuple = function(cell) {
   return tuple;
 };
 
-prototype.changes = function(out, drop) {
+prototype.changes = function(out) {
   var adds = this._adds,
       mods = this._mods,
       prev = this._prev,
+      drop = this._drop,
       add = out.add,
       rem = out.rem,
       mod = out.mod,
