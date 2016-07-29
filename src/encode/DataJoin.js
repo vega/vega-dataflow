@@ -36,13 +36,14 @@ prototype.transform = function(_, pulse) {
         x = lut.get(k);
 
     if (x) {
-      out.mod.push(x);
+      (x.exit ? out.add : out.mod).push(x);
     } else {
       lut.set(k, x = item(t));
       out.add.push(x);
     }
 
     x.datum = t;
+    x.exit = false;
   });
 
   pulse.visit(pulse.MOD, function(t) {
@@ -59,8 +60,8 @@ prototype.transform = function(_, pulse) {
         x = lut.get(k);
 
     if (t === x.datum) {
-      lut.remove(k);
       out.rem.push(x);
+      x.exit = true;
     }
   });
 
