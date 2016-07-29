@@ -32,6 +32,7 @@ export default function Operator(init, update, params, react) {
   this.value = init;
   this.stamp = -1;
   this.rank = -1;
+  this.qrank = -1;
   this.flags = 0;
 
   if (update) {
