@@ -5,7 +5,7 @@ import {inherits, compare} from 'vega-util';
  * Generates a comparator function.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {Array<function(object): *>} params.fields - The fields to compare.
+ * @param {Array<string>} params.fields - The fields to compare.
  * @param {Array<string>} [params.orders] - The sort orders.
  *   Each entry should be one of "ascending" (default) or "descending".
  */

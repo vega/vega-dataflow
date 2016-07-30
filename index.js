@@ -30,6 +30,7 @@ export {default as Filter} from './src/data/Filter';
 export {default as Fold} from './src/data/Fold';
 export {default as Generate} from './src/data/Generate';
 export {default as Impute} from './src/data/Impute';
+export {default as Key} from './src/data/Key';
 export {default as Lookup} from './src/data/Lookup';
 export {default as MultiExtent} from './src/data/MultiExtent';
 export {default as NoOp} from './src/data/NoOp';

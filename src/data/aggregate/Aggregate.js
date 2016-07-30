@@ -2,7 +2,7 @@ import Transform from '../../Transform';
 import TupleStore from './TupleStore';
 import {createMeasure, compileMeasures} from './Measures';
 import {ingest, replace} from '../../Tuple';
-import {array, error, inherits, accessorName} from 'vega-util';
+import {accessorName, array, error, inherits} from 'vega-util';
 
 export var ValidAggregates = [
   'values', 'count', 'valid', 'missing', 'distinct',
