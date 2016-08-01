@@ -35,6 +35,7 @@ export {default as Lookup} from './src/data/Lookup';
 export {default as MultiExtent} from './src/data/MultiExtent';
 export {default as NoOp} from './src/data/NoOp';
 export {default as Params} from './src/data/Params';
+export {default as PreFacet} from './src/data/PreFacet';
 export {default as Range} from './src/data/Range';
 export {default as Rank} from './src/data/Rank';
 export {default as Reflow} from './src/data/Reflow';

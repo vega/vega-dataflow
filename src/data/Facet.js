@@ -6,9 +6,9 @@ import {map} from 'd3-collection';
 /**
  * Facets a dataflow into a set of subflows based on a key.
  * @constructor
- * @param {function(Dataflow, string): Operator} subflow - A function that
- *   generates a subflow of operators and returns its root operator.
  * @param {object} params - The parameters for this operator.
+ * @param {function(Dataflow, string): Operator} params.subflow - A function
+ *   that generates a subflow of operators and returns its root operator.
  * @param {function(object): *} params.key - The key field to facet by.
  */
 export default function Facet(params) {
@@ -31,28 +31,32 @@ prototype.activate = function(flow) {
   this._targets[this._targets.active++] = flow;
 };
 
+prototype.subflow = function(key, flow, pulse) {
+  var flows = this.value,
+      sf = flows.get(key), df;
+
+  if (!sf) {
+    df = pulse.dataflow;
+    sf = df.add(new Subflow(pulse.fork(), this))
+      .connect(flow(df, key, this._count++));
+    flows.set(key, sf);
+    this.activate(sf);
+  } else if (sf.value.stamp < pulse.stamp) {
+    sf.init(pulse);
+    this.activate(sf);
+  }
+
+  return sf;
+};
+
 prototype.transform = function(_, pulse) {
   var self = this,
-      lut = this.value,
       key = _.key,
+      flow = _.subflow,
       cache = this._keys,
       rekey = _.modified('key');
 
-  // subflow generator
-  function subflow(key) {
-    var sf = lut.get(key), df;
-    if (!sf) {
-      df = pulse.dataflow;
-      sf = df.add(new Subflow(pulse.fork(), self))
-        .connect(_.subflow(df, key, self._count++));
-      lut.set(key, sf);
-      self.activate(sf);
-    } else if (sf.value.stamp < pulse.stamp) {
-      sf.init(pulse);
-      self.activate(sf);
-    }
-    return sf;
-  }
+  function subflow(key) { return self.subflow(key, flow, pulse); }
 
   this._targets.active = 0; // reset list of active subflows
 
