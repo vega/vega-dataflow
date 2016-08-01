@@ -5,12 +5,17 @@ import getScheme from './schemes';
 
 var SKIP = {
   'type': 1,
-  'nice': 1,
-  'zero': 1,
+  'scheme': 1,
+
   'domain': 1,
   'domainMin': 1,
   'domainMax': 1,
-  'scheme': 1
+  'nice': 1,
+  'zero': 1,
+
+  'range': 1,
+  'round': 1,
+  'bandSize': 1
 };
 
 /**
@@ -32,12 +37,13 @@ prototype.transform = function(_, pulse) {
     this.value = (scale = createScale(_.type, _.scheme, pulse));
   }
 
-  for (prop in _) {
-    if (!SKIP[prop] && isFunction(scale[prop])) {
-      scale[prop](_[prop]);
-    }
+  for (prop in _) if (!SKIP[prop]) {
+    isFunction(scale[prop])
+      ? scale[prop](_[prop])
+      : pulse.dataflow.warn('Unsupported scale property: ' + prop);
   }
-  configureDomain(scale, _);
+
+  configureRange(scale, _, configureDomain(scale, _));
 };
 
 function createScale(scaleType, scheme) {
@@ -57,7 +63,7 @@ function createScale(scaleType, scheme) {
 
 function configureDomain(scale, _) {
   var domain = _.domain;
-  if (!domain) return;
+  if (!domain) return 0;
 
   if (_.zero || _.domainMin != null || _.domainMax != null) {
     var n = (domain = domain.slice()).length - 1;
@@ -71,4 +77,19 @@ function configureDomain(scale, _) {
 
   scale.domain(domain);
   if (_.nice && scale.nice) scale.nice((_.nice !== true && +_.nice) || null);
+  return domain.length;
+}
+
+function configureRange(scale, _, count) {
+  var type = scale.type,
+      range = _.range;
+
+  if (_.bandSize != null) {
+    if (type !== 'band' && type !== 'point') {
+      error('Only band and point scales support bandSize.');
+    }
+    range = [0, _.bandSize * count];
+  }
+
+  if (range) scale[_.round ? 'rangeRound' : 'range'](range);
 }
