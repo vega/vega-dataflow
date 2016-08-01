@@ -285,14 +285,19 @@ function onOperator(df, source, target, update, params, options) {
     op = target;
   } else {
     func = isFunction(update) ? update : constant(update);
-    op = new Operator(null, function(_, pulse) {
+    update = !target ? func : function(_, pulse) {
       if (!target.skip()) return target.skip(true).value = func(_, pulse);
-    }, params, false);
+    };
+
+    op = new Operator(null, update, params, false);
     op.modified(options && options.force);
     op.skip(true); // skip first invocation
-    op.value = target.value;
     op.rank = 0;
-    op.targets().add(target);
+
+    if (target) {
+      op.value = target.value;
+      op.targets().add(target);
+    }
   }
 
   source.targets().add(op);
