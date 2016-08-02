@@ -4,6 +4,10 @@ import getScale from './scales';
 import getScheme from './schemes';
 
 var SKIP = {
+  'set': 1,
+  'modified': 1,
+  'clear': 1,
+
   'type': 1,
   'scheme': 1,
 
