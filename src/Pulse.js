@@ -140,11 +140,11 @@ prototype.init = function(src, flags) {
 };
 
 /**
- * Schedules a function to run after this pulse propagation completes.
+ * Schedules a function to run after pulse propagation completes.
  * @param {function} func - The function to run.
  */
 prototype.runAfter = function(func) {
-  this.dataflow.runAfter(this, func);
+  this.dataflow.runAfter(func);
 };
 
 prototype.changed = function(flags) {

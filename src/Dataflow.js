@@ -364,40 +364,38 @@ prototype.run = function() {
   df._pulses = {};
   df._pulse = null;
 
-  // invoke callbacks queued via runAfter
-  if (df._postrun.length) {
-    df._postrun.forEach(function(f) {
-      try { f(); } catch (err) { df.error(err); }
-    });
-    df._postrun = [];
-  }
-
   if (level >= Info) {
     dt = Date.now() - dt;
     df.info('> Pulse ' + df._clock + ': ' + count + ' operators; ' + dt + 'ms');
+  }
+
+  // invoke callbacks queued via runAfter
+  if (df._postrun.length) {
+    var postrun = df._postrun;
+    df._postrun = [];
+    postrun.forEach(function(f) {
+      try { f(df); } catch (err) { df.error(err); }
+    });
   }
 
   return count;
 };
 
 /**
- * Schedules a callback function to be invoked after the given pulse
- * completes. If the pulse has completed, the function is invoked
- * immediately. If the input pulse does not have a stamp value matching
- * the current timestamp, an error will be raised.
- * @param {Pulse} pulse - The pulse to run after.
- * @param {function()} callback - The callback function to run.
+ * Schedules a callback function to be invoked after the current pulse
+ * propagation completes. If no propagation is currently occurring,
+ * the function is invoked immediately.
+ * @param {function(Dataflow)} callback - The callback function to run.
+ *   The callback will be invoked with this Dataflow instance as its
+ *   sole argument.
  */
-prototype.runAfter = function(pulse, callback) {
-  if (pulse.stamp !== this._clock) {
-    this.error('Can only schedule runAfter on the current timestamp.');
-  }
+prototype.runAfter = function(callback) {
   if (this._pulse) {
     // pulse propagation is currently running, queue to run after
     this._postrun.push(callback);
   } else {
     // pulse propagation already complete, invoke immediately
-    try { callback(); } catch (err) { this.error(err); }
+    try { callback(this); } catch (err) { this.error(err); }
   }
 };
 
