@@ -42,7 +42,7 @@ export var properties = [
   'precision'
 ];
 
-export default function projection(name, proj) {
+export default function(name, proj) {
   return arguments.length > 1 ? (projections[name] = proj, this)
     : projections.hasOwnProperty(name) ? projections[name] : null;
 }

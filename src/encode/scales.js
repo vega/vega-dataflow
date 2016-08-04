@@ -20,7 +20,7 @@ var scales = {
   index:       scaleIndex
 };
 
-export default function scale(name, scale) {
+export default function(name, scale) {
   return arguments.length > 1 ? (scales[name] = scale, this)
     : scales.hasOwnProperty(name) ? scales[name] : null;
 }
