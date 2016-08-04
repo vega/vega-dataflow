@@ -33,6 +33,7 @@
     "d3-scale": "1",
     "d3-scale-chromatic": "1",
     "d3-voronoi": "1",
+    "vega-loader": "1",
     "vega-statistics": "1",
     "vega-util": "1"
   },
