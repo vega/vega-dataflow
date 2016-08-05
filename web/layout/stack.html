@@ -25,6 +25,7 @@
     <br/><br/>
     Click rectangles to change value. Shift-click to remove. Click background to add.
     <script type="text/javascript">
+var tx = vega.transforms;
 var svg = document.querySelector('svg.vis');
 var soff = document.querySelector('#offset');
 var bsrt = document.querySelector('#sort');
@@ -65,22 +66,22 @@ var key = vega.field('key'),
     yr = df.add([300, 0]),
     so = df.add(null),
     of = df.add(soff),
-    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category10'}),
-    c0 = df.add(vega.Collect),
-    st = df.add(vega.Stack, {field:val, offset:of, groupby:[key], sort:so, pulse:c0}),
+    sc = df.add(tx.Scale, {type:'ordinal', scheme:'category10'}),
+    c0 = df.add(tx.Collect),
+    st = df.add(tx.Stack, {field:val, offset:of, groupby:[key], sort:so, pulse:c0}),
 
-    ag = df.add(vega.Aggregate, {groupby:[key], drop:false, pulse:c0}),
-    ca = df.add(vega.Collect, {pulse: ag}),
-    dv = df.add(vega.Values, {field:key, pulse:ca}),
-    sx = df.add(vega.Scale, {type:'band', domain:dv, range:xr}),
+    ag = df.add(tx.Aggregate, {groupby:[key], drop:false, pulse:c0}),
+    ca = df.add(tx.Collect, {pulse: ag}),
+    dv = df.add(tx.Values, {field:key, pulse:ca}),
+    sx = df.add(tx.Scale, {type:'band', domain:dv, range:xr}),
 
-    ye = df.add(vega.Extent, {field:end, pulse:st}),
-    sy = df.add(vega.Scale, {domain:ye, zero:true, range:yr}),
+    ye = df.add(tx.Extent, {field:end, pulse:st}),
+    sy = df.add(tx.Scale, {domain:ye, zero:true, range:yr}),
 
-    j1 = df.add(vega.DataJoin, {item:items(svg, 'rect'), pulse:st}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:encoders, sc:sc, sx:sx, sy:sy, pulse:c1}),
-    s1 = df.add(vega.Sieve, {pulse: e1});
+    j1 = df.add(tx.DataJoin, {item:items(svg, 'rect'), pulse:st}),
+    c1 = df.add(tx.Collect, {pulse:j1}),
+    e1 = df.add(tx.Encode, {encoders:encoders, sc:sc, sx:sx, sy:sy, pulse:c1}),
+    s1 = df.add(tx.Sieve, {pulse: e1});
 
 svg.addEventListener('click', function(evt) {
   if (evt.target === svg) {

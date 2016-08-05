@@ -1,11 +1,12 @@
 var tape = require('tape'),
-    vega = require('../../');
+    vega = require('../../'),
+    Compare = vega.transforms.Compare;
 
 tape('Compare generates comparator functions', function(test) {
   var df = new vega.Dataflow(),
       c = df.add('foo'),
       o = df.add('ascending'),
-      f = df.add(vega.Compare, {fields:c, orders:o});
+      f = df.add(Compare, {fields:c, orders:o});
 
   df.run();
   test.equal(typeof f.value, 'function');

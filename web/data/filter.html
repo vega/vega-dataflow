@@ -169,6 +169,7 @@
       </g>
     </svg><br/>
     <script type="text/javascript">
+var tx = vega.transforms;
 var g = vega.randomNormal(50, 20);
 function gen() {
   var u = -1, v = -1, x = -1;
@@ -236,26 +237,26 @@ var df = new vega.Dataflow(),
     b2  = df.add(updateBrush, {el:'#view2', x:x2}),
     b3  = df.add(updateBrush, {el:'#view3', x:x3}),
     bin = [
-      df.add(vega.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
-      df.add(vega.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
-      df.add(vega.Bin, {name:'bin', field:x, extent:[0,100], step:5})
+      df.add(tx.Bin, {name:'bin', field:u, extent:[0,100], step:5}),
+      df.add(tx.Bin, {name:'bin', field:v, extent:[0,100], step:5}),
+      df.add(tx.Bin, {name:'bin', field:x, extent:[0,100], step:5})
     ],
 
-    dg  = df.add(vega.Generate, {size:dn, generator:gen}),
+    dg  = df.add(tx.Generate, {size:dn, generator:gen}),
     ff  = [
-      df.add(vega.Filter, {test:rf1, pulse:dg}),
-      df.add(vega.Filter, {test:rf2, pulse:dg}),
-      df.add(vega.Filter, {test:rf3, pulse:dg})
+      df.add(tx.Filter, {test:rf1, pulse:dg}),
+      df.add(tx.Filter, {test:rf2, pulse:dg}),
+      df.add(tx.Filter, {test:rf3, pulse:dg})
     ];
 
 // add histograms
 bin.forEach(function(bin, i) {
-  var a  = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:dg}),
-      c  = df.add(vega.Collect, {pulse: a}),
-      x  = df.add(vega.Extent, {field:count, pulse:c}),
+  var a  = df.add(tx.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c  = df.add(tx.Collect, {pulse: a}),
+      x  = df.add(tx.Extent, {field:count, pulse:c}),
 
-      fa = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:ff[i]}),
-      fc = df.add(vega.Collect, {pulse: fa}),
+      fa = df.add(tx.Aggregate, {groupby:bin, drop:false, pulse:ff[i]}),
+      fc = df.add(tx.Collect, {pulse: fa}),
 
       dom = '#view' + (i+1) + ' ',
       v  = df.add(updateChart, {el:dom+'.base', extent:x, pulse:c}),

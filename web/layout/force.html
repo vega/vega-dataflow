@@ -22,6 +22,7 @@
     <input id="ki" type="range" min="1" max="10" value="1" step="1" /> Collision Iterations<br/>
     <input id="si" type="range" min="1" max="500" value="300" step="1" /> Simulation Iterations<br/>
     <script type="text/javascript">
+var tx = vega.transforms;
 var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
@@ -56,8 +57,8 @@ var r = vega.field('r'),
 var df = new vega.Dataflow(),
     xr = df.add([0, 500]),
     yr = df.add([0, 500]),
-    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category20c'}),
-    c0 = df.add(vega.Collect),
+    sc = df.add(tx.Scale, {type:'ordinal', scheme:'category20c'}),
+    c0 = df.add(tx.Collect),
 
     sl = df.add(document.querySelector('#sl').checked),
     cx = df.add(+document.querySelector('#cx').value),
@@ -67,17 +68,17 @@ var df = new vega.Dataflow(),
     st = df.add(+document.querySelector('#st').value),
     ki = df.add(+document.querySelector('#ki').value),
     si = df.add(+document.querySelector('#si').value),
-    cf = df.add(vega.Params, {force:'center', x:cx, y:cy}),
-    kf = df.add(vega.Params, {force:'collide', radius:r, iterations:ki}),
-    nf = df.add(vega.Params, {force:'nbody', strength:st}),
-    xf = df.add(vega.Params, {force:'x', x:v, strength:sx}),
-    yf = df.add(vega.Params, {force:'y', y:cy, strength:sy}),
-    fo = df.add(vega.Force, {static:sl, iterations:si, forces:[cf, kf, nf, xf, yf], pulse:c0}),
+    cf = df.add(tx.Params, {force:'center', x:cx, y:cy}),
+    kf = df.add(tx.Params, {force:'collide', radius:r, iterations:ki}),
+    nf = df.add(tx.Params, {force:'nbody', strength:st}),
+    xf = df.add(tx.Params, {force:'x', x:v, strength:sx}),
+    yf = df.add(tx.Params, {force:'y', y:cy, strength:sy}),
+    fo = df.add(tx.Force, {static:sl, iterations:si, forces:[cf, kf, nf, xf, yf], pulse:c0}),
 
-    j1 = df.add(vega.DataJoin, {item:items(svg, 'circle'), pulse:fo}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:nodes, sc:sc, pulse:c1}),
-    s1 = df.add(vega.Sieve, {pulse: e1});
+    j1 = df.add(tx.DataJoin, {item:items(svg, 'circle'), pulse:fo}),
+    c1 = df.add(tx.Collect, {pulse:j1}),
+    e1 = df.add(tx.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(tx.Sieve, {pulse: e1});
 
 df.pulse(c0, vega.changeset().insert(data))
   .on(df.events('#sl', 'change'), sl, check)

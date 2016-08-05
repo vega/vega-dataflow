@@ -1,6 +1,9 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    Lookup = vega.transforms.Lookup,
+    TupleIndex = vega.transforms.TupleIndex;
 
 tape('Lookup looks up matching tuples', function(test) {
   var lut = [
@@ -23,11 +26,11 @@ tape('Lookup looks up matching tuples', function(test) {
       y  = vega.field('y'),
 
       df = new vega.Dataflow(),
-      c0 = df.add(vega.Collect),
-      ti = df.add(vega.TupleIndex, {field:id, pulse:c0}),
-      c1 = df.add(vega.Collect),
+      c0 = df.add(Collect),
+      ti = df.add(TupleIndex, {field:id, pulse:c0}),
+      c1 = df.add(Collect),
       lk = df.add([x,y]),
-      lu = df.add(vega.Lookup, {index:ti, fields:lk, as:['u','v'], pulse:c1});
+      lu = df.add(Lookup, {index:ti, fields:lk, as:['u','v'], pulse:c1});
 
   df.run(); // initialize
 

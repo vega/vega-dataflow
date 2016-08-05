@@ -1,11 +1,12 @@
 var tape = require('tape'),
-    vega = require('../../');
+    vega = require('../../'),
+    Field = vega.transforms.Field;
 
 tape('Field generates field accessors', function(test) {
   var df = new vega.Dataflow(),
       n = df.add('foo'),
       a = df.add(null),
-      f = df.add(vega.Field, {name:n, as:a});
+      f = df.add(Field, {name:n, as:a});
 
   df.run();
   test.equal(typeof f.value, 'function');

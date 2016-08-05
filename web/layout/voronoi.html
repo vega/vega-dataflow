@@ -17,6 +17,7 @@
     <svg class="vis" width="500" height="500"></svg><br/>
     Click or hold command to add points. Hold shift to remove them.
     <script type="text/javascript">
+var tx = vega.transforms;
 var svg = document.querySelector('svg.vis');
 
 var data = [];
@@ -61,20 +62,20 @@ var u = vega.field('u'),
     df = new vega.Dataflow(),
     xr = df.add([0, 500]),
     yr = df.add([0, 500]),
-    sx = df.add(vega.Scale, {domain:[0,1], range:xr}),
-    sy = df.add(vega.Scale, {domain:[0,1], range:yr}),
+    sx = df.add(tx.Scale, {domain:[0,1], range:xr}),
+    sy = df.add(tx.Scale, {domain:[0,1], range:yr}),
     xx = df.add(scaleX, {sx:sx}),
     yy = df.add(scaleY, {sy:sy}),
-    c0 = df.add(vega.Collect),
-    vo = df.add(vega.Voronoi, {x:xx, y:yy, extent:[[-1,-1], [501,501]], pulse:c0}),
+    c0 = df.add(tx.Collect),
+    vo = df.add(tx.Voronoi, {x:xx, y:yy, extent:[[-1,-1], [501,501]], pulse:c0}),
 
-    j1 = df.add(vega.DataJoin, {item:items(svg, 'circle'), pulse:vo}),
-    e1 = df.add(vega.Encode, {encoders:points, sx:sx, sy:sy, pulse:j1}),
-    s1 = df.add(vega.Sieve, {pulse: e1}),
+    j1 = df.add(tx.DataJoin, {item:items(svg, 'circle'), pulse:vo}),
+    e1 = df.add(tx.Encode, {encoders:points, sx:sx, sy:sy, pulse:j1}),
+    s1 = df.add(tx.Sieve, {pulse: e1}),
 
-    j2 = df.add(vega.DataJoin, {item:items(svg, 'path'), pulse:vo}),
-    e2 = df.add(vega.Encode, {encoders:cells, sx:sx, sy:sy, pulse:j2}),
-    s2 = df.add(vega.Sieve, {pulse: e2});
+    j2 = df.add(tx.DataJoin, {item:items(svg, 'path'), pulse:vo}),
+    e2 = df.add(tx.Encode, {encoders:cells, sx:sx, sy:sy, pulse:j2}),
+    s2 = df.add(tx.Sieve, {pulse: e2});
 
 df.pulse(c0, vega.changeset().insert(data)).run();
 

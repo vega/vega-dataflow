@@ -28,6 +28,7 @@
     <input id="a" type="range" min="0" max="6.28" value="6.28" step="0.01"/> Angle<br/>
     <input id="r" type="range" min="0" max="250" value="200"/> Radius<br/>
     <script type="text/javascript">
+var tx = vega.transforms;
 var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg');
 var g = document.querySelector('g.vis');
@@ -89,23 +90,23 @@ var p = vega.field('parent'),
     r  = df.add(+document.querySelector('#r').value),
     lm = df.add('tidy'),
     sh = df.add('line'),
-    sc = df.add(vega.Scale, {type:'sequential', scheme:'magma', domain:[0,13]}),
-    c0 = df.add(vega.Collect),
-    s0 = df.add(vega.Stratify, {key:key, parentKey:p, pulse:c0}),
-    tl = df.add(vega.Tree, {method:lm, size:[a,r], pulse:s0}),
+    sc = df.add(tx.Scale, {type:'sequential', scheme:'magma', domain:[0,13]}),
+    c0 = df.add(tx.Collect),
+    s0 = df.add(tx.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tl = df.add(tx.Tree, {method:lm, size:[a,r], pulse:s0}),
 
-    ln = df.add(vega.TreeLinks, {pulse:tl}),
-    lc = df.add(vega.Collect, {pulse:ln}),
-    lp = df.add(vega.LinkPath, {shape:sh, orient:'radial', pulse:lc}),
-    j2 = df.add(vega.DataJoin, {item:items(g, 'path'), pulse:lp}),
-    c2 = df.add(vega.Collect, {pulse:j2}),
-    e2 = df.add(vega.Encode, {encoders:links, sc:sc, pulse:c2}),
-    s2 = df.add(vega.Sieve, {pulse: e2}),
+    ln = df.add(tx.TreeLinks, {pulse:tl}),
+    lc = df.add(tx.Collect, {pulse:ln}),
+    lp = df.add(tx.LinkPath, {shape:sh, orient:'radial', pulse:lc}),
+    j2 = df.add(tx.DataJoin, {item:items(g, 'path'), pulse:lp}),
+    c2 = df.add(tx.Collect, {pulse:j2}),
+    e2 = df.add(tx.Encode, {encoders:links, sc:sc, pulse:c2}),
+    s2 = df.add(tx.Sieve, {pulse: e2}),
 
-    j1 = df.add(vega.DataJoin, {item:items(g, 'circle'), pulse:tl}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:nodes, sc:sc, pulse:c1}),
-    s1 = df.add(vega.Sieve, {pulse: e1});
+    j1 = df.add(tx.DataJoin, {item:items(g, 'circle'), pulse:tl}),
+    c1 = df.add(tx.Collect, {pulse:j1}),
+    e1 = df.add(tx.Encode, {encoders:nodes, sc:sc, pulse:c1}),
+    s1 = df.add(tx.Sieve, {pulse: e1});
 
 df.pulse(c0, vega.changeset().insert(data)).run();
 

@@ -1,14 +1,16 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    Relay = vega.transforms.Relay;
 
 tape('Relay relays derived tuples', function(test) {
   var data = [{'id': 0}, {'id': 1}];
 
   var id = vega.field('id'),
       df = new vega.Dataflow(),
-      c = df.add(vega.Collect),
-      r = df.add(vega.Relay, {pulse:c}),
+      c = df.add(Collect),
+      r = df.add(Relay, {pulse:c}),
       p;
 
   df.pulse(c, changeset().insert(data)).run();

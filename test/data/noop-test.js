@@ -1,13 +1,15 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    NoOp = vega.transforms.NoOp;
 
 tape('NoOp propagates pulse', function(test) {
   var data = [{'id': 0}, {'id': 1}];
 
   var df = new vega.Dataflow(),
-      c = df.add(vega.Collect),
-      n = df.add(vega.NoOp, {pulse:c}),
+      c = df.add(Collect),
+      n = df.add(NoOp, {pulse:c}),
       p;
 
   df.pulse(c, changeset().insert(data)).run();

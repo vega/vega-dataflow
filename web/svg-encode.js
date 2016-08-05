@@ -23,7 +23,7 @@ function Encoder(encoders, scope, pulse) {
     params.parent = scope.parent;
   }
 
-  return new vega.Encode(params);
+  return new vega.transforms.Encode(params);
 }
 
 function items(el, tag) {

@@ -26,6 +26,7 @@
     <input id="tc" type="range" min="1" max="50" value="10"/> Tick Count<br/>
     <input id="tv" type="text" value="" placeholder="Tick Values (comma-separated)"/> Tick Values<br/>
     <script type="text/javascript">
+var tx = vega.transforms;
 var svg = document.querySelector('svg.vis');
 
 var ticks = {
@@ -75,18 +76,18 @@ var df = new vega.Dataflow(),
     ex = df.add(1),
     fs = df.add(null),
     ff = df.add(null, null),
-    xs = df.add(vega.Scale, {type:st, domain:[d0,d1], range:xr, exponent:ex}),
-    at = df.add(vega.AxisTicks, {scale:xs, values:tv, count:tc, format:ff, formatSpecifier:fs}),
+    xs = df.add(tx.Scale, {type:st, domain:[d0,d1], range:xr, exponent:ex}),
+    at = df.add(tx.AxisTicks, {scale:xs, values:tv, count:tc, format:ff, formatSpecifier:fs}),
 
-    j1 = df.add(vega.DataJoin, {item:items(svg, 'line'), pulse:at}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:ticks, s:xs, pulse:c1}),
-    s1 = df.add(vega.Sieve, {pulse: e1}),
+    j1 = df.add(tx.DataJoin, {item:items(svg, 'line'), pulse:at}),
+    c1 = df.add(tx.Collect, {pulse:j1}),
+    e1 = df.add(tx.Encode, {encoders:ticks, s:xs, pulse:c1}),
+    s1 = df.add(tx.Sieve, {pulse: e1}),
 
-    j2 = df.add(vega.DataJoin, {item:items(svg, 'text'), pulse:at}),
-    c2 = df.add(vega.Collect, {pulse:j2}),
-    e2 = df.add(vega.Encode, {encoders:labels, s:xs, pulse:c2}),
-    s2 = df.add(vega.Sieve, {pulse: e2});
+    j2 = df.add(tx.DataJoin, {item:items(svg, 'text'), pulse:at}),
+    c2 = df.add(tx.Collect, {pulse:j2}),
+    e2 = df.add(tx.Encode, {encoders:labels, s:xs, pulse:c2}),
+    s2 = df.add(tx.Sieve, {pulse: e2});
 
 df.on(df.events('#type', 'change'), st, option)
   .on(df.events('#d0', 'input'), d0, value)

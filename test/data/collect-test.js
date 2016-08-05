@@ -1,6 +1,7 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect;
 
 tape('Collect collects tuples', function(test) {
   var data = [
@@ -11,7 +12,7 @@ tape('Collect collects tuples', function(test) {
 
   var df = new vega.Dataflow(),
       so = df.add(null),
-      c0 = df.add(vega.Collect, {sort:so});
+      c0 = df.add(Collect, {sort:so});
 
   df.run(); // initialize
   test.equal(c0.value.length, 0);

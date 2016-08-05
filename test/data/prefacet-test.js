@@ -1,6 +1,8 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    PreFacet = vega.transforms.PreFacet;
 
 tape('PreFacet partitions pre-faceted tuple sets', function(test) {
   var data = [
@@ -12,7 +14,7 @@ tape('PreFacet partitions pre-faceted tuple sets', function(test) {
   var subs = [];
 
   function subflow(df, key) {
-    var col = df.add(vega.Collect);
+    var col = df.add(Collect);
     subs.push({key: key, data: col});
     return col;
   }
@@ -23,8 +25,8 @@ tape('PreFacet partitions pre-faceted tuple sets', function(test) {
 
   var tuples = vega.field('tuples'),
       df = new vega.Dataflow(),
-      source = df.add(vega.Collect),
-      facet = df.add(vega.PreFacet, {subflow:subflow, field:tuples, pulse:source});
+      source = df.add(Collect),
+      facet = df.add(PreFacet, {subflow:subflow, field:tuples, pulse:source});
 
   // -- test add
   df.pulse(source, changeset().insert(data)).run();

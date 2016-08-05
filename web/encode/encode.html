@@ -17,6 +17,7 @@
     </svg><br/>
     Drag to draw bubbles. Hold shift to pop them!
     <script type="text/javascript">
+var tx = vega.transforms;
 var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
@@ -27,7 +28,7 @@ function loader(_, pulse) {
   if (_.modified('points', 0)) { // mouse move
     p = pts[0];
     s = p.event.shiftKey;
-    if (p.item !== svg && s) {
+    if (p.item !== svg && s && !p.item.exit) {
       pulse.rem.push(p.item.datum);
       update = true;
     } else if (p.item === svg && !s && p.event.buttons) {
@@ -42,7 +43,7 @@ function loader(_, pulse) {
 
   if (_.modified('points', 2)) { // mouse over
     p = pts[2];
-    if (p.item !== svg) {
+    if (p.item !== svg && !p.item.exit) {
       pulse.mod.push(p.item.datum);
       pulse.encode = 'hover';
       update = true;
@@ -51,7 +52,7 @@ function loader(_, pulse) {
 
   if (_.modified('points', 1)) { // mouse out
     p = pts[1];
-    if (p.item !== svg) {
+    if (p.item !== svg && !p.item.exit) {
       pulse.mod.push(p.item.datum);
       update = true;
     }
@@ -79,7 +80,7 @@ var encoders = {
     "r": {"value": 50},
     "fill": {"value": "rgba(255, 0, 0, 0.05)"},
     "stroke": {"value": "rgba(0, 0, 0, 0.05)"},
-    "pointer-events": {"value": "none"}
+    "pointer-events": {"value": "none"},
   }, 'setTimeout(function() { item.remove(); }, 200);')
 };
 
@@ -92,10 +93,10 @@ var df = new vega.Dataflow(),
     rngy = df.add([500, 0]),
     domx = df.add([0, 1]),
     domy = df.add([0, 1]),
-    sx   = df.add(vega.Scale, {domain:domx, range:rngx}),
-    sy   = df.add(vega.Scale, {domain:domy, range:rngy}),
+    sx   = df.add(tx.Scale, {domain:domx, range:rngx}),
+    sy   = df.add(tx.Scale, {domain:domy, range:rngy}),
     load = df.add(0, loader, {points:[move, out, over], sx:sx, sy:sy}),
-    join = df.add(vega.DataJoin, {item:items(svg, 'circle'), pulse:load}),
+    join = df.add(tx.DataJoin, {item:items(svg, 'circle'), pulse:load}),
     encd = df.add(Encoder(encoders, {signals:{fill:fill}, scales:{sx:sx, sy:sy}}, join));
 
 function XYT(_, e) {

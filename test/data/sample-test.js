@@ -1,6 +1,8 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    Sample = vega.transforms.Sample;
 
 tape('Sample samples tuples without backing source', function(test) {
   var n = 100,
@@ -12,7 +14,7 @@ tape('Sample samples tuples without backing source', function(test) {
   for (i=0; i<n; ++i) data[i] = {v:Math.random()};
 
   var df = new vega.Dataflow(),
-      s = df.add(vega.Sample, {size:ns});
+      s = df.add(Sample, {size:ns});
 
   // -- initial sample
   df.pulse(s, changeset().insert(data)).run();
@@ -56,8 +58,8 @@ tape('Sample samples tuples with backing source', function(test) {
   for (i=0; i<n; ++i) data[i] = {v:Math.random()};
 
   var df = new vega.Dataflow(),
-      c = df.add(vega.Collect),
-      s = df.add(vega.Sample, {size:ns, pulse:c});
+      c = df.add(Collect),
+      s = df.add(Sample, {size:ns, pulse:c});
 
   // -- initial sample
   df.pulse(c, changeset().insert(data)).run();

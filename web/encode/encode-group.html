@@ -18,6 +18,7 @@
     <button id="scale">Toggle Scale</button>
     <button id="parent">Toggle Parent Field</button>
     <script type="text/javascript">
+var tx = vega.transforms;
 var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
@@ -67,8 +68,8 @@ function subflow() {
   };
   return function(df, key) {
     var el   = document.querySelector('g.' + key),
-        join = df.add(vega.DataJoin, {item:items(el, 'circle')}),
-        coll = df.add(vega.Collect, {pulse:join}),
+        join = df.add(tx.DataJoin, {item:items(el, 'circle')}),
+        coll = df.add(tx.Collect, {pulse:join}),
         encd = df.add(Encoder(circles, scope, coll));
     return join;
   };
@@ -86,17 +87,17 @@ var df = new vega.Dataflow(),
     rngy  = df.add([500, 0]),
     domx  = df.add([0, 1]),
     domy  = df.add([0, 1]),
-    color = df.add(vega.Scale, {type:'ordinal', scheme:cpal}),
-    sx    = df.add(vega.Scale, {domain:domx, range:rngx}),
-    sy    = df.add(vega.Scale, {domain:domy, range:rngy}),
-    init  = df.add(vega.Collect),
-    aggr  = df.add(vega.Aggregate, {groupby:[cat], pulse:init}),
-    group = df.add(vega.Collect, {pulse:aggr}),
-    apply = df.add(vega.Apply, {as:'color', apply:setc, c:color, pulse:group}),
-    join  = df.add(vega.DataJoin, {item:items(svg, 'g'), pulse:apply}),
+    color = df.add(tx.Scale, {type:'ordinal', scheme:cpal}),
+    sx    = df.add(tx.Scale, {domain:domx, range:rngx}),
+    sy    = df.add(tx.Scale, {domain:domy, range:rngy}),
+    init  = df.add(tx.Collect),
+    aggr  = df.add(tx.Aggregate, {groupby:[cat], pulse:init}),
+    group = df.add(tx.Collect, {pulse:aggr}),
+    apply = df.add(tx.Apply, {as:'color', apply:setc, c:color, pulse:group}),
+    join  = df.add(tx.DataJoin, {item:items(svg, 'g'), pulse:apply}),
     encd  = df.add(Encoder(groups, {}, join)),
-    stop  = df.add(vega.Sieve, {pulse:encd}),
-    facet = df.add(vega.Facet, {subflow:subflow(), key:cat, pulse:init});
+    stop  = df.add(tx.Sieve, {pulse:encd}),
+    facet = df.add(tx.Facet, {subflow:subflow(), key:cat, pulse:init});
 
 document.querySelector('#scale').addEventListener('click', function(evt) {
   var rx = ((rx=rngx.value)[0] === 0) ? [100, 400] : [0, 500];

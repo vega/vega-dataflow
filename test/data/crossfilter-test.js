@@ -1,6 +1,9 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    CrossFilter = vega.transforms.CrossFilter,
+    ResolveFilter = vega.transforms.ResolveFilter;
 
 tape('Crossfilter filters tuples', function(test) {
   var data = [
@@ -13,14 +16,14 @@ tape('Crossfilter filters tuples', function(test) {
       df = new vega.Dataflow(),
       r1 = df.add([0, 5]),
       r2 = df.add([0, 5]),
-      c0 = df.add(vega.Collect),
-      cf = df.add(vega.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0}),
-      f1 = df.add(vega.ResolveFilter, {ignore:2, filter:cf, pulse:cf}),
-      o1 = df.add(vega.Collect, {pulse: f1}),
-      f2 = df.add(vega.ResolveFilter, {ignore:1, filter:cf, pulse:cf}),
-      o2 = df.add(vega.Collect, {pulse: f2}),
-      fn = df.add(vega.ResolveFilter, {ignore:0, filter:cf, pulse:cf}),
-      on = df.add(vega.Collect, {pulse: fn});
+      c0 = df.add(Collect),
+      cf = df.add(CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0}),
+      f1 = df.add(ResolveFilter, {ignore:2, filter:cf, pulse:cf}),
+      o1 = df.add(Collect, {pulse: f1}),
+      f2 = df.add(ResolveFilter, {ignore:1, filter:cf, pulse:cf}),
+      o2 = df.add(Collect, {pulse: f2}),
+      fn = df.add(ResolveFilter, {ignore:0, filter:cf, pulse:cf}),
+      on = df.add(Collect, {pulse: fn});
 
   // -- add data
   df.pulse(c0, changeset().insert(data)).run();
@@ -85,8 +88,8 @@ tape('Crossfilter consolidates after remove', function(test) {
       df = new vega.Dataflow(),
       r1 = df.add([0, 3]),
       r2 = df.add([0, 3]),
-      c0 = df.add(vega.Collect),
-      cf = df.add(vega.CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0});
+      c0 = df.add(Collect),
+      cf = df.add(CrossFilter, {fields:[a,b], query:[r1,r2], pulse:c0});
 
   // -- add data
   df.pulse(c0, changeset().insert(data)).run();

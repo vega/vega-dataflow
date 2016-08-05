@@ -45,6 +45,8 @@
     <input id="cp" type="range" min="-90" max="90" value="0" step="1" /> Center &phi;<br/>
     <input id="pr" type="range" min="0" max="2" value="0.707106" step="0.1" /> Precision<br/>
     <script type="text/javascript">
+var vt = vega.transforms;
+
 var svg = document.querySelector('svg.vis'),
     graticule = svg.querySelector('.graticule'),
     gpaths = svg.querySelector('.paths'),
@@ -99,7 +101,7 @@ var lon = vega.field('lon'),
     cl = df.add(+document.querySelector('#cl').value),
     cp = df.add(+document.querySelector('#cp').value),
     pr = df.add(+document.querySelector('#pr').value),
-    pj = df.add(vega.Projection, {
+    pj = df.add(vt.Projection, {
       type: pt,
       scale: sc,
       precision: pr,
@@ -108,23 +110,23 @@ var lon = vega.field('lon'),
       rotate: [rl, rp, rg]
     }),
 
-    gg = df.add(vega.Graticule, {step: [15,15]}),
-    pg = df.add(vega.GeoPath, {projection:pj, pulse:gg}),
-    jg = df.add(vega.DataJoin, {item:items(graticule, 'path'), pulse:pg}),
-    cg = df.add(vega.Collect, {pulse:jg}),
-    eg = df.add(vega.Encode, {encoders:paths('none','#ddd'), pulse:cg}),
+    gg = df.add(vt.Graticule, {step: [15,15]}),
+    pg = df.add(vt.GeoPath, {projection:pj, pulse:gg}),
+    jg = df.add(vt.DataJoin, {item:items(graticule, 'path'), pulse:pg}),
+    cg = df.add(vt.Collect, {pulse:jg}),
+    eg = df.add(vt.Encode, {encoders:paths('none','#ddd'), pulse:cg}),
 
-    d0 = df.add(vega.Collect),
-    p0 = df.add(vega.GeoPath, {projection:pj, pulse:d0}),
-    j0 = df.add(vega.DataJoin, {item:items(gpaths, 'path'), pulse:p0}),
-    c0 = df.add(vega.Collect, {pulse:j0}),
-    e0 = df.add(vega.Encode, {encoders:paths('black','white'), pulse:c0}),
+    d0 = df.add(vt.Collect),
+    p0 = df.add(vt.GeoPath, {projection:pj, pulse:d0}),
+    j0 = df.add(vt.DataJoin, {item:items(gpaths, 'path'), pulse:p0}),
+    c0 = df.add(vt.Collect, {pulse:j0}),
+    e0 = df.add(vt.Encode, {encoders:paths('black','white'), pulse:c0}),
 
-    d1 = df.add(vega.Collect),
-    p1 = df.add(vega.GeoPoint, {projection:pj, fields:[lon, lat], pulse:d1}),
-    j1 = df.add(vega.DataJoin, {item:items(gpoints, 'circle'), pulse:p1}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:points, pulse:c1});
+    d1 = df.add(vt.Collect),
+    p1 = df.add(vt.GeoPoint, {projection:pj, fields:[lon, lat], pulse:d1}),
+    j1 = df.add(vt.DataJoin, {item:items(gpoints, 'circle'), pulse:p1}),
+    c1 = df.add(vt.Collect, {pulse:j1}),
+    e1 = df.add(vt.Encode, {encoders:points, pulse:c1});
 
 var ix = interactors(df, svg),
     cm = ix.mousemove.filter(function(e) { return e.buttons; }),

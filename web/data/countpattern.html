@@ -15,6 +15,7 @@
     Frequency Threshold<br/>
     <pre id="output"></pre>
     <script type="text/javascript">
+var tx = vega.transforms;
 var out = document.querySelector('#output');
 var area = document.querySelector('#text');
 
@@ -57,11 +58,11 @@ var df = new vega.Dataflow(),
     ft = df.add(4), // word frequency threshold
     ff = df.add(threshold, {freq:ft})
     rt = df.add(readText),
-    cp = df.add(vega.CountPattern, {field:get, case:'lower',
+    cp = df.add(tx.CountPattern, {field:get, case:'lower',
       pattern:'[\\w\']{2,}', stopwords:stopwords, pulse:rt}),
-    cc = df.add(vega.Collect, {pulse:cp}),
-    fc = df.add(vega.Filter, {test:ff, pulse:cc}),
-    c1 = df.add(vega.Collect, {pulse:fc}),
+    cc = df.add(tx.Collect, {pulse:cp}),
+    fc = df.add(tx.Filter, {test:ff, pulse:cc}),
+    c1 = df.add(tx.Collect, {pulse:fc}),
     up = df.add(updatePage, {pulse: c1});
 
 df.on(df.events(area, 'keyup').debounce(250), rt)

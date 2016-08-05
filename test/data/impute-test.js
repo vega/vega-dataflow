@@ -1,6 +1,8 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    Collect = vega.transforms.Collect,
+    Impute = vega.transforms.Impute;
 
 tape('Impute imputes missing tuples', function(test) {
   var data = [
@@ -13,8 +15,8 @@ tape('Impute imputes missing tuples', function(test) {
       c = vega.field('c'),
       df = new vega.Dataflow(),
       m  = df.add('value'),
-      co = df.add(vega.Collect),
-      im = df.add(vega.Impute, {field:y, method:m, value:-1, groupby:[c], orderby:[x], pulse:co}),
+      co = df.add(Collect),
+      im = df.add(Impute, {field:y, method:m, value:-1, groupby:[c], orderby:[x], pulse:co}),
       p;
 
   df.pulse(co, changeset().insert(data)).run();

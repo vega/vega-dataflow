@@ -64,6 +64,7 @@
       <rect id="inner" x="10" y="10" width="80" height="80"></rect>
     </svg>
     <script type="text/javascript">
+var tx = vega.transforms;
 data();
 layout();
 
@@ -116,18 +117,18 @@ function data() {
       fv = df.add(filter, {ft:ft}),
 
       // generate data
-      dg = df.add(vega.Generate, {size:dn, generator:gen}),
+      dg = df.add(tx.Generate, {size:dn, generator:gen}),
 
       // histogram of full data set
-      h1 = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:dg}),
-      c1 = df.add(vega.Collect, {pulse:h1}),
-      x1 = df.add(vega.Extent, {field:count, pulse:c1}),
+      h1 = df.add(tx.Aggregate, {groupby:bin, drop:false, pulse:dg}),
+      c1 = df.add(tx.Collect, {pulse:h1}),
+      x1 = df.add(tx.Extent, {field:count, pulse:c1}),
       v1 = df.add(updateChart, {el:'.hist .base > rect', extent:x1, pulse:c1}),
 
       // histogram of filtered data set
-      fl = df.add(vega.Filter, {test:fv, pulse:dg}),
-      h2 = df.add(vega.Aggregate, {groupby:bin, drop:false, pulse:fl}),
-      c2 = df.add(vega.Collect, {pulse:h2}),
+      fl = df.add(tx.Filter, {test:fv, pulse:dg}),
+      h2 = df.add(tx.Aggregate, {groupby:bin, drop:false, pulse:fl}),
+      c2 = df.add(tx.Collect, {pulse:h2}),
       v2 = df.add(updateChart, {el:'.hist .filt > rect', extent:x1, pulse:c2});
 
   var stream = df.events(window, 'mousemove');

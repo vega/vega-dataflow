@@ -17,6 +17,7 @@
     <input id="h" type="range" min="100" max="500" value="500"/> Height<br/>
     <input id="pad" type="range" min="0" max="50" value="4"/> Padding
     <script type="text/javascript">
+var tx = vega.transforms;
 var ingest = vega.Tuple.ingest;
 var svg = document.querySelector('svg.vis');
 
@@ -59,14 +60,14 @@ var p = vega.field('parent'),
     w  = df.add(+document.querySelector('#w').value),
     h  = df.add(+document.querySelector('#h').value),
     pd = df.add(+document.querySelector('#pad').value),
-    sc = df.add(vega.Scale, {type:'ordinal', scheme:'category20'}),
-    c0 = df.add(vega.Collect),
-    s0 = df.add(vega.Stratify, {key:key, parentKey:p, pulse:c0}),
-    tm = df.add(vega.Pack, {field:val, size:[w,h], padding:pd, pulse:s0}),
-    j1 = df.add(vega.DataJoin, {item:items(svg, 'circle'), pulse:tm}),
-    c1 = df.add(vega.Collect, {pulse:j1}),
-    e1 = df.add(vega.Encode, {encoders:encoders, sc:sc, pulse:c1}),
-    s1 = df.add(vega.Sieve, {pulse: e1});
+    sc = df.add(tx.Scale, {type:'ordinal', scheme:'category20'}),
+    c0 = df.add(tx.Collect),
+    s0 = df.add(tx.Stratify, {key:key, parentKey:p, pulse:c0}),
+    tm = df.add(tx.Pack, {field:val, size:[w,h], padding:pd, pulse:s0}),
+    j1 = df.add(tx.DataJoin, {item:items(svg, 'circle'), pulse:tm}),
+    c1 = df.add(tx.Collect, {pulse:j1}),
+    e1 = df.add(tx.Encode, {encoders:encoders, sc:sc, pulse:c1}),
+    s1 = df.add(tx.Sieve, {pulse: e1});
 
 df.pulse(c0, vega.changeset().insert(data))
   .on(df.events('#w', 'input'), w, value)

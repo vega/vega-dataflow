@@ -1,6 +1,7 @@
 var tape = require('tape'),
     vega = require('../../'),
-    changeset = vega.changeset;
+    changeset = vega.changeset,
+    tx = vega.transforms;
 
 tape('Aggregate aggregates tuples', function(test) {
   var data = [
@@ -11,14 +12,14 @@ tape('Aggregate aggregates tuples', function(test) {
   var key = vega.field('k'),
       val = vega.field('v'),
       df = new vega.Dataflow(),
-      col = df.add(vega.Collect),
-      agg = df.add(vega.Aggregate, {
+      col = df.add(tx.Collect),
+      agg = df.add(tx.Aggregate, {
         groupby: [key],
         fields: [val, val, val, val],
         ops: ['count', 'sum', 'min', 'max'],
         pulse: col
       }),
-      out = df.add(vega.Collect, {pulse: agg});
+      out = df.add(tx.Collect, {pulse: agg});
 
   // -- test adds
   df.pulse(col, changeset().insert(data)).run();
