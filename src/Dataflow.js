@@ -4,8 +4,8 @@ import events from './dataflow/events';
 import on from './dataflow/on';
 import {rank, rerank} from './dataflow/rank';
 import {pulse, touch, update} from './dataflow/update';
-import {ingest, request} from './dataflow/load';
-import {run, runAfter, enqueue, getPulse} from './dataflow/run';
+import {ingest, request, loadOptions} from './dataflow/load';
+import {run, runAsync, runAfter, enqueue, getPulse} from './dataflow/run';
 import changeset from './ChangeSet';
 import Heap from './util/Heap';
 import UniqueList from './util/UniqueList';
@@ -58,6 +58,7 @@ prototype.changeset = changeset;
 // DATA LOADING
 prototype.ingest = ingest;
 prototype.request = request;
+prototype.loadOptions = loadOptions;
 
 // EVENT HANDLING
 prototype.events = events;
@@ -65,6 +66,7 @@ prototype.on = on;
 
 // PULSE PROPAGATION
 prototype.run = run;
+prototype.runAsync = runAsync;
 prototype.runAfter = runAfter;
 prototype._enqueue = enqueue;
 prototype._getPulse = getPulse;

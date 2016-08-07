@@ -6,14 +6,18 @@ import {id, isArray, Info, Debug} from 'vega-util';
 /**
  * Runs the dataflow. This method will increment the current timestamp
  * and process all updated, pulsed and touched operators. When run for
- * the first time, all registered operators will be processed.
+ * the first time, all registered operators will be processed. If there
+ * are pending data loading operations, this method will return immediately
+ * without evaluating the dataflow. Instead, the dataflow will be
+ * asynchronously invoked when data loading completes. To track when dataflow
+ * evaluation completes, use the runAsync instead.
  */
 export function run() {
   if (!this._touched.length) {
     return 0; // nothing to do!
   }
 
-  if (this._requests > 0) {
+  if (this._pending) {
     this.info('Awaiting requests, delaying dataflow run.');
     return 0;
   }
@@ -80,6 +84,18 @@ export function run() {
   }
 
   return count;
+}
+
+/**
+ * Runs the dataflow and returns a Promise that resolves when the
+ * propagation cycle completes. The standard run method may exit early
+ * if there are pending data loading operations. In contrast, this
+ * method returns a Promise to allow callers to receive notification
+ * when dataflow evaluation completes.
+ * @return {Promise} - A promise that resolves to this dataflow.
+ */
+export function runAsync() {
+  return this._pending || Promise.resolve(this.run());
 }
 
 /**

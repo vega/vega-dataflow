@@ -1,28 +1,46 @@
 import {load, read} from 'vega-loader';
 
+export function ingest(target, data, format) {
+  return this.pulse(target, this.changeset().insert(read(data, format)));
+}
+
 export function loadOptions(_) {
   return arguments.length ? (this._loadopt = _, this) : this._loadopt;
 }
 
-export function request(target, url, format) {
-  var df = this;
+function loadPending(df) {
+  var pending = new Promise(function(accept) { resolve = accept; }),
+      resolve;
 
-  df._requests = 1 + (df._requests || 0);
+  pending.requests = 0;
 
-  function decrement() {
-    if (--df._requests === 0) df.runAfter(function() { df.run(); });
+  pending.done = function() {
+    if (--pending.requests === 0) {
+      df.runAfter(function() {
+        df._pending = null;
+        df.run();
+        resolve(df);
+      });
+    }
   }
 
-  load(url, df._loadopt)
-    .then(function(data) { return df.ingest(target, data, format); })
-    .then(decrement)
-    .catch(function(error) {
-      df.warn('Loading failed: ' + url, error);
-      decrement()
-    });
+  return (df._pending = pending);
 }
 
-export function ingest(target, data, format) {
-  this.pulse(target, this.changeset()
-      .insert(read(data, format)));
+export function request(target, url, format) {
+  var df = this,
+      pending = df._pending || loadPending(df);
+
+  pending.requests += 1;
+
+  load(url, df.loadOptions())
+    .then(
+      function(data) {
+        df.ingest(target, data, format);
+      },
+      function(error) {
+        df.warn('Loading failed: ' + url, error);
+        pending.done();
+      })
+    .then(pending.done);
 }
