@@ -42,5 +42,8 @@ export function request(target, url, format) {
         df.warn('Loading failed: ' + url, error);
         pending.done();
       })
-    .then(pending.done);
+    .then(pending.done)
+    .catch(function(error) {
+      df.error('Error after data loading.', error);
+    });
 }
