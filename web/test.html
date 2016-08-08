@@ -126,7 +126,7 @@ function data() {
       v1 = df.add(updateChart, {el:'.hist .base > rect', extent:x1, pulse:c1}),
 
       // histogram of filtered data set
-      fl = df.add(tx.Filter, {test:fv, pulse:dg}),
+      fl = df.add(tx.Filter, {expr:fv, pulse:dg}),
       h2 = df.add(tx.Aggregate, {groupby:bin, drop:false, pulse:fl}),
       c2 = df.add(tx.Collect, {pulse:h2}),
       v2 = df.add(updateChart, {el:'.hist .filt > rect', extent:x1, pulse:c2});

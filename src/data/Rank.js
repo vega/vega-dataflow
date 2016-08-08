@@ -23,6 +23,7 @@ prototype.transform = function(_, pulse) {
 
   var norm  = _.normalize,
       field = _.field,
+      as = _.as || 'rank',
       ranks = {},
       n = -1, rank;
 
@@ -33,18 +34,18 @@ prototype.transform = function(_, pulse) {
       if (ranks[v] == null) ranks[v] = ++n;
     });
     pulse.visit(pulse.SOURCE, norm && --n
-      ? function(t) { t.rank = ranks[field(t)] / n; }
-      : function(t) { t.rank = ranks[field(t)]; }
+      ? function(t) { t[as] = ranks[field(t)] / n; }
+      : function(t) { t[as] = ranks[field(t)]; }
     );
   } else {
     n += pulse.source.length;
     rank = -1;
     // Otherwise rank all the tuples together.
     pulse.visit(pulse.SOURCE, norm && n
-      ? function(t) { t.rank = ++rank / n; }
-      : function(t) { t.rank = ++rank; }
+      ? function(t) { t[as] = ++rank / n; }
+      : function(t) { t[as] = ++rank; }
     );
   }
 
-  return pulse.reflow().modifies('rank');
+  return pulse.reflow().modifies(as);
 };

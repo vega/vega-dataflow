@@ -244,9 +244,9 @@ var df = new vega.Dataflow(),
 
     dg  = df.add(tx.Generate, {size:dn, generator:gen}),
     ff  = [
-      df.add(tx.Filter, {test:rf1, pulse:dg}),
-      df.add(tx.Filter, {test:rf2, pulse:dg}),
-      df.add(tx.Filter, {test:rf3, pulse:dg})
+      df.add(tx.Filter, {expr:rf1, pulse:dg}),
+      df.add(tx.Filter, {expr:rf2, pulse:dg}),
+      df.add(tx.Filter, {expr:rf3, pulse:dg})
     ];
 
 // add histograms

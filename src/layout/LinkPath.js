@@ -35,6 +35,7 @@ prototype.transform = function(_, pulse) {
       sy = _.sourceY || sourceY,
       tx = _.targetX || targetX,
       ty = _.targetY || targetY,
+      as = _.as || 'path',
       orient = _.orient || 'vertical',
       shape = _.shape || 'line',
       path = PATHS.get(shape + '-' + orient) || PATHS.get(shape);
@@ -44,7 +45,7 @@ prototype.transform = function(_, pulse) {
   }
 
   function set(t) {
-    t.path = path(sx(t), sy(t), tx(t), ty(t));
+    t[as] = path(sx(t), sy(t), tx(t), ty(t));
   }
 
   if (_.modified()) {
@@ -53,7 +54,7 @@ prototype.transform = function(_, pulse) {
     pulse.visit(pulse.ALL, set);
   }
 
-  return pulse.modifies('path');
+  return pulse.modifies(as);
 };
 
 // -- Link Path Generation Methods -----

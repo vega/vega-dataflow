@@ -16,7 +16,7 @@ export default function Fold(params) {
 
 var prototype = inherits(Fold, Transform);
 
-function key(f) {
+function keyFunction(f) {
   return f.fields.join('|');
 }
 
@@ -24,7 +24,10 @@ prototype.transform = function(_, pulse) {
   var cache = this.value,
       reset = _.modified('fields'),
       fields = _.fields,
-      keys = fields.map(key),
+      as = _.as || ['key', 'value'],
+      key = as[0],
+      value = as[1],
+      keys = fields.map(keyFunction),
       n = fields.length,
       stamp = pulse.stamp,
       out = pulse.fork(),
@@ -34,8 +37,8 @@ prototype.transform = function(_, pulse) {
     var f = (cache[t._id] = Array(n)); // create cache of folded tuples
     for (var i=0, ft; i<n; ++i) { // for each key, derive folds
       ft = (f[i] = derive(t));
-      ft.key = keys[i];
-      ft.value = fields[i](t);
+      ft[key] = keys[i];
+      ft[value] = fields[i](t);
       out.add.push(ft);
     }
   }
@@ -45,8 +48,8 @@ prototype.transform = function(_, pulse) {
     for (var i=0, ft; i<n; ++i) { // for each key, rederive folds
       if (!(mask & (1 << i))) continue; // field is unchanged
       ft = rederive(t, f[i], stamp);
-      ft.key = keys[i];
-      ft.value = fields[i](t);
+      ft[key] = keys[i];
+      ft[value] = fields[i](t);
       out.mod.push(ft);
     }
   }
@@ -70,5 +73,5 @@ prototype.transform = function(_, pulse) {
     });
   }
 
-  return out.modifies(['key', 'value']);
+  return out.modifies(as);
 };

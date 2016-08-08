@@ -61,7 +61,7 @@ var df = new vega.Dataflow(),
     cp = df.add(tx.CountPattern, {field:get, case:'lower',
       pattern:'[\\w\']{2,}', stopwords:stopwords, pulse:rt}),
     cc = df.add(tx.Collect, {pulse:cp}),
-    fc = df.add(tx.Filter, {test:ff, pulse:cc}),
+    fc = df.add(tx.Filter, {expr:ff, pulse:cc}),
     c1 = df.add(tx.Collect, {pulse:fc}),
     up = df.add(updatePage, {pulse: c1});
 

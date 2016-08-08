@@ -20,7 +20,10 @@ export default function Stack(params) {
 var prototype = inherits(Stack, Transform);
 
 prototype.transform = function(_, pulse) {
-  var field = _.field,
+  var as = _.as || ['y0', 'y1'],
+      y0 = as[0],
+      y1 = as[1],
+      field = _.field,
       offset = _.offset,
       groups, group, i, j, n, m,
       max, off, scale, t, a, b, v;
@@ -40,12 +43,12 @@ prototype.transform = function(_, pulse) {
       a = b; // use previous value for start point
       v += field(t);
       b = scale * v + off; // compute end point
-      t.y0 = a;
-      t.y1 = b;
+      t[y0] = a;
+      t[y1] = b;
     }
   }
 
-  return pulse.reflow().modifies(['y0', 'y1']);
+  return pulse.reflow().modifies(as);
 };
 
 function partition(data, groupby, sort, field) {

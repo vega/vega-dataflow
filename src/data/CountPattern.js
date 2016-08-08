@@ -40,6 +40,7 @@ prototype.transform = function(_, pulse) {
       match = this._match,
       stop = this._stop,
       get = _.field,
+      as = _.as || ['text', 'count'],
       add = process(function(t) { counts[t] = 1 + (counts[t] || 0); }),
       rem = process(function(t) { counts[t] -= 1; });
 
@@ -50,7 +51,7 @@ prototype.transform = function(_, pulse) {
     pulse.visit(pulse.REM, rem);
   }
 
-  return this._finish(pulse); // generate output tuples
+  return this._finish(pulse, as); // generate output tuples
 };
 
 prototype._parameterCheck = function(_, pulse) {
@@ -74,9 +75,11 @@ prototype._parameterCheck = function(_, pulse) {
   return init;
 }
 
-prototype._finish = function(pulse) {
+prototype._finish = function(pulse, as) {
   var counts = this._counts,
       tuples = this._tuples || (this._tuples = {}),
+      text = as[0],
+      count = as[1],
       out = pulse.fork(),
       w, t, c;
 
@@ -84,17 +87,19 @@ prototype._finish = function(pulse) {
     t = tuples[w];
     c = counts[w] || 0;
     if (!t && c) {
-      tuples[w] = (t = ingest({text: w, count: c}));
+      tuples[w] = (t = ingest({}));
+      t[text] = w;
+      t[count] = c;
       out.add.push(t);
     } else if (c === 0) {
       if (t) out.rem.push(t);
       counts[w] = null;
       tuples[w] = null;
-    } else if (t.count !== c) {
-      t.count = c;
+    } else if (t[count] !== c) {
+      t[count] = c;
       out.mod.push(t);
     }
   }
 
-  return out.modifies(['text', 'count']);
+  return out.modifies(as);
 };

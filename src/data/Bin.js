@@ -1,4 +1,4 @@
-import Operator from '../Operator';
+import Transform from '../Transform';
 import {inherits, accessor, accessorFields, accessorName} from 'vega-util';
 import {bin} from 'vega-statistics';
 
@@ -10,13 +10,30 @@ import {bin} from 'vega-statistics';
  * @param {function(object): *} params.field - The data field to bin.
  */
 export default function Bin(params) {
-  Operator.call(this, null, update, params);
+  Transform.call(this, null, params);
 }
 
-inherits(Bin, Operator);
+var prototype = inherits(Bin, Transform);
 
-function update(_) {
-  if (this.value && !_.modified()) return this.value;
+prototype.transform = function(_, pulse) {
+  var bins = this._bins(_),
+      step = bins.step,
+      flag = pulse.modified(accessorFields(_.field)) ? pulse.ADD_MOD : pulse.ADD,
+      as = _.as || ['bin0', 'bin1'],
+      b0 = as[0],
+      b1 = as[1];
+
+  pulse.visit(flag, function(t) {
+    t[b1] = (t[b0] = bins(t)) + step;
+  });
+
+  return pulse.modified(['bin0', 'bin1']);
+};
+
+prototype._bins = function(_) {
+  if (this.value && !_.modified()) {
+    return this.value;
+  }
 
   var field = _.field,
       bins  = bin(_),
@@ -28,9 +45,12 @@ function update(_) {
     return v == null ? null
       : start + step * Math.floor((+v - start) / step);
   };
-  return accessor(
+
+  f.step = step;
+
+  return this.value = accessor(
     f,
-    accessorFields(field.fields),
+    accessorFields(field),
     _.name || 'bin_' + accessorName(field)
   );
-}
+};

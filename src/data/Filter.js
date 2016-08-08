@@ -5,8 +5,8 @@ import {inherits} from 'vega-util';
  * Filters data tuples according to a predicate function.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): *} params.test - The predicate function that
- *   determines a tuple's filter status. Truthy values pass the filter.
+ * @param {function(object): *} params.expr - The predicate expression function
+ *   that determines a tuple's filter status. Truthy values pass the filter.
  */
 export default function Filter(params) {
   Transform.call(this, {}, params);
@@ -15,7 +15,7 @@ export default function Filter(params) {
 var prototype = inherits(Filter, Transform);
 
 prototype.transform = function(_, pulse) {
-  var test = _.test,
+  var test = _.expr,
       cache = this.value, // cache ids of filtered tuples
       output = pulse.fork(),
       add = output.add,

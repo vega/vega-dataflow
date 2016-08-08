@@ -1,6 +1,5 @@
 import Transform from '../Transform';
-import {accessor, error, inherits} from 'vega-util';
-import {map} from 'd3-collection';
+import {error, inherits} from 'vega-util';
 import {
   tree, cluster, pack, partition,
   treemap, treemapBinary,
@@ -8,24 +7,26 @@ import {
   treemapSquarify, treemapResquarify
 } from 'd3-hierarchy';
 
-var TILES = map()
-  .set('binary', treemapBinary)
-  .set('dice', treemapDice)
-  .set('slice', treemapSlice)
-  .set('slicedice', treemapSliceDice)
-  .set('squarify', treemapSquarify)
-  .set('resquarify', treemapResquarify);
+var Tiles = {
+  binary: treemapBinary,
+  dice: treemapDice,
+  slice: treemapSlice,
+  slicedice: treemapSliceDice,
+  squarify: treemapSquarify,
+  resquarify: treemapResquarify
+};
 
-var LAYOUTS = map()
-  .set('tidy', tree)
-  .set('cluster', cluster);
+var Layouts = {
+  tidy: tree,
+  cluster: cluster
+};
 
 /**
  * Tree layout generator. Supports both 'tidy' and 'cluster' layouts.
  */
 function treeLayout(method) {
   var m = method || 'tidy';
-  if (LAYOUTS.has(m)) return LAYOUTS.get(m)();
+  if (Layouts.hasOwnProperty(m)) return Layouts[m]();
   else error('Unrecognized Tree layout method: ' + m);
 }
 
@@ -40,7 +41,7 @@ function treemapLayout() {
     if (t.ratio) x.tile(t.ratio(_));
   };
   x.method = function(_) {
-    if (TILES.has(_)) x.tile(TILES.get(_));
+    if (Tiles.hasOwnProperty(_)) x.tile(Tiles[_]);
     else error('Unrecognized Treemap layout method: ' + _);
   };
   return x;
@@ -62,44 +63,38 @@ prototype.transform = function(_, pulse) {
     error(this.constructor.name
       + ' transform requires a backing tree data source.');
   }
+
   var layout = this.layout(_.method),
-      root = pulse.source.root;
+      fields = this.fields,
+      root = pulse.source.root,
+      as = _.as || fields;
 
   if (_.field) root.sum(_.field);
   if (_.sort) root.sort(_.sort);
 
-  this.setParams(layout, _);
+  setParams(layout, this.params, _);
   try {
     this.value = layout(root);
   } catch (err) {
     error(err);
   }
-  root.each(this.setFields);
+  root.each(function(node) { setFields(node, fields, as); });
 
-  return pulse.reflow().modifies(this.setParams.fields); // fork?
+  return pulse.reflow().modifies(as);
 };
 
-/**
- * Compile a function that sets parameters on a layout instance.
- */
-function setParams(params) {
-  var code = '', p;
-  for (var i=0, n=params.length; i<n; ++i) {
-    p = '"' + params[i] + '"';
-    code += 'if(' + p + ' in _) layout[' + p + '](_[' + p + ']);'
+function setParams(layout, params, _) {
+  for (var p, i=0, n=params.length; i<n; ++i) {
+    p = params[i];
+    if (p in _) layout[p](_[p]);
   }
-  return Function('layout', '_', code);
 }
 
-/**
- * Compile a function that writes layout results to output fields.
- */
-function setFields(fields) {
-  var code = 'var t=node.data;'
+function setFields(node, fields, as) {
+  var t = node.data;
   for (var i=0, n=fields.length; i<n; ++i) {
-    code += 't["' + fields[i] + '"]=node["' + fields[i] + '"];';
+    t[as[i]] = node[fields[i]];
   }
-  return accessor(Function('node', code), fields);
 }
 
 /**
@@ -113,8 +108,8 @@ export function Tree(params) {
 }
 inherits(Tree, HierarchyLayout);
 Tree.prototype.layout = treeLayout;
-Tree.prototype.setParams = setParams(['size', 'nodeSize', 'separation']);
-Tree.prototype.setFields = setFields(['x', 'y']);
+Tree.prototype.params = ['size', 'nodeSize', 'separation'];
+Tree.prototype.fields = ['x', 'y'];
 
 /**
  * Treemap layout.
@@ -127,12 +122,12 @@ export function Treemap(params) {
 }
 inherits(Treemap, HierarchyLayout);
 Treemap.prototype.layout = treemapLayout;
-Treemap.prototype.setParams = setParams([
+Treemap.prototype.params = [
   'method', 'ratio', 'size', 'round',
   'padding', 'paddingInner', 'paddingOuter',
   'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'
-]);
-Treemap.prototype.setFields = setFields(['x0', 'y0', 'x1', 'y1']);
+];
+Treemap.prototype.fields = ['x0', 'y0', 'x1', 'y1'];
 
 /**
  * Partition tree layout.
@@ -145,8 +140,8 @@ export function Partition(params) {
 }
 inherits(Partition, HierarchyLayout);
 Partition.prototype.layout = partition;
-Partition.prototype.setParams = setParams(['size', 'round', 'padding']);
-Partition.prototype.setFields = Treemap.prototype.setFields;
+Partition.prototype.params = ['size', 'round', 'padding'];
+Partition.prototype.fields = Treemap.prototype.fields;
 
 /**
  * Packed circle tree layout.
@@ -159,5 +154,5 @@ export function Pack(params) {
 }
 inherits(Pack, HierarchyLayout);
 Pack.prototype.layout = pack;
-Pack.prototype.setParams = setParams(['size', 'padding']);
-Pack.prototype.setFields = setFields(['x', 'y', 'r']);
+Pack.prototype.params = ['size', 'padding'];
+Pack.prototype.fields = ['x', 'y', 'r'];

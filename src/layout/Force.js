@@ -1,23 +1,26 @@
 import Transform from '../Transform';
 import {array, error, inherits, isFunction} from 'vega-util';
-import {map} from 'd3-collection';
 import {
   forceSimulation, forceCenter, forceCollide,
   forceManyBody, forceLink, forceX, forceY
 } from 'd3-force';
 
-var FORCE_MAP = map()
-  .set('center', forceCenter)
-  .set('collide', forceCollide)
-  .set('nbody', forceManyBody)
-  .set('link', forceLink)
-  .set('x', forceX)
-  .set('y', forceY);
+var ForceMap = {
+  center: forceCenter,
+  collide: forceCollide,
+  nbody: forceManyBody,
+  link: forceLink,
+  x: forceX,
+  y: forceY
+};
 
-var FORCES = 'forces',
-    PARAMS = ['alpha', 'alphaMin', 'alphaTarget', 'velocityDecay', 'drag', 'forces'],
-    CONFIG = ['static', 'iterations'],
-    FIELDS = ['x', 'y', 'vx', 'vy', 'fx', 'fy'];
+var Forces = 'forces',
+    ForceParams = [
+      'alpha', 'alphaMin', 'alphaTarget',
+      'velocityDecay', 'drag', 'forces'
+    ],
+    ForceConfig = ['static', 'iterations'],
+    ForceOutput = ['x', 'y', 'vx', 'vy', 'fx', 'fy'];
 
 /**
  * Force simulation layout.
@@ -34,7 +37,7 @@ var prototype = inherits(Force, Transform);
 prototype.transform = function(_, pulse) {
   var sim = this.value,
       change = pulse.changed(pulse.ADD_REM),
-      params = _.modified(PARAMS),
+      params = _.modified(ForceParams),
       iters = _.iterations || 300;
 
   // configure simulation
@@ -55,7 +58,7 @@ prototype.transform = function(_, pulse) {
   }
 
   // run simulation
-  if (params || change || pulse.changed() || _.modified(CONFIG)) {
+  if (params || change || pulse.changed() || _.modified(ForceConfig)) {
     sim.alpha(Math.max(sim.alpha(), _.alpha || 1))
        .alphaDecay(1 - Math.pow(sim.alphaMin(), 1 / iters));
 
@@ -67,7 +70,7 @@ prototype.transform = function(_, pulse) {
     }
   }
 
-  return pulse.reflow().modifies(FIELDS);
+  return pulse.reflow().modifies(ForceOutput);
 };
 
 function rerun(df, op) {
@@ -90,18 +93,18 @@ function simulation(nodes, _) {
 function setup(sim, _, init) {
   var f = array(_.forces), i, n, p;
 
-  for (i=0, n=PARAMS.length; i<n; ++i) {
-    p = PARAMS[i];
-    if (p !== FORCES && _.modified(p)) sim[p](_[p]);
+  for (i=0, n=ForceParams.length; i<n; ++i) {
+    p = ForceParams[i];
+    if (p !== Forces && _.modified(p)) sim[p](_[p]);
   }
 
   for (i=0, n=f.length; i<n; ++i) {
-    if (init || _.modified(FORCES, i)) {
-      sim.force(FORCES + i, getForce(f[i]));
+    if (init || _.modified(Forces, i)) {
+      sim.force(Forces + i, getForce(f[i]));
     }
   }
   for (n=(sim.numForces || 0); i<n; ++i) {
-    sim.force(FORCES + i, null); // remove
+    sim.force(Forces + i, null); // remove
   }
 
   return sim.numForces = f.length, sim;
@@ -109,8 +112,10 @@ function setup(sim, _, init) {
 
 function getForce(_) {
   var f, p;
-  if (!FORCE_MAP.has(_.force)) error('Unrecognized force: ' + _.force);
-  f = FORCE_MAP.get(_.force)();
+  if (!ForceMap.hasOwnProperty(_.force)) {
+    error('Unrecognized force: ' + _.force);
+  }
+  f = ForceMap[_.force]();
   for (p in _) if (isFunction(f[p])) f[p](_[p]);
   return f;
 }
