@@ -12,7 +12,7 @@ function reset() {
  * @param {Tuple} t - The input tuple.
  * @return the tuple id.
  */
-function id(t) {
+function tupleid(t) {
   return t._id;
 }
 
@@ -75,6 +75,6 @@ function replace(t, d) {
 }
 
 export {
-  reset, id, ingest,
+  reset, tupleid, ingest,
   replace, derive, rederive
 };

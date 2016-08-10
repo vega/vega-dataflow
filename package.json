@@ -19,29 +19,20 @@
     "url": "https://github.com/uwdata/vega-dataflow.git"
   },
   "scripts": {
-    "build": "npm run test && uglifyjs build/vega-dataflow.js -c -m -o build/vega-dataflow.min.js",
-    "pretest": "rm -rf build && mkdir build && json2module package.json > build/package.js && bin/rollup",
-    "test": "tape 'test/**/*-test.js' && eslint index.js src test"
+    "pretest": "rm -rf build && mkdir build && rollup -g d3-array:d3,vega-loader:vega,vega-statistics:vega,vega-util:vega -f umd -n vega -o build/vega-dataflow.js -- index.js",
+    "test": "tape 'test/**/*-test.js' && eslint index.js src test",
+    "prepublish": "npm run test && uglifyjs build/vega-dataflow.js -c -m -o build/vega-dataflow.min.js",
+    "postpublish": "VERSION=`node -e 'console.log(require(\"./package.json\").version)'`; git push && git push --tags && zip -j build/vega-dataflow.zip -- LICENSE README.md build/vega-dataflow.js build/vega-dataflow.min.js"
   },
   "dependencies": {
     "d3-array": "1",
-    "d3-collection": "1",
-    "d3-force": "1",
-    "d3-format": "1",
-    "d3-geo": "1",
-    "d3-hierarchy": "1",
-    "d3-scale": "1",
-    "d3-scale-chromatic": "1",
-    "d3-voronoi": "1",
     "vega-loader": "1",
     "vega-statistics": "1",
     "vega-util": "1"
   },
   "devDependencies": {
     "eslint": "2",
-    "json2module": "0.0",
     "rollup": "0.34",
-    "rollup-plugin-node-resolve": "1",
     "tape": "4",
     "uglify-js": "2"
   }
