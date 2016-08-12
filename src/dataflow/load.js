@@ -44,6 +44,6 @@ export function request(target, url, format) {
       })
     .then(pending.done)
     .catch(function(error) {
-      df.error('Error after data loading.', error);
+      df.error(error);
     });
 }
