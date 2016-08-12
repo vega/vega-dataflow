@@ -32,5 +32,5 @@ prototype.transform = function(_, pulse) {
   }
 
   this.modified(mod);
-  return pulse;
+  return pulse.fork();
 };
