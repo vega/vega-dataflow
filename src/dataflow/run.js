@@ -12,7 +12,7 @@ import {id, isArray, Info, Debug} from 'vega-util';
  * asynchronously invoked when data loading completes. To track when dataflow
  * evaluation completes, use the runAsync instead.
  */
-export function run() {
+export function run(encode) {
   if (!this._touched.length) {
     return 0; // nothing to do!
   }
@@ -27,7 +27,7 @@ export function run() {
       level = df.logLevel(),
       op, next, dt;
 
-  df._pulse = new Pulse(df, ++df._clock);
+  df._pulse = new Pulse(df, ++df._clock, encode);
 
   if (level >= Info) {
     dt = Date.now();
@@ -46,7 +46,7 @@ export function run() {
       if (op.rank !== op.qrank) { df._enqueue(op, true); continue; }
 
       // otherwise, evaluate the operator
-      next = op.run(df._getPulse(op));
+      next = op.run(df._getPulse(op, encode));
 
       if (level >= Debug) {
         df.debug(op.id, next === StopPropagation ? 'STOP' : '', op);
@@ -140,13 +140,14 @@ export function enqueue(op, force) {
  * Else if the pulse on the upstream source operator is current, we use that.
  * Else we use the pulse from the pulse map, but copy the source tuple array.
  */
-export function getPulse(op) {
+export function getPulse(op, encode) {
   var s = op.source,
       stamp = this._clock,
       p, q;
 
   if (s && isArray(s)) {
-    return new MultiPulse(this, stamp, s.map(function(_) { return _.pulse; }));
+    p = s.map(function(_) { return _.pulse; });
+    return new MultiPulse(this, stamp, p, encode);
   } else {
     q = this._pulses[op.id];
     p = (s && (s=s.pulse) && s.stamp === stamp && q.target !== op) ? s : q;

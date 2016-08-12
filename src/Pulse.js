@@ -34,14 +34,14 @@ var ADD       = (1 << 0),
  * @constructor
  * @param {Dataflow} dataflow - The backing dataflow instance.
  */
-export default function Pulse(dataflow, stamp) {
+export default function Pulse(dataflow, stamp, encode) {
   this.dataflow = dataflow;
   this.stamp = stamp == null ? -1 : stamp;
   this.add = [];
   this.rem = [];
   this.mod = [];
   this.fields = null;
-  this.encode = null;
+  this.encode = encode || null;
 }
 
 var prototype = Pulse.prototype;

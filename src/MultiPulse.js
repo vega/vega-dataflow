@@ -13,7 +13,7 @@ import {error, inherits, isArray} from 'vega-util';
  * @param {number} stamp - The timestamp.
  * @param {Array<Pulse>} pulses - The sub-pulses for this multi-pulse.
  */
-export default function MultiPulse(dataflow, stamp, pulses) {
+export default function MultiPulse(dataflow, stamp, pulses, encode) {
   var p = this,
       c = 0,
       pulse, hash, i, n, f;
@@ -21,7 +21,7 @@ export default function MultiPulse(dataflow, stamp, pulses) {
   this.dataflow = dataflow;
   this.stamp = stamp;
   this.fields = null;
-  this.encode = null;
+  this.encode = encode || null;
   this.pulses = pulses;
 
   for (i=0, n=pulses.length; i<n; ++i) {
