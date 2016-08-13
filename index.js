@@ -29,7 +29,6 @@ import Apply from './src/transforms/Apply';
 import Bin from './src/transforms/Bin';
 import Collect from './src/transforms/Collect';
 import Compare from './src/transforms/Compare';
-import CountIndex from './src/transforms/CountIndex';
 import CountPattern from './src/transforms/CountPattern';
 import Extent from './src/transforms/Extent';
 import Facet from './src/transforms/Facet';
@@ -83,7 +82,6 @@ register(RankDefinition, Rank);
 register(SampleDefinition, Sample);
 
 transform('Compare', Compare);
-transform('CountIndex', CountIndex);
 transform('Facet', Facet);
 transform('Field', Field);
 transform('Generate', Generate);
