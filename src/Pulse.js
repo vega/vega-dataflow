@@ -14,7 +14,8 @@ var ADD       = (1 << 0),
     ALL       = ADD | REM | MOD,
     REFLOW    = (1 << 3),
     SOURCE    = (1 << 4),
-    NO_SOURCE = (1 << 5);
+    NO_SOURCE = (1 << 5),
+    NO_FIELDS = (1 << 6);
 
 /**
  * A Pulse enables inter-operator communication during a run of the
@@ -100,6 +101,12 @@ prototype.SOURCE = SOURCE;
 prototype.NO_SOURCE = NO_SOURCE;
 
 /**
+ * Boolean flag indicating that field modifications should be
+ * suppressed when creating a forked pulse.
+ */
+prototype.NO_FIELDS = NO_FIELDS;
+
+/**
  * Creates a new pulse based on the values of this pulse.
  * The dataflow, time stamp and field modification values are copied over.
  * By default, new empty ADD, REM and MOD arrays are created.
@@ -132,7 +139,7 @@ prototype.init = function(src, flags) {
   p.stamp = src.stamp;
   p.source = (flags & NO_SOURCE) ? null : src.source;
   p.encode = src.encode;
-  if (src.fields) p.fields = src.fields;
+  if (src.fields && !(flags & NO_FIELDS)) p.fields = src.fields;
   p.add = (flags & ADD) ? (p.addF = src.addF, src.add) : (p.addF = null, []);
   p.rem = (flags & REM) ? (p.remF = src.remF, src.rem) : (p.remF = null, []);
   p.mod = (flags & MOD) ? (p.modF = src.modF, src.mod) : (p.modF = null, []);
