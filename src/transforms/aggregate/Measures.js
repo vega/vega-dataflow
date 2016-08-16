@@ -113,16 +113,16 @@ export var Aggregates = {
   }),
   'min': measure({
     name: 'min',
-    init: 'this.min = +Infinity;',
-    add:  'if (v < this.min) this.min = v;',
+    init: 'this.min = null;',
+    add:  'if (v < this.min || this.min === null) this.min = v;',
     rem:  'if (v <= this.min) this.min = NaN;',
     set:  'this.min = (isNaN(this.min) ? cell.data.min(this.get) : this.min)',
     str:  ['values'], idx: 4
   }),
   'max': measure({
     name: 'max',
-    init: 'this.max = -Infinity;',
-    add:  'if (v > this.max) this.max = v;',
+    init: 'this.max = null;',
+    add:  'if (v > this.max || this.max === null) this.max = v;',
     rem:  'if (v >= this.max) this.max = NaN;',
     set:  'this.max = (isNaN(this.max) ? cell.data.max(this.get) : this.max)',
     str:  ['values'], idx: 4
