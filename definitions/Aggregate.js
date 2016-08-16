@@ -2,7 +2,7 @@ export default {
   "type": "Aggregate",
   "metadata": {"generates": true, "changes": true},
   "params": [
-    { "name": "groupby", "type": "field", "array": true, "required": true },
+    { "name": "groupby", "type": "field", "array": true },
     { "name": "fields", "type": "field", "array": true },
     { "name": "ops", "type": "enum", "array": true,
       "values": [
