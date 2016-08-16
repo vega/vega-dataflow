@@ -34,7 +34,8 @@ export default function Aggregate(params) {
   this._dnames = []; // group-by dimension names
 
   this._measures = []; // collection of aggregation monoids
-  this._count = false; // flag indicating only count aggregation
+  this._countOnly = false; // flag indicating only count aggregation
+  this._counts = null; // collection of count fields
   this._prev = null;   // previous aggregation cells
 
   this._inputs = null;  // array of dependent input tuple field names
@@ -95,7 +96,8 @@ prototype.init = function(_) {
     : cellkey;
 
   // initialize aggregate measures
-  this._count = true;
+  this._countOnly = true;
+  this._counts = [];
   this._measures = [];
 
   var fields = _.fields || [null],
@@ -113,10 +115,17 @@ prototype.init = function(_) {
     field = fields[i];
     op = ops[i];
 
+    if (field == null && op !== 'count') {
+      error('Null aggregate field specified.');
+    }
     mname = accessorName(field);
     outname = measureName(op, mname, as[i]);
     outputs.push(outname);
-    if (!field) continue;
+
+    if (op === 'count') {
+      this._counts.push(outname);
+      continue;
+    }
 
     m = map[mname];
     if (!m) {
@@ -126,7 +135,7 @@ prototype.init = function(_) {
       this._measures.push(m);
     }
 
-    if (op !== 'count') this._count = false;
+    if (op !== 'count') this._countOnly = false;
     m.push(createMeasure(op, outname));
   }
 
@@ -182,7 +191,7 @@ prototype.newcell = function(key, t) {
     store: false
   };
 
-  if (!this._count) {
+  if (!this._countOnly) {
     var measures = this._measures,
         n = measures.length, i;
 
@@ -219,7 +228,7 @@ prototype.add = function(t) {
       agg, i, n;
 
   cell.num += 1;
-  if (this._count) return;
+  if (this._countOnly) return;
 
   if (cell.store) cell.data.add(t);
 
@@ -235,7 +244,7 @@ prototype.rem = function(t) {
       agg, i, n;
 
   cell.num -= 1;
-  if (this._count) return;
+  if (this._countOnly) return;
 
   if (cell.store) cell.data.rem(t);
 
@@ -246,7 +255,9 @@ prototype.rem = function(t) {
 };
 
 prototype.celltuple = function(cell) {
-  var tuple = cell.tuple, agg, i, n;
+  var tuple = cell.tuple,
+      counts = this._counts,
+      agg, i, n;
 
   // consolidate stored values
   if (cell.store) {
@@ -254,9 +265,10 @@ prototype.celltuple = function(cell) {
   }
 
   // update tuple properties
-  if (this._count) {
-    tuple.count = cell.num;
-  } else {
+  for (i=0, n=counts.length; i<n; ++i) {
+    tuple[counts[i]] = cell.num;
+  }
+  if (!this._countOnly) {
     agg = cell.agg;
     for (i=0, n=agg.length; i<n; ++i) {
       agg[i].set();
