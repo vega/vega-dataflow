@@ -22,7 +22,7 @@ prototype.transform = function(_, pulse) {
       flow = _.subflow,
       field = _.field;
 
-  if (_.modified('field') || pulse.modified(field.fields)) {
+  if (_.modified('field') || field && pulse.modified(field.fields)) {
     error('PreFacet does not support field modification.');
   }
 
@@ -30,12 +30,12 @@ prototype.transform = function(_, pulse) {
 
   pulse.visit(pulse.ADD, function(t) {
     var sf = self.subflow(t._id, flow, pulse);
-    field(t).forEach(function(_) { sf.add(ingest(_)); });
+    field ? field(t).forEach(function(_) { sf.add(ingest(_)); }) : sf.add(t);
   });
 
   pulse.visit(pulse.REM, function(t) {
     var sf = self.subflow(t._id, flow, pulse);
-    field(t).forEach(function(_) { sf.rem(_); });
+    field ? field(t).forEach(function(_) { sf.rem(_); }) : sf.rem(t);
   });
 
   return pulse;
