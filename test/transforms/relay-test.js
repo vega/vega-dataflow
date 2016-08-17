@@ -5,13 +5,32 @@ var tape = require('tape'),
     Collect = vega.transforms.Collect,
     Relay = vega.transforms.Relay;
 
+tape('Relay propagates pulse', function(test) {
+  var data = [{'id': 0}, {'id': 1}];
+
+  var df = new vega.Dataflow(),
+      c = df.add(Collect),
+      n = df.add(Relay, {derive: false, pulse:c}),
+      p;
+
+  df.pulse(c, changeset().insert(data)).run();
+  p = n.pulse;
+  test.equal(p, c.pulse);
+  test.equal(p.source, c.value);
+  test.equal(p.add.length, 2);
+  test.equal(p.rem.length, 0);
+  test.equal(p.mod.length, 0);
+
+  test.end();
+});
+
 tape('Relay relays derived tuples', function(test) {
   var data = [{'id': 0}, {'id': 1}];
 
   var id = util.field('id'),
       df = new vega.Dataflow(),
       c = df.add(Collect),
-      r = df.add(Relay, {pulse:c}),
+      r = df.add(Relay, {derive: true, pulse:c}),
       p;
 
   df.pulse(c, changeset().insert(data)).run();

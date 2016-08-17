@@ -114,11 +114,27 @@ prototype.NO_FIELDS = NO_FIELDS;
  *   tuple arrays should be copied to the new pulse. The supported flag values
  *   are ADD, REM and MOD. Array references are copied directly: new array
  *   instances are not created.
- * @return {Pulse}
+ * @return {Pulse} - The forked pulse instance.
  * @see init
  */
 prototype.fork = function(flags) {
   return new Pulse(this.dataflow).init(this, flags);
+};
+
+/**
+ * Returns a pulse that adds all tuples from a backing source. This is
+ * useful for cases where operators are added to a dataflow after an
+ * upstream data pipeline has already been processed, ensuring that
+ * new operators can observe all tuples within a stream.
+ * @return {Pulse} - A pulse instance with all source tuples included
+ *   in the add array. If the current pulse already has all source
+ *   tuples in its add array, it is returned directly. If the current
+ *   pulse does not have a backing source, it is returned directly.
+ */
+prototype.addAll = function() {
+  var p = this;
+  return (!this.source || this.source.length === this.add.length) ? p
+    : (p = new Pulse(this.dataflow).init(this), p.add = p.source, p);
 };
 
 /**
