@@ -21,7 +21,7 @@ prototype.transform = function(_, pulse) {
       sort = _.sort,
       data = this.value,
       push = function(t) { data.push(t); },
-      n = 0, map, adds;
+      n = 0, map;
 
   if (out.rem.length) { // build id map and filter data array
     map = {};
@@ -30,16 +30,14 @@ prototype.transform = function(_, pulse) {
   }
 
   if (sort) {
+    // if sort criteria change, re-sort the full data array
     if (_.modified('sort') || pulse.modified(sort.fields)) {
-      // need to re-sort the full data array
-      out.visit(out.ADD, push);
       data.sort(sort);
       mod = true;
-    } else if (add) {
-      // sort adds only, then merge
-      adds = [];
-      out.visit(out.ADD, function(t) { adds.push(t); });
-      data = merge(sort, data, adds.sort(sort));
+    }
+    // if added tuples, sort them in place and then merge
+    if (add) {
+      data = merge(sort, data, out.add.sort(sort));
     }
   } else if (add) {
     // no sort, so simply add new tuples
