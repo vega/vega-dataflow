@@ -25,8 +25,8 @@ prototype.transform = function(_, pulse) {
     this.value = index = {};
     pulse.visit(pulse.SOURCE, set);
   } else if (pulse.changed()) {
-    pulse.visit(pulse.ADD, set);
     pulse.visit(pulse.REM, function(t) { index[field(t)] = undefined; });
+    pulse.visit(pulse.ADD, set);
   } else {
     mod = false;
   }
