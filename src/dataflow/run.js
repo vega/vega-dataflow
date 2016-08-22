@@ -143,15 +143,18 @@ export function enqueue(op, force) {
 export function getPulse(op, encode) {
   var s = op.source,
       stamp = this._clock,
-      p, q;
+      p;
 
   if (s && isArray(s)) {
     p = s.map(function(_) { return _.pulse; });
     return new MultiPulse(this, stamp, p, encode);
   } else {
-    q = this._pulses[op.id];
-    p = (s && (s=s.pulse) && s.stamp === stamp && q.target !== op) ? s : q;
-    if (s) p.source = s.source;
+    s = s && s.pulse;
+    p = this._pulses[op.id];
+    if (s) {
+      if (s.stamp === stamp && p.target !== op) p = s;
+      else p.source = s.source;
+    }
     return p;
   }
 }
