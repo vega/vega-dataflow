@@ -18,16 +18,18 @@ var prototype = inherits(Bin, Transform);
 prototype.transform = function(_, pulse) {
   var bins = this._bins(_),
       step = bins.step,
-      flag = pulse.modified(accessorFields(_.field)) ? pulse.ADD_MOD : pulse.ADD,
       as = _.as || ['bin0', 'bin1'],
       b0 = as[0],
-      b1 = as[1];
+      b1 = as[1],
+      flag = _.modified() ? (pulse.reflow(), pulse.SOURCE)
+        : pulse.modified(accessorFields(_.field)) ? pulse.ADD_MOD
+        : pulse.ADD;
 
   pulse.visit(flag, function(t) {
     t[b1] = (t[b0] = bins(t)) + step;
   });
 
-  return pulse.modified(['bin0', 'bin1']);
+  return pulse.modifies(as);
 };
 
 prototype._bins = function(_) {
