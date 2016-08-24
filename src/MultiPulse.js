@@ -49,7 +49,7 @@ var prototype = inherits(MultiPulse, Pulse);
  * @return {Pulse}
  */
 prototype.fork = function() {
-  if (arguments.length && arguments[0] !== 0) {
+  if (arguments.length && (arguments[0] & Pulse.prototype.ALL)) {
     error('MultiPulse fork does not support tuple change sets.');
   }
   return new Pulse(this.dataflow).init(this, 0);

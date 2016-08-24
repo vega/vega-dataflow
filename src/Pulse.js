@@ -153,12 +153,14 @@ prototype.addAll = function() {
 prototype.init = function(src, flags) {
   var p = this;
   p.stamp = src.stamp;
-  p.source = (flags & NO_SOURCE) ? null : src.source;
   p.encode = src.encode;
   if (src.fields && !(flags & NO_FIELDS)) p.fields = src.fields;
   p.add = (flags & ADD) ? (p.addF = src.addF, src.add) : (p.addF = null, []);
   p.rem = (flags & REM) ? (p.remF = src.remF, src.rem) : (p.remF = null, []);
   p.mod = (flags & MOD) ? (p.modF = src.modF, src.mod) : (p.modF = null, []);
+  p.source = (flags & NO_SOURCE)
+    ? (p.srcF = null, null)
+    : (p.srcF = src.srcF, src.source);
   return p;
 };
 
@@ -207,6 +209,7 @@ prototype.filter = function(flags, filter) {
   if (flags & ADD) p.addF = addFilter(p.addF, filter);
   if (flags & REM) p.remF = addFilter(p.remF, filter);
   if (flags & MOD) p.modF = addFilter(p.modF, filter);
+  if (flags & SOURCE) p.srcF = addFilter(p.srcF, filter);
   return p;
 };
 
@@ -230,12 +233,13 @@ function filter(pulse, flags) {
 }
 
 prototype.visit = function(flags, visitor) {
+  var v = visitor, src, sum;
+
   if (flags & SOURCE) {
-    this.source.forEach(visitor);
+    visitArray(this.source, this.srcF, v);
     return this;
   }
 
-  var v = visitor, src, sum;
   if (flags & ADD) visitArray(this.add, this.addF, v);
   if (flags & REM) visitArray(this.rem, this.remF, v);
   if (flags & MOD) visitArray(this.mod, this.modF, v);
@@ -247,8 +251,8 @@ prototype.visit = function(flags, visitor) {
     } else if (sum) {
       visitArray(src, filter(this, ADD_MOD), v);
     } else {
-      // if no add/rem/mod tuples, iterate directly
-      src.forEach(visitor);
+      // if no add/rem/mod tuples, visit source
+      visitArray(src, this.srcF, v);
     }
   }
 
