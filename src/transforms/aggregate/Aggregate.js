@@ -46,7 +46,7 @@ var prototype = inherits(Aggregate, Transform);
 
 prototype.transform = function(_, pulse) {
   var aggr = this,
-      out = pulse.fork(),
+      out = pulse.fork(pulse.NO_SOURCE | pulse.NO_FIELDS),
       mod;
 
   this.stamp = out.stamp;
