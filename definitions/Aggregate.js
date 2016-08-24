@@ -11,6 +11,7 @@ export default {
         "stdevp", "median", "q1", "q3", "modeskew", "min", "max",
         "argmin", "argmax" ] },
     { "name": "as", "type": "string", "array": true },
-    { "name": "drop", "type": "boolean", "default": true }
+    { "name": "drop", "type": "boolean", "default": true },
+    { "name": "key", "type": "field" }
   ]
 };
