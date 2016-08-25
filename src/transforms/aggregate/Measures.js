@@ -186,8 +186,8 @@ export function compileMeasures(agg, field) {
   set += 'return t;';
 
   ctr = Function('cell', 't', ctr);
-  ctr.prototype.add = Function('v', add);
-  ctr.prototype.rem = Function('v', rem);
+  ctr.prototype.add = Function('v', 't', add);
+  ctr.prototype.rem = Function('v', 't', rem);
   ctr.prototype.set = Function(set);
   ctr.prototype.get = get;
   ctr.fields = agg.map(function(_) { return _.out; });

@@ -234,7 +234,7 @@ prototype.add = function(t) {
 
   agg = cell.agg;
   for (i=0, n=agg.length; i<n; ++i) {
-    agg[i].add(agg[i].get(t));
+    agg[i].add(agg[i].get(t), t);
   }
 };
 
@@ -250,7 +250,7 @@ prototype.rem = function(t) {
 
   agg = cell.agg;
   for (i=0, n=agg.length; i<n; ++i) {
-    agg[i].rem(agg[i].get(t));
+    agg[i].rem(agg[i].get(t), t);
   }
 };
 
