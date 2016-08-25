@@ -171,7 +171,7 @@ prototype.cell = function(key, t) {
   if (!cell) {
     cell = this.value[key] = this.newcell(key, t);
     this._adds[this._alen++] = cell;
-  } else if (cell.num === 0 && this._drop) {
+  } else if (cell.num === 0 && this._drop && cell.stamp < this.stamp) {
     cell.stamp = this.stamp;
     this._adds[this._alen++] = cell;
   } else if (cell.stamp < this.stamp) {
