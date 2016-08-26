@@ -101,14 +101,14 @@ export var Aggregates = {
     name: 'argmin',
     add:  'if (v < this.min) this.argmin = t;',
     rem:  'if (v <= this.min) this.argmin = null;',
-    set:  'this.argmin = this.argmin || cell.data.argmin(this.get)',
+    set:  'this.argmin || cell.data.argmin(this.get)',
     req:  ['min'], str: ['values'], idx: 3
   }),
   'argmax': measure({
     name: 'argmax',
     add:  'if (v > this.max) this.argmax = t;',
     rem:  'if (v >= this.max) this.argmax = null;',
-    set:  'this.argmax = this.argmax || cell.data.argmax(this.get)',
+    set:  'this.argmax || cell.data.argmax(this.get)',
     req:  ['max'], str: ['values'], idx: 3
   }),
   'min': measure({
