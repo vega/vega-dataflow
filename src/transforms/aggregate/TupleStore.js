@@ -61,11 +61,11 @@ prototype.extent = function(get) {
 };
 
 prototype.argmin = function(get) {
-  return this.extent(get)[0];
+  return this.extent(get)[0] || {};
 };
 
 prototype.argmax = function(get) {
-  return this.extent(get)[1];
+  return this.extent(get)[1] || {};
 };
 
 prototype.min = function(get) {
