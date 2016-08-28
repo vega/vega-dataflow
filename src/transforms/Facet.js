@@ -30,15 +30,16 @@ prototype.activate = function(flow) {
   this._targets[this._targets.active++] = flow;
 };
 
-prototype.subflow = function(key, flow, pulse) {
+prototype.subflow = function(key, flow, pulse, parent) {
   var flows = this.value,
       sf = flows.hasOwnProperty(key) && flows[key],
-      df;
+      df, p;
 
   if (!sf) {
+    p = parent || (p = this._group[key]) && p.tuple;
     df = pulse.dataflow;
     sf = df.add(new Subflow(pulse.fork(), this))
-      .connect(flow(df, key, this._count++));
+      .connect(flow(df, key, this._count++, p));
     flows[key] = sf;
     this.activate(sf);
   } else if (sf.value.stamp < pulse.stamp) {
@@ -56,8 +57,11 @@ prototype.transform = function(_, pulse) {
       cache = this._keys,
       rekey = _.modified('key');
 
-  function subflow(key) { return self.subflow(key, flow, pulse); }
+  function subflow(key) {
+    return self.subflow(key, flow, pulse);
+  }
 
+  this._group = _.group || {};
   this._targets.active = 0; // reset list of active subflows
 
   pulse.visit(pulse.ADD, function(t) {

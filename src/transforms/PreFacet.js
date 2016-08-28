@@ -29,12 +29,12 @@ prototype.transform = function(_, pulse) {
   this._targets.active = 0; // reset list of active subflows
 
   pulse.visit(pulse.ADD, function(t) {
-    var sf = self.subflow(t._id, flow, pulse);
+    var sf = self.subflow(t._id, flow, pulse, t);
     field ? field(t).forEach(function(_) { sf.add(ingest(_)); }) : sf.add(t);
   });
 
   pulse.visit(pulse.REM, function(t) {
-    var sf = self.subflow(t._id, flow, pulse);
+    var sf = self.subflow(t._id, flow, pulse, t);
     field ? field(t).forEach(function(_) { sf.rem(_); }) : sf.rem(t);
   });
 
