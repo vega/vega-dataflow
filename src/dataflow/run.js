@@ -49,7 +49,7 @@ export function run(encode) {
       next = op.run(df._getPulse(op, encode));
 
       if (level >= Debug) {
-        df.debug(op.id, next === StopPropagation ? 'STOP' : '', op);
+        df.debug(op.id, next === StopPropagation ? 'STOP' : next, op);
       }
 
       // propagate the pulse
@@ -151,7 +151,7 @@ export function getPulse(op, encode) {
   } else {
     s = s && s.pulse;
     p = this._pulses[op.id];
-    if (s) {
+    if (s && s !== StopPropagation) {
       if (s.stamp === stamp && p.target !== op) p = s;
       else p.source = s.source;
     }
