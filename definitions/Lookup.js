@@ -3,7 +3,7 @@ export default {
   "metadata": {"modifies": true},
   "params": [
     { "name": "index", "type": "index", "params": [
-        {"name": "from", "type": "string", "signal": false, "required": true },
+        {"name": "from", "type": "data", "required": true },
         {"name": "key", "type": "field", "required": true }
       ] },
     { "name": "fields", "type": "field", "array": true, "required": true },
