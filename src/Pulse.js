@@ -223,6 +223,9 @@ prototype.materialize = function(flags) {
   if ((flags & ADD) && p.addF) { p.add = p.add.filter(p.addF); p.addF = null; }
   if ((flags & REM) && p.remF) { p.rem = p.rem.filter(p.remF); p.remF = null; }
   if ((flags & MOD) && p.modF) { p.mod = p.mod.filter(p.modF); p.modF = null; }
+  if ((flags & SOURCE) && p.srcF) {
+    p.source = p.source.filter(p.srcF); p.srcF = null;
+  }
   return p;
 };
 
