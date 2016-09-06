@@ -2,17 +2,17 @@ import Transform from '../Transform';
 import {inherits} from 'vega-util';
 
 /**
- * Applies a function to a data tuple and stores the result.
+ * Invokes a function for each data tuple and saves the results as a new field.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): *} params.expr - The expression function to apply to each tuple.
- * @param {string} params.as - The field name under which to store the result.
+ * @param {function(object): *} params.expr - The formula function to invoke for each tuple.
+ * @param {string} params.as - The field name under which to save the result.
  */
-export default function Apply(params) {
+export default function Formula(params) {
   Transform.call(this, null, params);
 }
 
-var prototype = inherits(Apply, Transform);
+var prototype = inherits(Formula, Transform);
 
 prototype.transform = function(_, pulse) {
   var func = _.expr,

@@ -25,7 +25,6 @@ export {
 import {register, transform} from './src/register';
 
 import Aggregate from './src/transforms/aggregate/Aggregate';
-import Apply from './src/transforms/Apply';
 import Bin from './src/transforms/Bin';
 import Collect from './src/transforms/Collect';
 import Compare from './src/transforms/Compare';
@@ -36,6 +35,7 @@ import Facet from './src/transforms/Facet';
 import Field from './src/transforms/Field';
 import Filter from './src/transforms/Filter';
 import Fold from './src/transforms/Fold';
+import Formula from './src/transforms/Formula';
 import Generate from './src/transforms/Generate';
 import Impute from './src/transforms/Impute';
 import Key from './src/transforms/Key';
@@ -54,7 +54,6 @@ import TupleIndex from './src/transforms/TupleIndex';
 import Values from './src/transforms/Values';
 
 import AggregateDefinition from './definitions/Aggregate';
-import ApplyDefinition from './definitions/Apply';
 import BinDefinition from './definitions/Bin';
 import CollectDefinition from './definitions/Collect';
 import CountPatternDefinition from './definitions/CountPattern';
@@ -62,6 +61,7 @@ import CrossDefinition from './definitions/Cross';
 import ExtentDefinition from './definitions/Extent';
 import FilterDefinition from './definitions/Filter';
 import FoldDefinition from './definitions/Fold';
+import FormulaDefinition from './definitions/Formula';
 import ImputeDefinition from './definitions/Impute';
 import LookupDefinition from './definitions/Lookup';
 import RangeDefinition from './definitions/Range';
@@ -69,7 +69,6 @@ import RankDefinition from './definitions/Rank';
 import SampleDefinition from './definitions/Sample';
 
 register(AggregateDefinition, Aggregate);
-register(ApplyDefinition, Apply);
 register(BinDefinition, Bin);
 register(CollectDefinition, Collect);
 register(CountPatternDefinition, CountPattern);
@@ -77,6 +76,7 @@ register(CrossDefinition, Cross);
 register(ExtentDefinition, Extent);
 register(FilterDefinition, Filter);
 register(FoldDefinition, Fold);
+register(FormulaDefinition, Formula);
 register(ImputeDefinition, Impute);
 register(LookupDefinition, Lookup);
 register(RangeDefinition, Range);

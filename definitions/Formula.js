@@ -1,5 +1,5 @@
 export default {
-  "type": "Apply",
+  "type": "Formula",
   "metadata": {"modifies": true},
   "params": [
     { "name": "expr", "type": "expr", "required": true },
