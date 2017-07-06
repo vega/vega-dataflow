@@ -71,7 +71,9 @@ function siftdown(array, start, idx, cmp) {
     }
     break;
   }
-  return (array[idx] = item);
+  array[idx] = item;
+
+  return item;
 }
 
 function siftup(array, idx, cmp) {

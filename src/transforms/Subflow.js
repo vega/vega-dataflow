@@ -18,7 +18,8 @@ var prototype = inherits(Subflow, Operator);
 
 prototype.connect = function(target) {
   this.targets().add(target);
-  return (target.source = this);
+  target.source = this;
+  return target.source;
 };
 
 /**
