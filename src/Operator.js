@@ -49,7 +49,10 @@ var prototype = Operator.prototype;
  * @return {UniqueList}
  */
 prototype.targets = function() {
-  return this._targets || (this._targets = UniqueList(id));
+  if (!this._targets) {
+    this._targets = UniqueList(id);
+  }
+  return this._targets;
 };
 
 /**

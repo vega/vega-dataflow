@@ -45,7 +45,9 @@ prototype.values = function() {
   }
 
   this._rem = [];
-  return (this._add = x);
+  this._add = x;
+
+  return this._add;
 };
 
 // memoizing statistics methods

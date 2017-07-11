@@ -27,7 +27,8 @@ function loadPending(df) {
     }
   };
 
-  return (df._pending = pending);
+  df._pending = pending;
+  return pending;
 }
 
 export function request(target, url, format) {

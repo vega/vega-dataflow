@@ -54,9 +54,10 @@ prototype._bins = function(_) {
       start = bins.start,
       stop  = bins.stop,
       step  = bins.step,
-      a, d;
+      a = _.anchor,
+      d;
 
-  if ((a = _.anchor) != null) {
+  if (a != null) {
     d = a - (start + step * Math.floor((a - start) / step));
     start += d;
     stop += d;
@@ -76,9 +77,11 @@ prototype._bins = function(_) {
   f.stop = stop;
   f.step = step;
 
-  return this.value = accessor(
+  this.value = accessor(
     f,
     accessorFields(field),
     _.name || 'bin_' + accessorName(field)
   );
+
+  return this.value;
 };
