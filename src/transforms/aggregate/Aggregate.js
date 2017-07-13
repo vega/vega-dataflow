@@ -214,12 +214,12 @@ function cellkey(x) {
 
 prototype.cellkey = cellkey;
 
-prototype.cell = function(key, t) {
+prototype.cell = function(key, t, rem) {
   var cell = this.value[key];
   if (!cell) {
     cell = this.value[key] = this.newcell(key, t);
     this._adds[this._alen++] = cell;
-  } else if (cell.num === 0 && this._drop && cell.stamp < this.stamp) {
+  } else if (cell.num === 0 && this._drop && cell.stamp < this.stamp && !rem) {
     cell.stamp = this.stamp;
     this._adds[this._alen++] = cell;
   } else if (cell.stamp < this.stamp) {
@@ -288,10 +288,10 @@ prototype.add = function(t) {
 
 prototype.rem = function(t) {
   var key = this.cellkey(t),
-      cell = this.cell(key, t),
+      cell = this.cell(key, t, true),
       agg, i, n;
 
-  cell.num -= 1;
+  if (cell.num > 0) cell.num -= 1;
   if (this._countOnly) return;
 
   if (cell.store) cell.data.rem(t);
