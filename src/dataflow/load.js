@@ -43,7 +43,7 @@ export function request(target, url, format) {
         df.ingest(target, data, format);
       },
       function(error) {
-        df.error('Loading failed: ' + JSON.stringify(url), error);
+        df.error('Loading failed', url, error);
       })
     .then(pending.done, pending.done)
     .catch(function(error) { df.error(error); });
