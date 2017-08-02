@@ -15,9 +15,10 @@ import {bisector} from 'd3-array';
  * @param {Array<string>} params.ops - An array of strings indicating window operations to perform.
  * @param {Array<function(object): *>} [params.fields] - An array of accessors
  *   for data fields to use as inputs to window operations.
+ * @param {Array<*>} [params.params] - An array of parameter values for window operations.
  * @param {Array<string>} [params.as] - An array of output field names for window operations.
  * @param {Array<number>} [params.frame] - Window frame definition as two-element array.
- * @param {boolean} [params.frameRows] - If true, base window frame boundaries on row
+ * @param {boolean} [params.ignorePeers] - If true, base window frame boundaries on row
  *   number alone, ignoring peers with identical sort values. If false (default),
  *   the window boundaries will be adjusted to include peer values.
  */
@@ -85,7 +86,7 @@ prototype.group = function(key) {
 
 function processPartition(list, state, _) {
   var sort = _.sort,
-      range = sort && !_.frameRows,
+      range = sort && !_.ignorePeers,
       frame = _.frame || [null, 0],
       data = list.data(sort),
       n = data.length,

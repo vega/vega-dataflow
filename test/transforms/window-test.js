@@ -25,7 +25,7 @@ tape('Window processes single partition', function(test) {
       agg = df.add(tx.Window, {
         sort: util.compare('key'),
         frame: [null, 0],
-        frameRows: true,
+        ignorePeers: true,
         fields: [
           null, val, val, val,
           null, null, null, null,
@@ -133,7 +133,7 @@ tape('Window processes multiple partitions', function(test) {
         sort: util.compare('key'),
         groupby: [util.field('k')],
         frame: [null, 0],
-        frameRows: true,
+        ignorePeers: true,
         fields: [
           null, val, val, val,
           null, null, null, null,
@@ -214,7 +214,7 @@ tape('Window processes range frames', function(test) {
       agg = df.add(tx.Window, {
         sort: util.compare('key'),
         frame: [0, null],
-        frameRows: false,
+        ignorePeers: false,
         fields: [null, val, val, val, val, val],
         ops: ['count', 'sum', 'min', 'max', 'first_value', 'last_value'],
         pulse: col
@@ -299,7 +299,7 @@ tape('Window processes row frames', function(test) {
       agg = df.add(tx.Window, {
         sort: util.compare('key'),
         frame: [-1, 1],
-        frameRows: true,
+        ignorePeers: true,
         fields: [null, val, val, null],
         ops: ['count', 'sum', 'mean', 'rank'],
         pulse: col
