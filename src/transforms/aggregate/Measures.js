@@ -183,7 +183,7 @@ export function compileMeasures(agg, field) {
   });
   set += 'return t;';
 
-  ctr = Function('cell', 't', ctr);
+  ctr = Function('cell', ctr);
   ctr.prototype.init = Function(init);
   ctr.prototype.add = Function('v', 't', add);
   ctr.prototype.rem = Function('v', 't', rem);

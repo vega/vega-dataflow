@@ -232,7 +232,7 @@ prototype.newcell = function(key, t) {
 
     cell.agg = Array(n);
     for (i=0; i<n; ++i) {
-      cell.agg[i] = new measures[i](cell, cell.tuple);
+      cell.agg[i] = new measures[i](cell);
     }
   }
 
@@ -306,7 +306,7 @@ prototype.celltuple = function(cell) {
   if (!this._countOnly) {
     agg = cell.agg;
     for (i=0, n=agg.length; i<n; ++i) {
-      agg[i].set(cell.tuple);
+      agg[i].set(tuple);
     }
   }
 
