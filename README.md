@@ -1,3 +1,5 @@
+**NOTE:** This package has been consolidated into the [`vega/vega`](https://github.com/vega/vega) repository, where future development and issues will be handled. This repository has been archived and is now read-only.
+
 # vega-dataflow
 
 Reactive dataflow processing.
